@@ -1,0 +1,82 @@
+export const API = {
+    // Authentication / user routes
+    AUTH: {
+        REGISTER: "/api/auth/register",
+        LOGIN: "/api/auth/login",
+        WHOAMI: "/api/auth/whoami",
+        UPDATEPROFILE: "/api/auth/update-profile",
+        FORGOT_PASSWORD: "/api/auth/request-password-reset",
+        RESET_PASSWORD: (token: string) => `/api/auth/reset-password/${token}`,
+        GOOGLE: "/api/auth/google",
+        EXISTS: "/api/auth/exists",
+    },
+    NGO: {
+        LIST: "/api/ngos",
+        GET: (id: string) => `/api/ngos/${id}`,
+    },
+    DONATION: {
+        LIST: "/api/donations",
+        GET: (id: string) => `/api/donations/${id}`,
+        CREATE: "/api/donations",
+        UPDATE: (id: string) => `/api/donations/${id}`,
+        DELETE: (id: string) => `/api/donations/${id}`,
+    },
+    TASK: {
+        LIST: "/api/tasks",
+        GET: (id: string) => `/api/tasks/${id}`,
+        UPDATE_STATUS: (id: string) => `/api/tasks/${id}/status`,
+        acceptTask: (id: string) => `/api/tasks/${id}/accept`,
+        completeTask: (id: string) => `/api/tasks/${id}/complete`,
+        cancelTask: (id: string) => `/api/tasks/${id}/cancel`,
+    },
+    REVIEWS: {
+        LIST: "/api/reviews",
+        CREATE: "/api/reviews",
+        MY: "/api/reviews/my",
+        GET: (id: string) => `/api/reviews/${id}`,
+        UPDATE: (id: string) => `/api/reviews/${id}`,
+        DELETE: (id: string) => `/api/reviews/${id}`,
+    },
+    WISHLIST: {
+        LIST: "/api/wishlists",
+        CREATE: "/api/wishlists",
+        MY: "/api/wishlists/my",
+        BY_DONOR: (donorId: string) => `/api/wishlists/donor/${donorId}`,
+        GET: (id: string) => `/api/wishlists/${id}`,
+        UPDATE: (id: string) => `/api/wishlists/${id}`,
+        DELETE: (id: string) => `/api/wishlists/${id}`,
+    },
+    // Admin routes 
+    ADMIN: {
+        USER: {
+            GET_ALL: "/api/admin/users",
+            GET_ONE: (id: string) => `/api/admin/users/${id}`,
+            CREATE: "/api/admin/users",
+            UPDATE: (id: string) => `/api/admin/users/${id}`,
+            DELETE: (id: string) => `/api/admin/users/${id}`,
+        },
+        NGO: {
+            GET_ALL: "/api/admin/ngos",
+            GET_ONE: (id: string) => `/api/admin/ngos/${id}`,
+            CREATE: "/api/admin/ngos",
+            UPDATE: (id: string) => `/api/admin/ngos/${id}`,
+            DELETE: (id: string) => `/api/admin/ngos/${id}`,
+        },
+        DONATION: {
+            GET_ALL: "/api/admin/donations",
+            GET_ONE: (id: string) => `/api/admin/donations/${id}`,
+            UPDATE: (id: string) => `/api/admin/donations/${id}`,
+            DELETE: (id: string) => `/api/admin/donations/${id}`,
+            APPROVE: (id: string) => `/api/admin/donations/${id}/approve`,
+            ASSIGN: (id: string) => `/api/admin/donations/${id}/assign`,
+        },
+        TASK: {
+            LIST: "/api/admin/tasks",
+            GET: (id: string) => `/api/admin/tasks/${id}`,
+            CREATE: "/api/admin/tasks",
+            UPDATE: (id: string) => `/api/admin/tasks/${id}`,
+            UPDATE_STATUS: (id: string) => `/api/admin/tasks/${id}/status`,
+            DELETE: (id: string) => `/api/admin/tasks/${id}`,
+        },
+    },
+};
