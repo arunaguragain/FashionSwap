@@ -7,10 +7,11 @@ import adminUserRoutes from "./routes/admin/user.route";
 import adminNgoRoutes from "./routes/admin/ngo.route";
 import adminDonationRoutes from "./routes/admin/donation.route";
 import adminTaskRoutes from "./routes/admin/task.route";
-import donationRoutes from "./routes/donation.route";
+import listingRoutes from "./routes/listing.route";
+import orderRoutes from "./routes/order.route";
+import transactionRoutes from "./routes/transaction.route";
+import profileRoutes from "./routes/profile.route";
 import wishlistRoutes from "./routes/wishlist.route";
-import ngoRoutes from "./routes/ngo.route";
-import volunteerTaskRoutes from "./routes/volunteer/task.route";
 import reviewRoutes from "./routes/review.route";
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -36,17 +37,18 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/item_photos', express.static(path.join(__dirname, '../uploads')));
 
 app.get('/', (req: Request, res: Response) => {
-    return res.status(200).json({ success: "true", message: "Welcome to the api of aashwaas" });
+    return res.status(200).json({ success: "true", message: "Welcome to the api of FashionSwap" });
 }); 
 app.use('/api/auth', authRoutes);
-app.use('/api/donations', donationRoutes);
+app.use('/api/listings', listingRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/profiles', profileRoutes);
 app.use('/api/wishlists', wishlistRoutes);
-app.use('/api/ngos', ngoRoutes);
+app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin/users', adminUserRoutes);
 app.use('/api/admin/ngos', adminNgoRoutes);
 app.use('/api/admin/donations', adminDonationRoutes);
 app.use('/api/admin/tasks', adminTaskRoutes);
-app.use('/api/tasks', volunteerTaskRoutes);
-app.use('/api/reviews', reviewRoutes);
 
 export default app;
