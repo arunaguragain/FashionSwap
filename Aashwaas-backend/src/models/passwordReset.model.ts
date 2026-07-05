@@ -21,3 +21,8 @@ const PasswordResetSchema: Schema = new Schema(
 );
 
 export const PasswordResetModel = mongoose.model<IPasswordReset>('PasswordReset', PasswordResetSchema);
+
+
+
+
+

@@ -66,3 +66,7 @@ const transactionSchema = new Schema<ITransaction>(
 );
 
 export default mongoose.model<ITransaction>('Transaction', transactionSchema);
+
+
+
+

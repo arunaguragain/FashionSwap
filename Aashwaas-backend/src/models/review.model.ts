@@ -84,3 +84,10 @@ reviewSchema.index({ orderId: 1 });
 
 export const ReviewModel = mongoose.model<IReview>('Review', reviewSchema);
 export default ReviewModel;
+
+
+
+
+
+
+
