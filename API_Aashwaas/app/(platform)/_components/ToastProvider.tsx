@@ -17,10 +17,14 @@ type ToastContextValue = {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
-export const useToast = (p0: { title: any; tone: string; }) => {
+export const useToast = (initial?: Omit<Toast, 'id'>) => {
   const context = useContext(ToastContext);
   if (!context) {
     throw new Error("useToast must be used within ToastProvider");
+  }
+  if (initial) {
+    // fire-and-forget
+    try { context.pushToast(initial); } catch {}
   }
   return context;
 };
