@@ -77,9 +77,10 @@ export default function AdminTaskDetailPage() {
           ngo = ngoId && typeof ngoId === 'string' ? (await AdminNGOsApi.adminGetById(ngoId)).data : null;
         } catch {}
         // Always use the latest pickup/drop location from the task object if present, else fallback
-        setTask({
+          const donationAny: any = donation;
+          setTask({
           ...data,
-          title: typeof data.title === 'string' && data.title ? data.title : (donation?.itemName || donation?.title || ''),
+          title: typeof data.title === 'string' && data.title ? data.title : (donationAny?.itemName || donationAny?.title || ''),
           pickupLocation: data.pickupLocation || donation?.pickupLocation || '',
           dropLocation: data.dropLocation || ngo?.address || '',
           donorContact,
@@ -175,8 +176,8 @@ export default function AdminTaskDetailPage() {
             <div className="mt-4 space-y-2 text-sm text-gray-600">
               <p><span className="font-medium">Donation:</span> {
                 // Show donation name/title from fetched donation object if available, else fallback
-                task.donationId && typeof task.donationId === 'object' && (task.donationId.itemName || task.donationId.title)
-                  ? `${task.donationId.itemName || task.donationId.title}${task.donationId.category ? ' (' + task.donationId.category + ')' : ''}`
+                task.donationId && typeof task.donationId === 'object' && ((task.donationId as any).itemName || (task.donationId as any).title)
+                  ? `${(task.donationId as any).itemName || (task.donationId as any).title}${(task.donationId as any).category ? ' (' + (task.donationId as any).category + ')' : ''}`
                   : (task.donationTitle || <span className="italic text-gray-400">-</span>)
               }</p>
               <p><span className="font-medium">Pickup Location:</span> {task.pickupLocation || <span className="italic text-gray-400">-</span>}</p>
