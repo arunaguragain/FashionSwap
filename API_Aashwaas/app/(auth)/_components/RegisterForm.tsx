@@ -68,9 +68,9 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
         if (loginLink) {
           router.push(loginLink);
         } else if (userType === "Donor") {
-          router.push("/donor_login");
+          router.push("/login");
         } else if (userType === "Volunteer") {
-          router.push("/volunteer_login");
+          router.push("/login");
         } else {
           router.push("/");
         }

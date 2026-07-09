@@ -1,77 +1,109 @@
 "use client";
 
-import React from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SearchBar from '../../components/marketplace/SearchBar';
 import FilterPanel from '../../components/marketplace/FilterPanel';
 import ListingCard from '../../components/marketplace/ListingCard';
 import SkeletonCard from '../../components/common/SkeletonCard';
-import { useEffect, useState } from 'react';
 import { getListings } from '../../lib/api';
 
-const mockListings = new Array(6).fill(0).map((_, i) => ({
-  id: `listing-${i}`,
-  title: `Item ${i + 1}`,
-  price: (i + 1) * 10,
-  image: '/images/placeholder.png',
-  seller: { name: `seller${i + 1}`, rating: 4.5 },
-  condition: 'Good',
-  category: 'Tops',
-}));
+interface ListingItem {
+  _id?: string;
+  id?: string;
+  title: string;
+  askingPrice?: number;
+  price?: number;
+  images?: string[];
+  image?: string;
+  sellerName?: string;
+  seller?: { name?: string; rating?: number };
+  condition?: string;
+  category?: string;
+  description?: string;
+}
 
 export default function ListingsPage() {
-  const [items, setItems] = useState<any[]>(mockListings);
+  const [items, setItems] = useState<ListingItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [filters, setFilters] = useState<{ category?: string; minPrice?: number; maxPrice?: number; condition?: string; size?: string }>({});
 
-  const handleSearch = async (q: string) => {
+  const loadListings = useCallback(async (search = '', currentFilters: { category?: string; minPrice?: number; maxPrice?: number; condition?: string; size?: string } = {}) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await getListings(q);
-      setItems(res?.data ?? res ?? []);
+      const res = await getListings(search, currentFilters);
+      const payload = (res as any)?.data ?? res ?? [];
+      setItems(Array.isArray(payload) ? payload : []);
     } catch (e: any) {
-      setError(e.message || 'Failed to load');
+      setError(e.message || 'Failed to load listings');
+      setItems([]);
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  const handleSearch = async (q: string) => {
+    setQuery(q);
+    await loadListings(q, filters);
   };
 
-  const handleFilter = (filters: any) => {
-    console.log('filters', filters);
+  const handleFilter = (nextFilters: { category?: string; minPrice?: number; maxPrice?: number; condition?: string; size?: string }) => {
+    setFilters(nextFilters);
+    void loadListings(query, nextFilters);
   };
 
   useEffect(() => {
-    // load initial listings
-    handleSearch('');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    void loadListings('', {});
+  }, [loadListings]);
+
+  const content = useMemo(() => {
+    if (loading) {
+      return (
+        <>
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </>
+      );
+    }
+
+    if (error) {
+      return <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">{error}</div>;
+    }
+
+    if (items.length === 0) {
+      return <div className="rounded-lg border border-dashed border-gray-300 p-6 text-gray-600">No listings match your current search.</div>;
+    }
+
+    return items.map((l) => {
+      const id = l._id || l.id;
+      const image = l.images?.[0] || l.image || '/images/placeholder.png';
+      const sellerName = l.seller?.name || l.sellerName || 'seller';
+      const price = l.askingPrice ?? l.price ?? 0;
+      return (
+        <ListingCard
+          key={id}
+          id={String(id)}
+          image={image}
+          title={l.title}
+          price={price}
+          seller={{ name: sellerName, rating: l.seller?.rating }}
+          condition={l.condition}
+          category={l.category}
+        />
+      );
+    });
+  }, [error, items, loading]);
 
   return (
-    <div className="max-w-[1200px] mx-auto p-6">
+    <div className="mx-auto max-w-300 p-6">
       <div className="mb-6"><SearchBar onSearch={handleSearch} /></div>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
         <aside className="md:col-span-1"><FilterPanel onFilter={handleFilter} /></aside>
-        <main className="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {loading && (
-            <>
-              <SkeletonCard />
-              <SkeletonCard />
-              <SkeletonCard />
-            </>
-          )}
-          {error && <div className="text-red-600">{error}</div>}
-          {!loading && !error && (items.length === 0 ? <div>No listings</div> : items.map((l) => (
-            <ListingCard
-              key={l.id}
-              id={l.id}
-              image={l.image}
-              title={l.title}
-              price={l.price}
-              seller={l.seller}
-              condition={l.condition}
-              category={l.category}
-            />
-          )))}
+        <main className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 md:col-span-3">
+          {content}
         </main>
       </div>
     </div>

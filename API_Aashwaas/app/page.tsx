@@ -37,8 +37,8 @@ export default function Home() {
             <p className="text-white mb-4 max-w-xl text-lg drop-shadow-lg">Aashwaas bridges donors, volunteers, and NGOs to reduce waste and maximize the impact of every contribution. Donate goods and volunteer your time all in one transparent platform.</p>
 
             <div className="flex flex-wrap items-center gap-4 mb-6">
-              <Link href="/donor_login" className="inline-flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-full shadow">Donate Now</Link>
-              <Link href="/volunteer_login" className="inline-flex items-center gap-3 bg-white border border-blue-600 text-blue-600 px-5 py-3 rounded-full hover:bg-blue-50">Become a Volunteer</Link>
+              <Link href="/register" className="inline-flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-full shadow">Start Selling</Link>
+              <Link href="/listings" className="inline-flex items-center gap-3 bg-white border border-blue-600 text-blue-600 px-5 py-3 rounded-full hover:bg-blue-50">Browse Listings</Link>
             </div>
 
             <div className="flex items-center gap-6 text-sm text-gray-600">
@@ -248,12 +248,12 @@ export default function Home() {
           <p className="mt-3 max-w-2xl mx-auto text-gray-600">Join thousands of donors, volunteers, and organizations creating positive change</p>
 
             <div className="mt-8 flex items-center justify-center gap-4 flex-wrap">
-            <Link href="/donor_register" className="inline-flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-full shadow"> 
-              Start Donating
+            <Link href="/register" className="inline-flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-full shadow"> 
+              Join FashionSwap
             </Link>
 
-            <Link href="/volunteer_register" className="inline-flex items-center gap-3 bg-white border border-blue-600 text-blue-600 px-6 py-3 rounded-full hover:bg-blue-50"> 
-              Join as Volunteer
+            <Link href="/listings" className="inline-flex items-center gap-3 bg-white border border-blue-600 text-blue-600 px-6 py-3 rounded-full hover:bg-blue-50"> 
+              Explore Marketplace
             </Link>
           </div>
         </div>

@@ -56,8 +56,15 @@ export async function fetchJSON(path: string, opts: RequestInit = {}) {
 }
 
 // Listings
-export function getListings(query = '') {
-  return fetchJSON(`/api/listings${query ? `?q=${encodeURIComponent(query)}` : ''}`);
+export function getListings(query = '', filters: Record<string, unknown> = {}) {
+  const params = new URLSearchParams();
+  if (query) params.set('query', query);
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '') return;
+    params.set(key, String(value));
+  });
+  const suffix = params.toString() ? `?${params.toString()}` : '';
+  return fetchJSON(`/api/listings${suffix}`);
 }
 
 export function getListing(id: string) {
@@ -65,16 +72,39 @@ export function getListing(id: string) {
 }
 
 export function createListing(payload: any) {
-  return fetchJSON(`/api/listings`, { method: 'POST', body: JSON.stringify(payload) });
+  return fetchJSON('/api/listings', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
 
-// Orders
+export function createOrder(payload: any) {
+  return fetchJSON('/api/orders', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
 export function getOrders() {
   return fetchJSON('/api/orders');
 }
 
 export function getMyListings() {
-  return fetchJSON('/api/my/listings');
+  return fetchJSON('/api/listings/user/my-listings');
+}
+
+export function getTransactionByOrderId(orderId: string) {
+  return fetchJSON(`/api/transactions/order/${orderId}`);
+}
+
+export function confirmDelivery(transactionId: string) {
+  return fetchJSON(`/api/transactions/${transactionId}/confirm-delivery`, { method: 'PUT' });
+}
+
+export function confirmHandover(transactionId: string) {
+  return fetchJSON(`/api/transactions/${transactionId}/confirm-handover`, { method: 'PUT' });
 }
 
 // Auth

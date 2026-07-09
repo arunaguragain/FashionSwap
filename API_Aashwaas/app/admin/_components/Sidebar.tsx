@@ -18,10 +18,9 @@ import {
 
 const navItems = [
 	{ href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-	{ href: "/admin/ngos", label: "NGO Management", icon: Building2 },
-	{ href: "/admin/users", label: "User Management", icon: UserCog },
-	{ href: "/admin/donations", label: "Donations", icon: Package },
-	{ href: "/admin/tasks", label: "Task Management", icon: ClipboardList },
+	{ href: "/admin/users", label: "Users", icon: UserCog },
+	{ href: "/listings", label: "Listings", icon: Package },
+	{ href: "/orders", label: "Orders", icon: ClipboardList },
 	{ href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
 ];
 

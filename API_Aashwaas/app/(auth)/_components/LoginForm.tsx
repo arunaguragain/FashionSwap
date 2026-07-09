@@ -81,9 +81,9 @@ export default function LoginForm({
       const userRole = res.data?.role?.toLowerCase();
       
       if (userRole === "donor") {
-        redirectPath = "/user/donor/dashboard";
+        redirectPath = "/listings";
       } else if (userRole === "volunteer") {
-        redirectPath = "/user/volunteer/dashboard";
+        redirectPath = "/listings";
       } else if (userRole === "admin") {
         redirectPath = "/admin/dashboard";
       }

@@ -173,7 +173,7 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
                   if (!autoLogin) {
                     // when creating a new account we don't want confusing server messages
                     try { pushToast({ title: 'Account created', description: 'Please login.', tone: 'success' }); } catch (e) {}
-                    const loginPath = userType === 'Donor' ? '/donor_login' : userType === 'Volunteer' ? '/volunteer_login' : '/admin_login';
+                    const loginPath = userType === 'Donor' ? '/login' : userType === 'Volunteer' ? '/login' : '/admin_login';
                     try { (router.push as any)(loginPath); } catch (e) { try { window.location.href = loginPath; } catch (_) {} }
                     return;
                   }

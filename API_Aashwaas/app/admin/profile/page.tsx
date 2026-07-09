@@ -225,7 +225,7 @@ export default function AdminProfilePage() {
           <div className="font-semibold mb-2">Quick Actions</div>
           <button onClick={() => router.push('/admin/dashboard')} className="bg-purple-600 text-white px-4 py-2 rounded">Go to Home</button>
           <button onClick={() => router.push('/admin/users')} className="bg-gray-200 px-4 py-2 rounded">Manage Users</button>
-          <button onClick={() => router.push('/admin/ngos')}  className="bg-gray-200 px-4 py-2 rounded">Manage NGOs</button>
+          <button onClick={() => router.push('/admin/users')}  className="bg-gray-200 px-4 py-2 rounded">Manage Users</button>
         </div>
       </div>
     </div>
