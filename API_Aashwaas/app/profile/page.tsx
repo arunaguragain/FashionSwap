@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import Button from '../../components/common/Button';
 import Protected from '../../components/common/Protected';
 import { useAuth } from '@/context/AuthContext';
@@ -58,7 +59,12 @@ export default function ProfilePage() {
             <h1 className="text-2xl font-semibold text-slate-900">Welcome back, {user?.name || user?.fullName || 'there'}</h1>
             <p className="text-sm text-slate-500">Manage your listings, track your orders, and export your account data.</p>
           </div>
-          <Button onClick={exportData}>Export my data</Button>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/settings" className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+              Open settings
+            </Link>
+            <Button onClick={exportData}>Export my data</Button>
+          </div>
         </div>
 
         <div className="mb-6 grid gap-4 md:grid-cols-3">

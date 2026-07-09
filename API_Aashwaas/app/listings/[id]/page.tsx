@@ -52,23 +52,28 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
   if (error) return <div className="p-6 text-red-600">{error}</div>;
   if (!listing) return <div className="p-6">No listing found</div>;
 
-  const images = listing.images ?? ['/images/placeholder.png'];
+  const images = Array.isArray(listing.images) && listing.images.length ? listing.images : ['/images/placeholder.png'];
   const price = listing.askingPrice ?? listing.price ?? 0;
+  const sellerName = listing.sellerName || listing.seller?.name || 'Seller';
+  const location = listing.location || listing.pickupLocation || 'Location shared after offer';
 
   return (
     <div className="mx-auto max-w-250 p-6">
       <div className="grid gap-8 md:grid-cols-2">
         <ImageGallery images={images} />
         <div>
-          <h1 className="mb-2 text-2xl font-semibold">{listing.title}</h1>
-          <p className="mb-4 text-gray-700">{listing.description}</p>
-          <p className="mb-4 text-lg font-bold">Price: ₹{price}</p>
-          <div className="mb-4 text-sm text-gray-600">
-            <p>Category: {listing.category}</p>
-            <p>Condition: {listing.condition}</p>
-            <p>Seller: {listing.sellerName || 'Seller'}</p>
+          <div className="mb-3 inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">
+            {listing.category || 'Fashion'}
           </div>
-          <div className="flex gap-3">
+          <h1 className="mb-2 text-2xl font-semibold">{listing.title}</h1>
+          <p className="mb-4 text-gray-700">{listing.description || 'A great fashion find ready for a new home.'}</p>
+          <p className="mb-4 text-2xl font-bold text-slate-900">₹{price}</p>
+          <div className="mb-4 space-y-2 text-sm text-gray-600">
+            <p><span className="font-medium text-slate-900">Condition:</span> {listing.condition || 'Good'}</p>
+            <p><span className="font-medium text-slate-900">Seller:</span> {sellerName}</p>
+            <p><span className="font-medium text-slate-900">Location:</span> {location}</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
             <Button onClick={handleOffer} disabled={submitting}>{submitting ? 'Sending...' : 'Make Offer'}</Button>
             <Button variant="secondary">Contact seller</Button>
           </div>

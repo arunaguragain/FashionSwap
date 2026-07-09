@@ -74,7 +74,12 @@ export default function ListingsPage() {
     }
 
     if (items.length === 0) {
-      return <div className="rounded-lg border border-dashed border-gray-300 p-6 text-gray-600">No listings match your current search.</div>;
+      return (
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-600 md:col-span-3">
+          <p className="font-medium text-slate-900">No listings match your search yet.</p>
+          <p className="mt-1">Try a broader keyword or clear a filter to see more fashion pieces.</p>
+        </div>
+      );
     }
 
     return items.map((l) => {

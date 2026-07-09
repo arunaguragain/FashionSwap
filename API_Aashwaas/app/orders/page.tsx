@@ -75,14 +75,15 @@ export default function OrdersPage() {
                   <div className="text-sm text-gray-600">Offer: ₹{o.offerPrice ?? o.total ?? 0}</div>
                   <div className="text-sm text-gray-500">Status: {status}</div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {status === 'accepted' && (
                     <>
-                      <button className="rounded bg-primary-900 px-3 py-2 text-sm text-white" onClick={() => onCompleteAction(o, 'delivery')} disabled={actionLoading === id}>Confirm Delivery</button>
-                      <button className="rounded border border-gray-300 px-3 py-2 text-sm" onClick={() => onCompleteAction(o, 'handover')} disabled={actionLoading === id}>Confirm Handover</button>
+                      <button className="rounded bg-primary-900 px-3 py-2 text-sm text-white" onClick={() => onCompleteAction(o, 'delivery')} disabled={actionLoading === id}>{actionLoading === id ? 'Working...' : 'Confirm Delivery'}</button>
+                      <button className="rounded border border-gray-300 px-3 py-2 text-sm" onClick={() => onCompleteAction(o, 'handover')} disabled={actionLoading === id}>{actionLoading === id ? 'Working...' : 'Confirm Handover'}</button>
                     </>
                   )}
                   {status === 'completed' && <span className="text-sm text-green-700">Completed</span>}
+                  {!['accepted', 'completed'].includes(status) && <span className="text-sm text-slate-500">Awaiting seller response</span>}
                 </div>
               </div>
             );

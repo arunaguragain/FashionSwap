@@ -120,7 +120,8 @@ export default function CreateListing() {
           <Input name="price" type="number" label="Price" required value={price} onChange={(e) => setPrice(e.target.value ? Number(e.target.value) : '')} error={fieldErrors.askingPrice} />
           <Input name="location" label="Location" value={location} onChange={(e) => setLocation(e.target.value)} error={fieldErrors.location} />
           <Input name="images" label="Image URLs" value={images.join(', ')} onChange={(e) => setImages(e.target.value.split(',').map((item) => item.trim()).filter(Boolean))} error={fieldErrors.images} />
-          <Button type="submit" disabled={loading}>{loading ? 'Creating...' : 'Create'}</Button>
+          <p className="text-sm text-slate-500">Tip: add one or more image links so buyers can inspect the piece before reaching out.</p>
+          <Button type="submit" disabled={loading}>{loading ? 'Creating...' : 'Create listing'}</Button>
         </form>
       </div>
     </Protected>

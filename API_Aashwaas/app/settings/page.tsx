@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Button from '../../components/common/Button';
 import Protected from '../../components/common/Protected';
 
@@ -9,9 +9,29 @@ export default function SettingsPage() {
   const [privacy, setPrivacy] = useState('show');
   const [saved, setSaved] = useState(false);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const stored = window.localStorage.getItem('fashionSwap-settings');
+      if (!stored) return;
+      const parsed = JSON.parse(stored);
+      if (typeof parsed.notifications === 'boolean') {
+        setNotifications(parsed.notifications);
+      }
+      if (typeof parsed.privacy === 'string') {
+        setPrivacy(parsed.privacy);
+      }
+    } catch (error) {
+      console.error('Unable to load saved settings', error);
+    }
+  }, []);
+
   const handleSave = () => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('fashionSwap-settings', JSON.stringify({ notifications, privacy }));
+    }
     setSaved(true);
-    setTimeout(() => setSaved(false), 1800);
+    window.setTimeout(() => setSaved(false), 1800);
   };
 
   return (
