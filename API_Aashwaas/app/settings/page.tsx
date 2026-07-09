@@ -1,18 +1,53 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Button from '../../components/common/Button';
+import Protected from '../../components/common/Protected';
 
 export default function SettingsPage() {
+  const [notifications, setNotifications] = useState(true);
+  const [privacy, setPrivacy] = useState('show');
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = () => {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1800);
+  };
+
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-4">Settings</h1>
-      <div className="bg-white p-6 rounded shadow">
-        <p className="mb-2">Notification preferences and account settings go here.</p>
-        <div className="mt-4">
-          <Button>Save</Button>
+    <Protected>
+      <div className="mx-auto max-w-4xl p-6">
+        <div className="mb-6">
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-blue-600">Preferences</p>
+          <h1 className="text-2xl font-semibold text-slate-900">Account settings</h1>
+          <p className="text-sm text-slate-500">Fine-tune how FashionSwap communicates with you and how your profile appears.</p>
+        </div>
+
+        <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <label className="flex items-center justify-between rounded-xl border border-slate-200 p-4">
+            <div>
+              <p className="font-medium text-slate-900">Email notifications</p>
+              <p className="text-sm text-slate-500">Receive updates about offers, orders, and new messages.</p>
+            </div>
+            <input type="checkbox" checked={notifications} onChange={() => setNotifications((value) => !value)} className="h-5 w-5 rounded border-slate-300" />
+          </label>
+
+          <label className="block rounded-xl border border-slate-200 p-4">
+            <p className="font-medium text-slate-900">Profile visibility</p>
+            <p className="mb-3 text-sm text-slate-500">Choose whether buyers can see your profile information.</p>
+            <select value={privacy} onChange={(event) => setPrivacy(event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
+              <option value="show">Show profile to buyers</option>
+              <option value="limited">Show only basic details</option>
+              <option value="hide">Hide profile from buyers</option>
+            </select>
+          </label>
+
+          <div className="flex items-center gap-3">
+            <Button onClick={handleSave}>Save settings</Button>
+            {saved ? <span className="text-sm text-emerald-600">Saved successfully</span> : null}
+          </div>
         </div>
       </div>
-    </div>
+    </Protected>
   );
 }

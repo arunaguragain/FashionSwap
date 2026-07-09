@@ -2,14 +2,10 @@
 import React from 'react';
 
 export const dynamic = 'force-static';
-import ResetPasswordForm from "../_components/ResetPasswordForm";
-import { useSearchParams } from "next/navigation";
+import ResetPasswordFormSuspense from "../_components/ResetPasswordFormSuspense";
 
 // client component to allow static rendering; token handled client‑side
 export default function Page() {
-  const searchParams = useSearchParams();
-  const token = searchParams?.get("token") || undefined;
-
   React.useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -34,7 +30,7 @@ export default function Page() {
 
           <div className="w-full md:w-5/12 flex items-center justify-center">
             <div className="w-full">
-              <ResetPasswordForm token={token} />
+              <ResetPasswordFormSuspense />
             </div>
           </div>
         </div>

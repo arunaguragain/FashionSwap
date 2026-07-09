@@ -17,8 +17,8 @@ const bodyFont = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Aashwaas | Donations Platform",
-  description: "Donate with purpose, partner with NGOs, and complete volunteer tasks.",
+  title: "FashionSwap | Marketplace for Preloved Style",
+  description: "Buy, sell, and discover pre-loved fashion in a trusted marketplace.",
 };
 
 export default function RootLayout({

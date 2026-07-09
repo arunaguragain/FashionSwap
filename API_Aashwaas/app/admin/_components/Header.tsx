@@ -57,12 +57,9 @@ export default function AdminHeader() {
 										}
 
 										if (lc === 'dashboard' || lc.includes('dash')) target = '/admin/dashboard';
-										else if (lc.includes('donat')) target = '/admin/donations';
-										else if (lc.includes('ngo') || lc.includes('organization') || lc.includes('org')) target = '/admin/ngos';
-										else if (lc.includes('user') || lc.includes('users')) target = '/admin/users';
-										else if (lc.includes('volunt') || lc.includes('volunteer')) target = '/admin/users';
-										else if (lc.includes('task')) target = '/admin/tasks';
-										else if (lc.includes('analytic')) target = '/admin/analytics';
+													else if (lc.includes('list')) target = '/listings';
+													else if (lc.includes('order')) target = '/orders';
+													else if (lc.includes('user') || lc.includes('users')) target = '/admin/users';
 
 										if (target) {
 											// navigate to the matched page, keep query for context
@@ -96,10 +93,10 @@ export default function AdminHeader() {
 
 				<div className="flex items-center gap-3">
 					<Link
-						href="/admin/ngos/create"
+						href="/listing/create"
 						className="hidden items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2 min-w-[140px] text-sm font-semibold text-white hover:from-indigo-700 md:inline-flex"
 					>
-						<span className="text-center">Add NGO</span>
+						<span className="text-center">Add Listing</span>
 					</Link>
 
 				</div>

@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Package, Truck, Building, ShieldCheck, Smartphone, Users, Globe, BarChart2, TrendingUp } from 'lucide-react';
+import { Package, Truck, Building, ShieldCheck, Smartphone, Users, BarChart2, TrendingUp } from 'lucide-react';
 import { FaTshirt, FaUtensils, FaBook, FaCouch } from 'react-icons/fa';
 
 export default function Home() {
@@ -9,7 +9,7 @@ export default function Home() {
       <header className="sticky top-0 z-50 py-4 bg-white shadow-sm">
         <div className="max-w-[1600px] mx-auto px-6 flex items-center justify-between">
           <div>
-            <Image src="/images/logo.png" alt="Aashwaas" width={140} height={40} className="object-contain" />
+            <Image src="/images/logo.png" alt="FashionSwap" width={140} height={40} className="object-contain" />
           </div>
           <nav className="hidden md:flex items-center gap-6 text-sm text-gray-600">
             <Link href="#how-it-works" className="hover:text-gray-900">How It Works</Link>
@@ -29,12 +29,12 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-8 items-center pt-11 pb-12 relative z-30">
           <div className="max-w-2xl">
             <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6 text-white drop-shadow-lg">
-              Transform Donations into
+              Refresh your wardrobe with
               <br />
-              <span className="block text-blue-400 drop-shadow-lg">Real Impact</span>
+              <span className="block text-blue-400 drop-shadow-lg">Fashion that lasts</span>
             </h1>
 
-            <p className="text-white mb-4 max-w-xl text-lg drop-shadow-lg">Aashwaas bridges donors, volunteers, and NGOs to reduce waste and maximize the impact of every contribution. Donate goods and volunteer your time all in one transparent platform.</p>
+            <p className="text-white mb-4 max-w-xl text-lg drop-shadow-lg">FashionSwap helps people buy and sell pre-loved clothing and accessories in a safe, stylish marketplace built around trust and reuse.</p>
 
             <div className="flex flex-wrap items-center gap-4 mb-6">
               <Link href="/register" className="inline-flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-full shadow">Start Selling</Link>
@@ -71,8 +71,8 @@ export default function Home() {
 
       <section id="how-it-works" className="w-full bg-gray-100 py-16">
         <div className="max-w-[1100px] mx-auto text-center mb-10 px-4">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">How Aashwaas Works</h2>
-          <p className="mt-3 text-gray-600 max-w-2xl mx-auto">A simple, transparent process connecting your donations with those who need them most</p>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">How FashionSwap Works</h2>
+          <p className="mt-3 text-gray-600 max-w-2xl mx-auto">A simple, transparent marketplace for discovering, listing, and buying pre-loved fashion</p>
         </div>
 
         <div className="max-w-[1200px] mx-auto px-6">
@@ -84,8 +84,8 @@ export default function Home() {
                     </div>
 
                     <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center mb-4">1</div>
-                <h3 className="text-lg font-semibold mb-2">List Your Donation</h3>
-                <p className="text-sm text-gray-600 text-center">Donors register and list items they wish to donate through our web or mobile platform.</p>
+                <h3 className="text-lg font-semibold mb-2">Create a Listing</h3>
+                <p className="text-sm text-gray-600 text-center">Sellers share clothing and accessories with clear details, photos, and pricing.</p>
               </div>
             </div>
 
@@ -96,8 +96,8 @@ export default function Home() {
                     </div>
 
                     <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center mb-4">2</div>
-                <h3 className="text-lg font-semibold mb-2">Volunteer Pickup</h3>
-                <p className="text-sm text-gray-600 text-center">Verified volunteers are notified and schedule a convenient pickup time from your location.</p>
+                <h3 className="text-lg font-semibold mb-2">Connect With Buyers</h3>
+                <p className="text-sm text-gray-600 text-center">Buyers browse listings, send offers, and chat directly with the seller.</p>
               </div>
             </div>
 
@@ -108,8 +108,8 @@ export default function Home() {
                     </div>
 
                     <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center mb-4">3</div>
-                <h3 className="text-lg font-semibold mb-2">Delivered to NGOs</h3>
-                <p className="text-sm text-gray-600 text-center">Items are delivered to registered NGOs who distribute them to beneficiaries in need.</p>
+                <h3 className="text-lg font-semibold mb-2">Complete the Exchange</h3>
+                <p className="text-sm text-gray-600 text-center">Orders are confirmed and completed through a simple, trust-first transaction flow.</p>
               </div>
             </div>
           </div>
@@ -118,8 +118,8 @@ export default function Home() {
 
       <section id="what-you-can-donate" className="w-full py-16 bg-white">
         <div className="max-w-[1100px] mx-auto text-center mb-12 px-4">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">What You Can Donate</h2>
-          <p className="mt-3 text-gray-600 max-w-2xl mx-auto">We accept a wide range of items to help those in need</p>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">What You Can List</h2>
+          <p className="mt-3 text-gray-600 max-w-2xl mx-auto">A wide range of fashion pieces and accessories ready for a second life</p>
         </div>
 
         <div className="max-w-[1200px] mx-auto px-6">
@@ -145,8 +145,8 @@ export default function Home() {
                 <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-3">
                   <FaUtensils className="w-5 h-5 text-blue-600" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Food</h3>
-                <p className="text-sm text-gray-600 text-center">Non-perishable food items and packaged goods</p>
+                <h3 className="text-lg font-semibold mb-2">Accessories</h3>
+                <p className="text-sm text-gray-600 text-center">Bags, belts, jewelry, and small style accents</p>
               </div>
             </div>
 
@@ -158,8 +158,8 @@ export default function Home() {
                 <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-3">
                   <FaBook className="w-5 h-5 text-blue-600" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Stationery</h3>
-                <p className="text-sm text-gray-600 text-center">Books, notebooks, pens, and educational materials</p>
+                <h3 className="text-lg font-semibold mb-2">Vintage Finds</h3>
+                <p className="text-sm text-gray-600 text-center">Unique pieces, statement items, and timeless classics</p>
               </div>
             </div>
 
@@ -192,8 +192,8 @@ export default function Home() {
                 <ShieldCheck className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h4 className="font-semibold">100% Transparent</h4>
-                <p className="text-sm text-gray-600">Track your donation from pickup to delivery with real-time updates</p>
+                <h4 className="font-semibold">Trusted Transactions</h4>
+                <p className="text-sm text-gray-600">Track each listing and order with clear updates from posting to pickup</p>
               </div>
             </div>
 
@@ -203,7 +203,7 @@ export default function Home() {
               </div>
               <div>
                 <h4 className="font-semibold">Mobile & Web Access</h4>
-                <p className="text-sm text-gray-600">Manage donations anytime, anywhere with our cross-platform apps</p>
+                <p className="text-sm text-gray-600">Manage listings and orders anytime, anywhere from any device</p>
               </div>
             </div>
 
@@ -212,8 +212,8 @@ export default function Home() {
                 <Users className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h4 className="font-semibold">Verified Network</h4>
-                <p className="text-sm text-gray-600">All volunteers and NGOs are thoroughly verified for your peace of mind</p>
+                <h4 className="font-semibold">Verified Community</h4>
+                <p className="text-sm text-gray-600">Sellers and buyers are reviewed and supported by a trusted network</p>
               </div>
             </div>
 
@@ -222,8 +222,8 @@ export default function Home() {
                 <BarChart2 className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h4 className="font-semibold">Impact Analytics</h4>
-                <p className="text-sm text-gray-600">See the real-world impact of your contributions with detailed reports</p>
+                <h4 className="font-semibold">Marketplace Insights</h4>
+                <p className="text-sm text-gray-600">See your activity clearly with simple insights into your listings and orders</p>
               </div>
             </div>
 
@@ -232,8 +232,8 @@ export default function Home() {
                 <TrendingUp className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h4 className="font-semibold">Zero Waste Goal</h4>
-                <p className="text-sm text-gray-600">Maximize resource utilization and minimize waste in the donation process</p>
+                <h4 className="font-semibold">Circular Style</h4>
+                <p className="text-sm text-gray-600">Extend the life of great pieces and reduce waste through resale</p>
               </div>
             </div>
 
@@ -244,8 +244,8 @@ export default function Home() {
 
       <section id="ready-to-make-difference" className="w-full py-16 bg-gradient-to-br from-blue-50 via-blue-200 to-white">
         <div className="max-w-[1100px] mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900">Ready to Make a Difference?</h2>
-          <p className="mt-3 max-w-2xl mx-auto text-gray-600">Join thousands of donors, volunteers, and organizations creating positive change</p>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900">Ready to Refresh Your Wardrobe?</h2>
+          <p className="mt-3 max-w-2xl mx-auto text-gray-600">Join thousands of style-conscious shoppers and sellers building a more sustainable closet</p>
 
             <div className="mt-8 flex items-center justify-center gap-4 flex-wrap">
             <Link href="/register" className="inline-flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-full shadow"> 

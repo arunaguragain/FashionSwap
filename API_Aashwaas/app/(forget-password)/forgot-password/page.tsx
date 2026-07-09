@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 export const dynamic = 'force-static';
-import ForgotPasswordForm from "../_components/ForgotPasswordForm";
+import ForgotPasswordFormSuspense from "../_components/ForgotPasswordFormSuspense";
 
 // simple wrapper page – no server data required, so force static rendering
 export default function Page() {
@@ -27,7 +27,7 @@ export default function Page() {
 
           <div className="w-full md:w-5/12 p-4 md:p-6 flex items-center">
             <div className="w-full">
-              <ForgotPasswordForm />
+              <ForgotPasswordFormSuspense />
             </div>
           </div>
         </div>
