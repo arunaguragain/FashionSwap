@@ -4,8 +4,9 @@ const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY
   ? Buffer.from(process.env.ENCRYPTION_KEY, 'hex')
   : Buffer.from('0'.repeat(64), 'hex');
 
-const IV_LENGTH = 16;
-const ALGORITHM = 'aes-256-cbc';
+const IV_LENGTH = 12;
+const TAG_LENGTH = 16;
+const ALGORITHM = 'aes-256-gcm';
 
 export function encrypt(text: string): string {
   try {
@@ -14,8 +15,9 @@ export function encrypt(text: string): string {
 
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
+    const tag = cipher.getAuthTag().toString('hex');
 
-    return iv.toString('hex') + ':' + encrypted;
+    return iv.toString('hex') + ':' + tag + ':' + encrypted;
   } catch (error) {
     console.error('Encryption error:', error);
     throw new Error('Encryption failed');
@@ -24,9 +26,11 @@ export function encrypt(text: string): string {
 
 export function decrypt(encrypted: string): string {
   try {
-    const [ivHex, encryptedData] = encrypted.split(':');
+    const [ivHex, tagHex, encryptedData] = encrypted.split(':');
     const iv = Buffer.from(ivHex, 'hex');
+    const tag = Buffer.from(tagHex, 'hex');
     const decipher = crypto.createDecipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
+    decipher.setAuthTag(tag);
 
     let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
     decrypted += decipher.final('utf8');

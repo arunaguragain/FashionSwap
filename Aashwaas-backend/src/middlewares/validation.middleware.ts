@@ -9,10 +9,11 @@ export const validateSchema = (schema: ZodSchema) => {
       req.body = validated;
       next();
     } catch (error: any) {
-      if (error.errors && Array.isArray(error.errors)) {
-        const formattedErrors = error.errors.map((err: any) => ({
-          field: err.path.join('.'),
-          message: err.message,
+      const issues = error?.issues || error?.errors || [];
+      if (Array.isArray(issues)) {
+        const formattedErrors = issues.map((err: any) => ({
+          field: Array.isArray(err?.path) ? err.path.join('.') : '',
+          message: err?.message || 'Invalid value',
         }));
 
         return res.status(400).json({

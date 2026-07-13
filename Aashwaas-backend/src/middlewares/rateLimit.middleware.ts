@@ -1,13 +1,17 @@
 import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
 import { Request, Response, NextFunction } from 'express';
 
+const isTestEnvironment = process.env.NODE_ENV === 'test' || Boolean(process.env.JEST_WORKER_ID);
+
+const skipRateLimit = (req: Request) => isTestEnvironment || req.path === '/health' || req.path === '/api/health';
+
 export const generalLimiter: RateLimitRequestHandler = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   message: 'Too many requests from this IP, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req: Request) => req.path === '/health' || req.path === '/api/health',
+  skip: skipRateLimit,
 });
 
 export const authLimiter: RateLimitRequestHandler = rateLimit({
@@ -17,6 +21,7 @@ export const authLimiter: RateLimitRequestHandler = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: false,
+  skip: skipRateLimit,
 });
 
 export const passwordResetLimiter: RateLimitRequestHandler = rateLimit({

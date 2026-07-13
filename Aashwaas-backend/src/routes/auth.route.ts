@@ -73,6 +73,8 @@ router.post(
   (req, res) => authController.resetPasswordWithOTP(req, res)
 );
 
+router.post('/reset-password/:token', (req, res) => authController.resetPasswordWithOTP(req, res));
+
 router.post(
   '/check-password-strength',
   validateSchema(z.object({ password: z.string() })),

@@ -28,7 +28,7 @@ export class AuthController {
       const existingUser = await userService.getUserByEmail(email);
 
       if (existingUser) {
-        res.status(400).json({ success: false, message: 'Email already registered' });
+        res.status(403).json({ success: false, message: 'Email already registered' });
         return;
       }
 
@@ -51,7 +51,7 @@ export class AuthController {
 
       res.status(201).json({
         success: true,
-        message: 'User registered. Please verify your email with the OTP sent.',
+        message: 'User Registered',
         data: {
           userId: newUser._id,
           email: newUser.email,
@@ -148,6 +148,7 @@ export class AuthController {
       res.status(200).json({
         success: true,
         message: 'Google login successful',
+        token: accessToken,
         data: { accessToken, user },
       });
     } catch (error: any) {
@@ -273,6 +274,7 @@ export class AuthController {
       res.status(200).json({
         success: true,
         message: 'Login successful',
+        token: accessToken,
         data: {
           accessToken,
           user: {
@@ -548,7 +550,12 @@ export class AuthController {
   }
 
   async resetPasswordWithOTP(req: AuthRequest, res: Response): Promise<void> {
-    try {
+    try {      if (req.params?.token) {
+        const { newPassword } = req.body;
+        await userService.resetPassword(req.params.token, newPassword);
+        res.status(200).json({ success: true, message: 'Password reset successfully' });
+        return;
+      }
       const { email, otp, newPassword } = req.body;
       await userService.resetPasswordWithOTP(email, otp, newPassword);
       res.status(200).json({ success: true, message: 'Password reset successfully' });

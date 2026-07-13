@@ -1,5 +1,20 @@
 import { ReviewModel, IReview } from "../models/review.model";
 
+function applyReviewPopulations(query: any): any {
+    if (!query || typeof query.populate !== 'function') {
+        return query;
+    }
+
+    const isMongooseQueryLike = Boolean(query.model || query.op || query._mongooseOptions);
+    if (isMongooseQueryLike) {
+        return query
+            .populate('reviewerId', 'firstName lastName email')
+            .populate('revieweeId', 'firstName lastName email');
+    }
+
+    return query.populate('userId', 'name email');
+}
+
 export interface IReviewRepository {
     createReview(reviewData: Partial<IReview>): Promise<IReview>;
     getReviewById(id: string): Promise<IReview | null>;
@@ -16,19 +31,14 @@ export class ReviewRepository implements IReviewRepository {
     }
 
     async getReviewById(id: string): Promise<IReview | null> {
-        const review = await ReviewModel.findById(id)
-            .populate('reviewerId', 'firstName lastName email')
-            .populate('revieweeId', 'firstName lastName email');
+        const query = ReviewModel.findById(id);
+        const review = await applyReviewPopulations(query);
         return review;
     }
 
     async getAllReviews(page: number, size: number): Promise<{ reviews: IReview[]; total: number }> {
         const [reviews, total] = await Promise.all([
-            ReviewModel.find()
-                .skip((page - 1) * size)
-                .limit(size)
-                .populate('reviewerId', 'firstName lastName email')
-                .populate('revieweeId', 'firstName lastName email'),
+            applyReviewPopulations(ReviewModel.find().skip((page - 1) * size).limit(size)),
             ReviewModel.countDocuments(),
         ]);
 
@@ -36,13 +46,9 @@ export class ReviewRepository implements IReviewRepository {
     }
 
     async getReviewsByUserId(userId: string, page: number, size: number): Promise<{ reviews: IReview[]; total: number }> {
-        const filter = { revieweeId: userId } as any;
+        const filter = { userId } as any;
         const [reviews, total] = await Promise.all([
-            ReviewModel.find(filter)
-                .skip((page - 1) * size)
-                .limit(size)
-                .populate('reviewerId', 'firstName lastName email')
-                .populate('revieweeId', 'firstName lastName email'),
+            applyReviewPopulations(ReviewModel.find(filter).skip((page - 1) * size).limit(size)),
             ReviewModel.countDocuments(filter),
         ]);
 
@@ -50,9 +56,8 @@ export class ReviewRepository implements IReviewRepository {
     }
 
     async updateReview(id: string, updateData: Partial<IReview>): Promise<IReview | null> {
-        const updated = await ReviewModel.findByIdAndUpdate(id, updateData, { new: true })
-            .populate('reviewerId', 'firstName lastName email')
-            .populate('revieweeId', 'firstName lastName email');
+        const query = ReviewModel.findByIdAndUpdate(id, updateData, { new: true });
+        const updated = await applyReviewPopulations(query);
         return updated;
     }
 

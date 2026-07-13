@@ -42,7 +42,7 @@ describe('Review Integration Tests', () => {
         const createRes = await request(app)
             .post('/api/reviews')
             .set('Authorization', `Bearer ${tokenA}`)
-            .send({ rating: 4, comment: 'Initial review for tests' });
+            .send({ rating: 4, comment: 'Initial review for tests', reviewerRole: 'buyer' });
 
         baseReviewId = createRes.body.data?._id ?? '';
         if (!baseReviewId) throw new Error('Failed to create base review for tests');
@@ -73,7 +73,7 @@ describe('Review Integration Tests', () => {
         const res = await request(app)
             .post('/api/reviews')
             .set('Authorization', `Bearer ${tokenA}`)
-            .send({ rating: 5, comment: 'Great work' });
+            .send({ rating: 5, comment: 'Great work', reviewerRole: 'buyer' });
 
         expect(res.status).toBe(201);
         expect(res.body).toHaveProperty('success', true);
@@ -126,7 +126,7 @@ describe('Review Integration Tests', () => {
         const createRes = await request(app)
             .post('/api/reviews')
             .set('Authorization', `Bearer ${tokenA}`)
-            .send({ rating: 3, comment: 'To be deleted' });
+            .send({ rating: 3, comment: 'To be deleted', reviewerRole: 'buyer' });
 
         const createdId = createRes.body.data?._id;
 
@@ -143,7 +143,7 @@ describe('Review Integration Tests', () => {
         const createRes = await request(app)
             .post('/api/reviews')
             .set('Authorization', `Bearer ${tokenA}`)
-            .send({ rating: 2, comment: 'Owner only' });
+            .send({ rating: 2, comment: 'Owner only', reviewerRole: 'buyer' });
 
         const createdId = createRes.body.data?._id;
 

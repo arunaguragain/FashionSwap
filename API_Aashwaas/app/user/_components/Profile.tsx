@@ -11,6 +11,10 @@ interface ProfilePageProps {
   role: "Donor" | "Volunteer";
   memberSince: string;
   impactPoints: number;
+  sellerRating?: number;
+  buyerRating?: number;
+  completedSales?: number;
+  successfulPurchases?: number;
   totalDonations?: number;
   itemsDonated?: number;
   onEditProfile: () => void;
@@ -27,6 +31,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   role,
   memberSince,
   impactPoints,
+  sellerRating,
+  buyerRating,
+  completedSales,
+  successfulPurchases,
   totalDonations,
   itemsDonated,
   onEditProfile,
@@ -151,17 +159,29 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
         </div>
       </div>
       {/* Marketplace Activity */}
-      <div className="mt-8 grid grid-cols-3 gap-6">
-        {typeof totalDonations === "number" && (
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        {typeof sellerRating === "number" && (
           <div className="bg-green-50 rounded-lg p-6 text-center">
-            <div className="text-2xl font-bold">{totalDonations}</div>
-            <div className="text-gray-500">Total Donations</div>
+            <div className="text-2xl font-bold">{sellerRating.toFixed(1)}/5</div>
+            <div className="text-gray-500">Seller Rating</div>
           </div>
         )}
-        {typeof itemsDonated === "number" && (
+        {typeof buyerRating === "number" && (
           <div className="bg-blue-50 rounded-lg p-6 text-center">
-            <div className="text-2xl font-bold">{itemsDonated}</div>
-            <div className="text-gray-500">Items Donated</div>
+            <div className="text-2xl font-bold">{buyerRating.toFixed(1)}/5</div>
+            <div className="text-gray-500">Buyer Rating</div>
+          </div>
+        )}
+        {typeof completedSales === "number" && (
+          <div className="bg-purple-50 rounded-lg p-6 text-center">
+            <div className="text-2xl font-bold">{completedSales}</div>
+            <div className="text-gray-500">Completed Sales</div>
+          </div>
+        )}
+        {typeof successfulPurchases === "number" && (
+          <div className="bg-amber-50 rounded-lg p-6 text-center">
+            <div className="text-2xl font-bold">{successfulPurchases}</div>
+            <div className="text-gray-500">Successful Purchases</div>
           </div>
         )}
         <div className="bg-purple-50 rounded-lg p-6 text-center">

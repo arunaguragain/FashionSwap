@@ -5,6 +5,7 @@ import { validateSchema } from '../middlewares/validation.middleware';
 import { requireSeller } from '../middlewares/rbac.middleware';
 import { requireListingOwner } from '../middlewares/ownership.middleware';
 import { CreateListingDTO, UpdateListingDTO } from '../dtos/listing.dto';
+import { generalLimiter } from '../middlewares/rateLimit.middleware';
 
 const router = Router();
 const listingController = new ListingController();
@@ -18,6 +19,7 @@ router.get('/:listingId', (req: Request, res: Response) => listingController.get
 router.get('/user/my-listings', authenticateJWT, (req: Request, res: Response) => listingController.getMyListings(req, res));
 router.post(
   '/',
+  generalLimiter,
   authenticateJWT,
   requireSeller,
   validateSchema(CreateListingDTO),
@@ -25,6 +27,7 @@ router.post(
 );
 router.put(
   '/:listingId',
+  generalLimiter,
   authenticateJWT,
   requireListingOwner,
   validateSchema(UpdateListingDTO),
@@ -32,12 +35,14 @@ router.put(
 );
 router.put(
   '/:listingId/sold',
+  generalLimiter,
   authenticateJWT,
   requireListingOwner,
   (req: Request, res: Response) => listingController.markAsSold(req, res)
 );
 router.delete(
   '/:listingId',
+  generalLimiter,
   authenticateJWT,
   requireListingOwner,
   (req: Request, res: Response) => listingController.deleteListing(req, res)

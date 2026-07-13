@@ -28,6 +28,12 @@ export const validateCSRFToken = (req: Request, res: Response, next: NextFunctio
     return next();
   }
 
+  const authHeader = req.get('authorization');
+  const isAuthRoute = req.path === '/api/auth' || req.path.startsWith('/api/auth/');
+  if (isAuthRoute || authHeader?.startsWith('Bearer ')) {
+    return next();
+  }
+
   const cookieToken = req.cookies?.[CSRF_COOKIE_NAME];
   const headerToken = req.get(CSRF_HEADER_NAME);
 

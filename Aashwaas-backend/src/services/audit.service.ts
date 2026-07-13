@@ -18,10 +18,25 @@ function ensureLogDir() {
   }
 }
 
+function sanitizeMeta(meta?: Record<string, any>): Record<string, any> | undefined {
+  if (!meta) return undefined;
+  const sanitized: Record<string, any> = {};
+  Object.entries(meta).forEach(([key, value]) => {
+    if (typeof value === 'string') {
+      sanitized[key] = value.length > 80 ? `${value.slice(0, 80)}…` : value;
+    } else if (value && typeof value === 'object') {
+      sanitized[key] = '[REDACTED]';
+    } else {
+      sanitized[key] = value;
+    }
+  });
+  return sanitized;
+}
+
 export function recordAuditEvent(event: AuditEvent) {
   try {
     ensureLogDir();
-    const line = JSON.stringify(event) + '\n';
+    const line = JSON.stringify({ ...event, meta: sanitizeMeta(event.meta) }) + '\n';
     fs.appendFileSync(LOG_FILE, line, { encoding: 'utf8' });
   } catch (err) {
     // best-effort logging; don't throw from audit
@@ -35,6 +50,6 @@ export function buildAuditEvent(userId: string | undefined, event: string, ip?: 
     userId,
     event,
     ip,
-    meta,
+    meta: sanitizeMeta(meta),
   } as AuditEvent;
 }

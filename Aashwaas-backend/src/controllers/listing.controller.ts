@@ -155,7 +155,29 @@ export class ListingController {
     try {
       const { userId } = (req as any).user;
       const { listingId } = req.params;
-      const updateData: any = { ...req.body };
+      const allowedFields = [
+        'title',
+        'description',
+        'category',
+        'brand',
+        'size',
+        'color',
+        'condition',
+        'material',
+        'careInstructions',
+        'askingPrice',
+        'negotiable',
+        'images',
+        'location',
+        'pickupAvailable',
+        'shippingAvailable',
+      ];
+      const updateData: Record<string, unknown> = {};
+      Object.entries(req.body || {}).forEach(([key, value]) => {
+        if (allowedFields.includes(key)) {
+          updateData[key] = value;
+        }
+      });
 
       const listing = await Listing.findById(listingId);
       if (!listing) {
@@ -167,9 +189,6 @@ export class ListingController {
         res.status(403).json({ success: false, message: 'You can only update your own listings' });
         return;
       }
-
-      delete updateData.sellerId;
-      delete updateData.sellerName;
 
       const updatedListing = await Listing.findByIdAndUpdate(listingId, updateData, { new: true });
 

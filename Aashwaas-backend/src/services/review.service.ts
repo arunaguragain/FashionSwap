@@ -1,8 +1,21 @@
+import mongoose from "mongoose";
 import { ReviewRepository } from "../repositories/review.repository";
 import { IReview } from "../models/review.model";
 import { HttpError } from "../errors/http-error";
 
 let reviewRepository = new ReviewRepository();
+
+function extractOwnerId(owner: any): string | undefined {
+    if (!owner) return undefined;
+    if (typeof owner === 'string') return owner;
+    if (owner._id) return owner._id.toString();
+    if (owner.id) return owner.id.toString();
+    try {
+        return owner.toString();
+    } catch {
+        return undefined;
+    }
+}
 
 export class ReviewService {
     async createReview(reviewData: Partial<IReview>, userId: string) {
@@ -10,9 +23,18 @@ export class ReviewService {
             throw new HttpError(400, "User ID is required");
         }
 
-        reviewData.reviewerId = userId as any;
+        const normalizedReviewData = {
+            ...reviewData,
+            reviewerId: userId as any,
+            reviewerRole: (reviewData as any).reviewerRole || 'buyer',
+            revieweeId: (reviewData as any).revieweeId || (reviewData as any).userId || userId as any,
+            userId: (reviewData as any).userId || (reviewData as any).revieweeId || userId as any,
+            orderId: (reviewData as any).orderId || new mongoose.Types.ObjectId(),
+            communicationQuality: (reviewData as any).communicationQuality ?? 5,
+            reliability: (reviewData as any).reliability ?? 5,
+        } as Partial<IReview>;
 
-        const newReview = await reviewRepository.createReview(reviewData);
+        const newReview = await reviewRepository.createReview(normalizedReviewData);
         return newReview;
     }
 
@@ -70,14 +92,7 @@ export class ReviewService {
 
         // Only author can update — normalize populated reviewer objects or raw ObjectId
         if (userId) {
-            const reviewOwnerId = (() => {
-                const uid: any = review.reviewerId;
-                if (!uid) return undefined;
-                if (typeof uid === 'string') return uid;
-                if (uid._id) return uid._id.toString();
-                if (uid.id) return uid.id.toString();
-                try { return uid.toString(); } catch { return undefined; }
-            })();
+            const reviewOwnerId = extractOwnerId((review as any).reviewerId ?? (review as any).userId);
 
             if (!reviewOwnerId || reviewOwnerId !== userId) {
                 throw new HttpError(403, "Not authorized to update this review");
@@ -99,14 +114,7 @@ export class ReviewService {
         }
 
         if (userId) {
-            const reviewOwnerId = (() => {
-                const uid: any = review.reviewerId;
-                if (!uid) return undefined;
-                if (typeof uid === 'string') return uid;
-                if (uid._id) return uid._id.toString();
-                if (uid.id) return uid.id.toString();
-                try { return uid.toString(); } catch { return undefined; }
-            })();
+            const reviewOwnerId = extractOwnerId((review as any).reviewerId ?? (review as any).userId);
 
             if (!reviewOwnerId || reviewOwnerId !== userId) {
                 throw new HttpError(403, "Not authorized to delete this review");

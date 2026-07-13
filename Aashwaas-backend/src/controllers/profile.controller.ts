@@ -70,19 +70,14 @@ export class ProfileController {
   async updateMyProfile(req: Request, res: Response): Promise<void> {
     try {
       const userId = getRequestUserId(req);
-      const { firstName, lastName, bio, avatar, location, phone } = req.body;
+      const allowedFields = ['firstName', 'lastName', 'bio', 'avatar', 'location', 'phone'];
+      const updateData: Record<string, unknown> = {};
 
-      const updateData: any = {};
-      if (firstName) updateData.firstName = firstName;
-      if (lastName) updateData.lastName = lastName;
-      if (bio !== undefined) updateData.bio = bio;
-      if (avatar !== undefined) updateData.avatar = avatar;
-      if (location) updateData.location = location;
-      if (phone !== undefined) updateData.phone = phone;
-
-      delete updateData.role;
-      delete updateData.password;
-      delete updateData.email;
+      Object.entries(req.body || {}).forEach(([key, value]) => {
+        if (allowedFields.includes(key)) {
+          updateData[key] = value;
+        }
+      });
 
       const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true }).select('-password -totpSecret');
 

@@ -9,14 +9,18 @@ describe('Authentication Integration Tests', () => { // Test Suite function
             email: 'test@example.com',
             password: 'Test@1234',
             confirmPassword: 'Test@1234',
-            name: 'Test User',
+            firstName: 'Test',
+            lastName: 'User',
+            location: 'Test City',
         };
 
         const resetUser = {
             email: 'reset.test@example.com',
             password: 'Reset@1234',
             confirmPassword: 'Reset@1234',
-            name: 'Reset User',
+            firstName: 'Reset',
+            lastName: 'User',
+            location: 'Reset City',
         };
 
         beforeAll(async () => {
@@ -59,7 +63,9 @@ describe('Authentication Integration Tests', () => { // Test Suite function
                         email: 'invalid-email',
                         password: 'Test@1234',
                         confirmPassword: 'Test@1234',
-                        name: 'Invalid Email User',
+                        firstName: 'Invalid',
+                        lastName: 'Email',
+                        location: 'Test City',
                     });
 
                 expect(response.status).toBe(400);
@@ -73,6 +79,9 @@ describe('Authentication Integration Tests', () => { // Test Suite function
                         email: 'missingname@example.com',
                         password: 'Test@1234',
                         confirmPassword: 'Test@1234',
+                        firstName: 'Missing',
+                        lastName: 'Name',
+                        location: 'Test City',
                     });
 
                 expect(response.status).toBe(400);

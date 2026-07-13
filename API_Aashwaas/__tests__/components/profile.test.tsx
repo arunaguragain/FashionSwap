@@ -63,23 +63,33 @@ describe('ProfilePage', () => {
     expect(onViewBadges).toHaveBeenCalled();
   });
 
-  test('displays donation statistics when provided', () => {
-    render(<ProfilePage {...baseProps} totalDonations={5} itemsDonated={12} />);
+  test('displays marketplace seller and buyer stats when provided', () => {
+    render(
+      <ProfilePage
+        {...baseProps}
+        sellerRating={4.8}
+        buyerRating={4.9}
+        completedSales={24}
+        successfulPurchases={15}
+      />
+    );
 
-    expect(screen.getByText('Total Donations')).toBeInTheDocument();
-    expect(screen.getByText('5')).toBeInTheDocument();
-    expect(screen.getByText('Items Donated')).toBeInTheDocument();
-    expect(screen.getByText('12')).toBeInTheDocument();
+    expect(screen.getByText('Seller Rating')).toBeInTheDocument();
+    expect(screen.getByText('4.8/5')).toBeInTheDocument();
+    expect(screen.getByText('Buyer Rating')).toBeInTheDocument();
+    expect(screen.getByText('4.9/5')).toBeInTheDocument();
+    expect(screen.getByText('Completed Sales')).toBeInTheDocument();
+    expect(screen.getByText('24')).toBeInTheDocument();
+    expect(screen.getByText('Successful Purchases')).toBeInTheDocument();
+    expect(screen.getByText('15')).toBeInTheDocument();
   });
 
-  test('renders correctly for Donor role and shows donor-specific stats', () => {
-    const donorProps = { ...baseProps, name: 'Donor Test', role: 'Donor' as const, totalDonations: 10, itemsDonated: 3 };
-    render(<ProfilePage {...donorProps} />);
+  test('renders correctly for Volunteer role and shows account details', () => {
+    const volunteerProps = { ...baseProps, name: 'Volunteer Test', role: 'Volunteer' as const };
+    render(<ProfilePage {...volunteerProps} />);
 
-    expect(screen.getByText('Donor Test')).toBeInTheDocument();
+    expect(screen.getByText('Volunteer Test')).toBeInTheDocument();
     expect(screen.getByText(/Account Type:/)).toBeInTheDocument();
-    expect(screen.getByText('Donor')).toBeInTheDocument();
-    expect(screen.getByText('10')).toBeInTheDocument();
-    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.getByText('Volunteer')).toBeInTheDocument();
   });
 });
