@@ -80,7 +80,7 @@ export default function AdminHeader() {
 											</span>
 											<input
 												className="w-full rounded-full border border-gray-200 bg-white py-2 pl-10 pr-4 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300"
-												placeholder="Search users, donations, NGOs..."
+												placeholder="Search users, listings, orders..."
 												type="search"
 												value={query}
 												onChange={(e) => setQuery(e.target.value)}

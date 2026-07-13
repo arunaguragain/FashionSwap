@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import ReactDOM from "react-dom";
 import Link from "next/link";
 import axios from "@/lib/api/axios";
-import { resolveNgoPhotoUrl } from "@/lib/api/admin/ngos";
 import ConfirmDialog from "@/app/(platform)/_components/ConfirmDialog";
 import { useToast } from "@/app/(platform)/_components/ToastProvider";
 
@@ -152,11 +151,10 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
                 let src = "/images/user.png";
                 if (photo) {
                   const lower = photo.toLowerCase();
-                  // treat common default names as missing and use local placeholder
                   if (lower === "default-profile.png" || lower.includes("default") || lower === "user.png") {
                     src = "/images/user.png";
                   } else {
-                    src = resolveUserPhotoUrl(photo) || resolveNgoPhotoUrl(photo) || "/images/user.png";
+                    src = resolveUserPhotoUrl(photo) || "/images/user.png";
                   }
                 }
                 return (

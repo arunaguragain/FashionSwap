@@ -16,7 +16,6 @@ export async function fetchJSON(path: string, opts: RequestInit = {}) {
   }
 
   if (!res.ok) {
-    // Normalize common validation error shapes into an object map { field: message }
     let normalized = data;
     try {
       if (data && data.errors) {
@@ -25,20 +24,18 @@ export async function fetchJSON(path: string, opts: RequestInit = {}) {
           const obj: Record<string, string> = {};
           errs.forEach((it: any) => {
             if (!it) return;
-            // common shapes: { field, message } or { param, msg } or string
             if (typeof it === 'string') {
-              obj._error = obj._error ? obj._error + '; ' + it : it;
+              obj._error = obj._error ? `${obj._error}; ${it}` : it;
             } else if (typeof it === 'object') {
               const key = it.field || it.param || it.path || '_error';
               const msg = it.message || it.msg || it.detail || JSON.stringify(it);
-              obj[key] = obj[key] ? obj[key] + '; ' + msg : msg;
+              obj[key] = obj[key] ? `${obj[key]}; ${msg}` : msg;
             }
           });
           normalized = { ...data, errors: obj };
         } else if (typeof errs === 'string') {
           normalized = { ...data, errors: { _error: errs } };
         } else if (typeof errs === 'object') {
-          // assume already map
           normalized = data;
         }
       }
@@ -91,6 +88,14 @@ export function getOrders() {
   return fetchJSON('/api/orders');
 }
 
+export function acceptOrder(orderId: string) {
+  return fetchJSON(`/api/orders/${orderId}/accept`, { method: 'PUT' });
+}
+
+export function declineOrder(orderId: string) {
+  return fetchJSON(`/api/orders/${orderId}/decline`, { method: 'PUT' });
+}
+
 export function getMyListings() {
   return fetchJSON('/api/listings/user/my-listings');
 }
@@ -118,4 +123,22 @@ export function register(name: string, email: string, password: string) {
 
 export function verifyOtp(code: string) {
   return fetchJSON('/api/auth/mfa/verify', { method: 'POST', body: JSON.stringify({ code }) });
+}
+
+export function setupMfa() {
+  return fetchJSON('/api/auth/mfa/setup', { method: 'POST' });
+}
+
+export function confirmMfaSetup(secret: string, otp: string) {
+  return fetchJSON('/api/auth/mfa/confirm-setup', {
+    method: 'POST',
+    body: JSON.stringify({ secret, otp }),
+  });
+}
+
+export function disableMfa(password: string) {
+  return fetchJSON('/api/auth/mfa/disable', {
+    method: 'POST',
+    body: JSON.stringify({ password }),
+  });
 }

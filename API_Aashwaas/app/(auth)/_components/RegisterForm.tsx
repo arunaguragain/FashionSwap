@@ -91,8 +91,8 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-gradient-to-br from-pink-100 to-rose-200 rounded-2xl opacity-30 blur-2xl transform -rotate-12 pointer-events-none hidden lg:block"></div>
         <div className="p-5 lg:p-6">
           <div className="text-center mb-6">
-            <h1 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2 tracking-tight">Create {userType} Account</h1>
-            <p className="text-gray-600 text-xs">Fill in details to get started</p>
+            <h1 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2 tracking-tight">Create your FashionSwap account</h1>
+            <p className="text-gray-600 text-xs">Join the marketplace to list, browse, and shop fashion with ease.</p>
           </div>
 
           {errorMessage && <div className="text-red-500 mb-4">{errorMessage}</div>}
@@ -151,7 +151,7 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
             <GoogleSignIn userType={userType} autoLogin={false} />
 
             {loginLink && (
-              <div className="mt-4 text-center text-sm text-gray-600">Already have an account? <a href={loginLink} className="text-blue-600 font-medium">Login</a></div>
+              <div className="mt-4 text-center text-sm text-gray-600">Already have an account? <a href={loginLink} className="text-blue-600 font-medium">Sign in</a></div>
             )}
 
           </form>

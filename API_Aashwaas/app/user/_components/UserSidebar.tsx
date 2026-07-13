@@ -7,44 +7,32 @@ import { handleLogout } from "@/lib/actions/auth-actions";
 import {
   LayoutDashboard,
   Package,
-  Building2,
   ClipboardList,
   Star,
   User,
-  Settings,
   LogOut,
-  PlusCircle,
 } from "lucide-react";
 
 interface UserSidebarProps {
   userType: "donor" | "volunteer";
 }
 
-const navItemsDonor = [
-  { href: "/user/donor/dashboard", label: "Home", icon: LayoutDashboard },
-  { href: "/user/donor/my-donations", label: "My Donations", icon: Package },
-  { href: "/user/donor/donation", label: "Add Donation", icon: PlusCircle },
-  { href: "/user/donor/ngos", label: "NGO Directory", icon: Building2 },
-  { href: "/user/donor/wishlist", label: "Wishlist", icon: ClipboardList },
-  { href: "/user/donor/reviews", label: "Reviews", icon: Star },
-];
-
-const navItemsVolunteer = [
-  { href: "/user/volunteer/dashboard", label: "Home", icon: LayoutDashboard },
-  { href: "/user/volunteer/my-tasks", label: "My Tasks", icon: ClipboardList },
-  { href: "/user/volunteer/ngos", label: "NGO Directory", icon: Building2 },
-  { href: "/user/volunteer/reviews", label: "Reviews", icon: Star },
+const navItems = [
+  { href: "/profile", label: "Profile", icon: User },
+  { href: "/listings", label: "Browse listings", icon: LayoutDashboard },
+  { href: "/listing/create", label: "Create listing", icon: Package },
+  { href: "/orders", label: "Orders", icon: ClipboardList },
+  { href: "/settings", label: "Settings", icon: Star },
 ];
 
 const UserSidebar: React.FC<UserSidebarProps> = ({ userType }) => {
   const pathname = usePathname();
   const router = useRouter();
-  const navItems = userType === "donor" ? navItemsDonor : navItemsVolunteer;
 
   const onLogout = async () => {
     const res = await handleLogout();
     if (res.success) {
-      router.push(userType === "donor" ? "/donor_login" : "/volunteer_login");
+      router.push("/login");
       return;
     }
   };
@@ -55,7 +43,7 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ userType }) => {
         <div className="flex flex-col items-start">
           <Image
             src="/images/logo.png"
-            alt="Aashwaas"
+            alt="FashionSwap"
             width={150}
             height={40}
             className="h-12 w-full max-w-[150px] object-contain"
@@ -92,7 +80,7 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ userType }) => {
         <div className="border-t border-gray-200 pt-4" />
         <div className="space-y-1">
           <Link
-            href={userType === "donor" ? "/user/donor/profile" : "/user/volunteer/profile"}
+            href="/profile"
             className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             <User className="h-4 w-4" /> Profile

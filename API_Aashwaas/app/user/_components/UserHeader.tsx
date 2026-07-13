@@ -41,7 +41,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ userType }) => {
                 />
               </div>
               <div className="flex flex-col text-sm text-gray-700">
-                <span className="font-medium">Hello, {user?.name ?? user?.fullName ?? user?.username ?? (userType === "donor" ? "Donor" : "Volunteer")}</span>
+                <span className="font-medium">Hello, {user?.name ?? user?.fullName ?? user?.username ?? "there"}</span>
                 <span className="text-xs text-gray-500">{user?.email ?? ''}</span>
               </div>
             </div>
@@ -63,17 +63,10 @@ const UserHeader: React.FC<UserHeaderProps> = ({ userType }) => {
                 return;
               }
 
-              // Map common keywords to actual routes used in this app
-              if (lc === 'dashboard' || lc.includes('dash')) target = `/user/${userType}/dashboard`;
-              else if (lc.includes('donat')) {
-                // donations are only for donors; for volunteers fall back to dashboard/search
-                target = userType === 'donor' ? `/user/${userType}/my-donations` : `/user/${userType}/dashboard`;
-              } else if (lc.includes('ngo')) target = `/user/${userType}/ngos`;
-              else if (lc.includes('task')) target = `/user/${userType}/my-tasks`;
-              else if (lc.includes('history')) target = `/user/${userType}/history`;
-              else if (lc.includes('wishlist')) target = `/user/donor/wishlist`;
-              else if (lc.includes('review') || lc.includes('reviews')) target = `/user/${userType}/reviews`;
-              else if (lc.includes('profile')) target = `/user/${userType}/profile`;
+              if (lc.includes('list')) target = '/listings';
+              else if (lc.includes('order')) target = '/orders';
+              else if (lc.includes('profile')) target = '/profile';
+              else if (lc.includes('sett')) target = '/settings';
 
               if (target) {
                 const url = `${target}?q=${encodeURIComponent(next)}`;
@@ -92,7 +85,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ userType }) => {
                 </span>
                 <input
                   className="w-full rounded-full border border-gray-200 bg-white py-2 pl-10 pr-4 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-green-300"
-                  placeholder="Search donations, NGOs, tasks..."
+                  placeholder="Search listings, orders, profile..."
                   type="search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}

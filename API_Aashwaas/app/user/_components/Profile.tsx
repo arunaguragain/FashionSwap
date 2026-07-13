@@ -62,7 +62,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   return (
     <div className="p-0">
       <h1 className="text-3xl font-bold mb-2">My Profile</h1>
-      <p className="mb-6 text-gray-500">Manage your account information and view your donation statistics</p>
+      <p className="mb-6 text-gray-500">Manage your account details and keep track of your FashionSwap activity.</p>
       <div className="flex flex-wrap gap-6">
         {/* Profile Info */}
         <div className="bg-white rounded-lg shadow p-6 flex-1 min-w-[320px]">
@@ -70,7 +70,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
             <div className="w-20 h-20 rounded-full bg-gray-200" />
             <div>
               <div className="text-xl font-semibold">{name}</div>
-              <div className="text-blue-600 font-medium">Verified {role}</div>
+              <div className="text-blue-600 font-medium">Verified member</div>
             </div>
           </div>
           
@@ -87,7 +87,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
             <span>{address}</span>
           </div>
           <div className="mb-2 flex items-center gap-2">
-            <span className="material-icons">Donor since: </span>
+            <span className="material-icons">Member since: </span>
             <span>{memberSince}</span>
           </div>
           <button className="mt-4 bg-black text-white px-4 py-2 rounded" onClick={() => setEditOpen(true)}>Edit Profile</button>
@@ -150,7 +150,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
           {onViewBadges && <button className="bg-gray-200 px-4 py-2 rounded" onClick={onViewBadges}>View Badges</button>}
         </div>
       </div>
-      {/* Donation Statistics */}
+      {/* Marketplace Activity */}
       <div className="mt-8 grid grid-cols-3 gap-6">
         {typeof totalDonations === "number" && (
           <div className="bg-green-50 rounded-lg p-6 text-center">
@@ -169,7 +169,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
           <div className="text-gray-500">Impact Points</div>
         </div>
       </div>
-      {/* Impact This Year */}
+      {/* Activity This Year */}
       <div className="mt-8 bg-green-100 rounded-lg p-6 text-center">
         <div className="font-semibold mb-2">Your Impact this year</div>
         <div>Keep up the amazing work!</div>

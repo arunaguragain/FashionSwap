@@ -77,13 +77,13 @@ export default function LoginForm({
       if (onSubmit) onSubmit(data);
       
       // Determine redirect path based on user role
-      let redirectPath = "/auth/dashboard";
+      let redirectPath = "/listings";
       const userRole = res.data?.role?.toLowerCase();
       
       if (userRole === "donor") {
-        redirectPath = "/listings";
+        redirectPath = "/user/donor/dashboard";
       } else if (userRole === "volunteer") {
-        redirectPath = "/listings";
+        redirectPath = "/user/volunteer/dashboard";
       } else if (userRole === "admin") {
         redirectPath = "/admin/dashboard";
       }
@@ -120,9 +120,11 @@ export default function LoginForm({
               </div>
             </div>
 
-            <h1 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2 tracking-tight">{userType} Login</h1>
+            <h1 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2 tracking-tight">
+              {userType === "Admin" ? "Admin Sign In" : "Welcome back"}
+            </h1>
             <p className="text-gray-600 text-xs">
-              {userType === "Admin" ? "Secure portal for authorized personnel" : `Sign in to your ${userType.toLowerCase()} account`}
+              {userType === "Admin" ? "Secure portal for authorized personnel" : "Sign in to continue exploring FashionSwap."}
             </p>
           </div>
 
@@ -193,19 +195,19 @@ export default function LoginForm({
               </div>
             )}
 
-            {userType === "Donor" && "volunteer" && (
+            {userType !== "Admin" && (
               <div className="flex items-center gap-3 my-4">
-              <span className="h-px bg-gray-500 flex-1"></span>
-              <span className="text-sm text-gray-500">Or continue with</span>
-              <span className="h-px bg-gray-500 flex-1"></span>
-            </div>
+                <span className="h-px bg-gray-500 flex-1"></span>
+                <span className="text-sm text-gray-500">Or continue with</span>
+                <span className="h-px bg-gray-500 flex-1"></span>
+              </div>
             )}
          
             {showGoogleSignIn && <GoogleSignIn userType={userType} autoLogin={true} />}
 
             {registerLink && (
               <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600">New to आश्वास? <Link href={registerLink} className="font-bold text-blue-600">Create an account</Link></p>
+                <p className="text-sm text-gray-600">New to FashionSwap? <Link href={registerLink} className="font-bold text-blue-600">Create an account</Link></p>
               </div>
             )}
           </form>

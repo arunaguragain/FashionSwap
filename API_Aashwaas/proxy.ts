@@ -3,10 +3,8 @@ import { getAuthToken, getUserData } from "@/lib/cookie";
 
 const publicRoutes = [
     '/admin_login',
-    '/donor_login',
-    '/volunteer_login',
-    '/donor_register',
-    '/volunteer_register',
+    '/login',
+    '/register',
     '/forget-password'
 ];
 const adminRoutes = ['/admin'];
@@ -22,7 +20,7 @@ export async function proxy(req: NextRequest) {
     const isUserRoute = userRoutes.some(route => pathname.startsWith(route));
     
     if (!token && !isPublicRoute) {
-        return NextResponse.redirect(new URL('/donor_login', req.url));
+        return NextResponse.redirect(new URL('/login', req.url));
     }
 
     if (token && user) {
@@ -39,10 +37,8 @@ export async function proxy(req: NextRequest) {
         // Redirect authenticated users to their respective dashboards
         if (user.role === 'admin') {
             return NextResponse.redirect(new URL('/admin/dashboard', req.url));
-        } else if (user.role === 'donor') {
-            return NextResponse.redirect(new URL('/user/donor/dashboard', req.url));
-        } else if (user.role === 'volunteer') {
-            return NextResponse.redirect(new URL('/user/volunteer/dashboard', req.url));
+        } else if (user.role === 'donor' || user.role === 'volunteer') {
+            return NextResponse.redirect(new URL('/profile', req.url));
         }
         return NextResponse.redirect(new URL('/', req.url));
     }
@@ -55,10 +51,8 @@ export const config = {
         '/admin/:path*',
         '/user/:path*',
         '/admin_login',
-        '/donor_login',
-        '/volunteer_login',
-        '/donor_register',
-        '/volunteer_register',
+        '/login',
+        '/register',
         '/forget-password'
     ]
 }

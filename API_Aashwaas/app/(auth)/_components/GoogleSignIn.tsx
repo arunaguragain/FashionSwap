@@ -173,7 +173,7 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
                   if (!autoLogin) {
                     // when creating a new account we don't want confusing server messages
                     try { pushToast({ title: 'Account created', description: 'Please login.', tone: 'success' }); } catch (e) {}
-                    const loginPath = userType === 'Donor' ? '/login' : userType === 'Volunteer' ? '/login' : '/admin_login';
+                    const loginPath = userType === 'Admin' ? '/admin_login' : '/login';
                     try { (router.push as any)(loginPath); } catch (e) { try { window.location.href = loginPath; } catch (_) {} }
                     return;
                   }
@@ -201,10 +201,8 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
                   }
                   setIsAuthenticated && setIsAuthenticated(true);
                   const userRole = data.data?.role?.toLowerCase();
-                  let redirectPath = "/auth/dashboard";
-                  if (userRole === "donor") redirectPath = "/user/donor/dashboard";
-                  else if (userRole === "volunteer") redirectPath = "/user/volunteer/dashboard";
-                  else if (userRole === "admin") redirectPath = "/admin/dashboard";
+                  let redirectPath = "/profile";
+                  if (userRole === "admin") redirectPath = "/admin/dashboard";
                   try {
                     // attempt client-side navigation
                     const pushResult = (router.push as any)(redirectPath);

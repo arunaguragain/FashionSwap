@@ -42,7 +42,7 @@ export default function AdminSidebar() {
 				<div className="flex flex-col items-start">
 					<Image
 						src="/images/logo.png"
-						alt="Aashwaas"
+						alt="FashionSwap"
 						width={150}
 						height={40}
 						className="h-12 w-full max-w-[150px] object-contain"

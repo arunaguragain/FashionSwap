@@ -22,12 +22,12 @@ const USER_CONFIGS = {
     content: {
       login: "Welcome Back, Admin!",
       register: "Create Admin Account",
-      description: "Manage the donation ecosystem with comprehensive oversight and control.",
+      description: "Manage the fashion marketplace with comprehensive oversight and control.",
     },
     features: [
-      { text: 'Complete NGO management', icon: <Users className="w-5 h-5 text-purple-700" /> },
-      { text: 'Real-time analytics dashboard', icon: <BarChart2 className="w-5 h-5 text-purple-700" /> },
-      { text: 'Advanced security protocols', icon: <Shield className="w-5 h-5 text-purple-700" /> }
+      { text: 'Manage listings, users, and orders', icon: <Users className="w-5 h-5 text-purple-700" /> },
+      { text: 'Monitor marketplace activity in real time', icon: <BarChart2 className="w-5 h-5 text-purple-700" /> },
+      { text: 'Protect your storefront with secure access', icon: <Shield className="w-5 h-5 text-purple-700" /> }
     ]
   },
   volunteer: {
@@ -41,14 +41,14 @@ const USER_CONFIGS = {
       border: "border-emerald-200",
     },
     content: {
-      login: "Welcome Back, Volunteer!",
-      register: "Join as a Volunteer",
-      description: "Join our community of dedicated volunteers making real change happen.",
+      login: "Welcome Back!",
+      register: "Join FashionSwap",
+      description: "Join our community of style-conscious buyers and sellers sharing great fashion.",
     },
     features: [
-      { text: 'Flexible task management', icon: <ClipboardList className="w-5 h-5 text-emerald-700" /> },
-      { text: 'Track volunteer hours & impact', icon: <Clock className="w-5 h-5 text-emerald-700" /> },
-      { text: 'Community recognition', icon: <Award className="w-5 h-5 text-emerald-700" /> }
+      { text: 'Keep track of your listings and offers', icon: <ClipboardList className="w-5 h-5 text-emerald-700" /> },
+      { text: 'Stay on top of activity and messages', icon: <Clock className="w-5 h-5 text-emerald-700" /> },
+      { text: 'Build trust with every successful exchange', icon: <Award className="w-5 h-5 text-emerald-700" /> }
     ]
   },
   donor: {
@@ -62,14 +62,14 @@ const USER_CONFIGS = {
       border: "border-sky-200",
     },
     content: {
-      login: "Welcome Back, Donor!",
-      register: "Become a Donor",
-      description: "Transform lives through your generous donations to verified organizations.",
+      login: "Welcome Back!",
+      register: "Start Selling or Shopping",
+      description: "Discover pre-loved fashion, list your pieces, and connect with trusted buyers and sellers.",
     },
     features: [
-      { text: 'Easy donation tracking', icon: <Heart className="w-5 h-5 text-sky-700" /> },
-      { text: 'Verified NGO network', icon: <Check className="w-5 h-5 text-sky-700" /> },
-      { text: 'Impact visualization', icon: <BarChart2 className="w-5 h-5 text-sky-700" /> }
+      { text: 'List pieces quickly and track offers', icon: <Heart className="w-5 h-5 text-sky-700" /> },
+      { text: 'Connect with trusted buyers and sellers', icon: <Check className="w-5 h-5 text-sky-700" /> },
+      { text: 'See your recent activity at a glance', icon: <BarChart2 className="w-5 h-5 text-sky-700" /> }
     ]
   }
 } as const;
@@ -123,7 +123,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
 
           <div className="flex-1"></div>
           <div className="flex items-center justify-between text-sm text-black/60">
-            <span>© 2025 आश्वास</span>
+            <span>© 2025 FashionSwap</span>
           </div>
         </div>
       </div>

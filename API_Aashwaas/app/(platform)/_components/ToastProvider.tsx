@@ -20,7 +20,11 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 export const useToast = (initial?: Omit<Toast, 'id'>) => {
   const context = useContext(ToastContext);
   if (!context) {
-    throw new Error("useToast must be used within ToastProvider");
+    const fallback = { pushToast: (_toast: Omit<Toast, 'id'>) => undefined };
+    if (initial) {
+      try { fallback.pushToast(initial); } catch {}
+    }
+    return fallback;
   }
   if (initial) {
     // fire-and-forget
