@@ -7,8 +7,8 @@ import { JWT_SECRET } from '../../config';
 describe('Authentication Integration Tests', () => { // Test Suite function
         const testUser = {
             email: 'test@example.com',
-            password: 'Test@1234',
-            confirmPassword: 'Test@1234',
+            password: 'TestPassword@1234',
+            confirmPassword: 'TestPassword@1234',
             firstName: 'Test',
             lastName: 'User',
             location: 'Test City',
@@ -16,8 +16,8 @@ describe('Authentication Integration Tests', () => { // Test Suite function
 
         const resetUser = {
             email: 'reset.test@example.com',
-            password: 'Reset@1234',
-            confirmPassword: 'Reset@1234',
+            password: 'ResetPassword@1234',
+            confirmPassword: 'ResetPassword@1234',
             firstName: 'Reset',
             lastName: 'User',
             location: 'Reset City',
@@ -61,8 +61,8 @@ describe('Authentication Integration Tests', () => { // Test Suite function
                     .post('/api/auth/register')
                     .send({
                         email: 'invalid-email',
-                        password: 'Test@1234',
-                        confirmPassword: 'Test@1234',
+                        password: 'TestPassword@1234',
+                        confirmPassword: 'TestPassword@1234',
                         firstName: 'Invalid',
                         lastName: 'Email',
                         location: 'Test City',
@@ -77,10 +77,8 @@ describe('Authentication Integration Tests', () => { // Test Suite function
                     .post('/api/auth/register')
                     .send({
                         email: 'missingname@example.com',
-                        password: 'Test@1234',
-                        confirmPassword: 'Test@1234',
-                        firstName: 'Missing',
-                        lastName: 'Name',
+                        password: 'TestPassword@1234',
+                        confirmPassword: 'TestPassword@1234',
                         location: 'Test City',
                     });
 
@@ -91,6 +89,7 @@ describe('Authentication Integration Tests', () => { // Test Suite function
 
         describe('POST /api/auth/login', () => {
             test('should login an existing user', async () => {
+                await UserModel.updateOne({ email: testUser.email }, { isVerified: true });
                 const response = await request(app)
                     .post('/api/auth/login')
                     .send({ email: testUser.email, password: testUser.password });
@@ -112,7 +111,7 @@ describe('Authentication Integration Tests', () => { // Test Suite function
             test('should not reset password with invalid token', async () => {
                 const response = await request(app)
                     .post('/api/auth/reset-password/invalid-token')
-                    .send({ newPassword: 'NewPass@123' });
+                    .send({ newPassword: 'NewPassword@123' });
 
                 expect(response.status).toBe(400);
                 expect(response.body).toHaveProperty('success', false);
@@ -125,7 +124,7 @@ describe('Authentication Integration Tests', () => { // Test Suite function
 
                 const response = await request(app)
                     .post(`/api/auth/reset-password/${token}`)
-                    .send({ newPassword: 'NewPass@123' });
+                    .send({ newPassword: 'NewPassword@123' });
 
                 expect(response.status).toBe(200);
                 expect(response.body).toHaveProperty('success', true);
@@ -134,7 +133,7 @@ describe('Authentication Integration Tests', () => { // Test Suite function
             test('should login with new password after reset', async () => {
                 const response = await request(app)
                     .post('/api/auth/login')
-                    .send({ email: resetUser.email, password: 'NewPass@123' });
+                    .send({ email: resetUser.email, password: 'NewPassword@123' });
 
                 expect(response.status).toBe(200);
                 expect(response.body).toHaveProperty('success', true);

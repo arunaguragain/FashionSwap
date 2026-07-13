@@ -6,7 +6,7 @@ import UserHeader from "./UserHeader";
 
 interface UserLayoutProps {
   children: ReactNode;
-  userType: "donor" | "volunteer";
+  userType: "buyer" | "seller" | "admin";
   userName?: string;
 }
 

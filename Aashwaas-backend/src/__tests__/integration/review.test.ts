@@ -7,16 +7,20 @@ import { ReviewModel } from '../../models/review.model';
 describe('Review Integration Tests', () => {
     const userA = {
         email: 'reviewa@gmail.com',
-        password: 'ReviewA@123',
-        confirmPassword: 'ReviewA@123',
-        name: 'Reviewer A',
+        password: 'ReviewerA@1234',
+        confirmPassword: 'ReviewerA@1234',
+        firstName: 'Reviewer',
+        lastName: 'A',
+        location: 'Test City',
     };
 
     const userB = {
         email: 'reviewb@gmail.com',
-        password: 'ReviewB@123',
-        confirmPassword: 'ReviewB@123',
-        name: 'Reviewer B',
+        password: 'ReviewerB@1234',
+        confirmPassword: 'ReviewerB@1234',
+        firstName: 'Reviewer',
+        lastName: 'B',
+        location: 'Test City',
     };
 
     let tokenA = '';
@@ -29,6 +33,9 @@ describe('Review Integration Tests', () => {
 
         await request(app).post('/api/auth/register').send(userA);
         await request(app).post('/api/auth/register').send(userB);
+
+        // Verify both users so login works
+        await UserModel.updateMany({ email: { $in: [userA.email, userB.email] } }, { isVerified: true });
 
         const loginA = await request(app).post('/api/auth/login').send({ email: userA.email, password: userA.password });
         const loginB = await request(app).post('/api/auth/login').send({ email: userB.email, password: userB.password });

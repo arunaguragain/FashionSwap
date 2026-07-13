@@ -16,5 +16,6 @@ module.exports = {
     moduleNameMapper: {
         '^uuid$': '<rootDir>/src/__tests__/__mocks__/uuid.ts',
     },
+    setupFiles: ['<rootDir>/src/__tests__/setupEnv.ts'],
     setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
 };

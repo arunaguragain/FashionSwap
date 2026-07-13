@@ -29,8 +29,8 @@ describe('connectDatabase', () => {
 
     await connectDatabase();
 
-    expect(mongoose.connect).toHaveBeenCalledWith('mongodb://test-uri');
-    expect(logSpy).toHaveBeenCalledWith('Connected to MongoDB');
+    expect(mongoose.connect).toHaveBeenCalledWith('mongodb://test-uri', { serverSelectionTimeoutMS: 5000 });
+    expect(logSpy).toHaveBeenCalledWith('MongoDB connected for FashionSwap');
 
     logSpy.mockRestore();
   });

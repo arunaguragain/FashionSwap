@@ -6,50 +6,58 @@ import { UserModel } from '../../models/user.model';
 describe('Admin User Integration Tests', () => { // Test Suite function
     const adminUser = {
         email: 'admin.test@example.com',
-        password: 'Admin@1234',
-        confirmPassword: 'Admin@1234',
-        name: 'Admin User',
+        password: 'AdminUser@1234',
+        confirmPassword: 'AdminUser@1234',
+        firstName: 'Admin',
+        lastName: 'User',
+        location: 'Admin City',
         role: 'admin',
     };
 
-    const donorUser = {
-        email: 'donor.test@example.com',
-        password: 'Donor@1234',
-        confirmPassword: 'Donor@1234',
-        name: 'Donor User',
-        role: 'donor',
+    const buyerUser = {
+        email: 'buyer.test@example.com',
+        password: 'BuyerUser@1234',
+        confirmPassword: 'BuyerUser@1234',
+        firstName: 'Buyer',
+        lastName: 'User',
+        location: 'Buyer City',
+        role: 'user',
     };
 
     let adminToken = '';
-    let donorToken = '';
+    let buyerToken = '';
     let createdUserId = '';
     const createdEmails: string[] = [];
 
     beforeAll(async () => {
-        // Ensure admin and donor users exist before tests
+        // Ensure admin and buyer users exist before tests
         await UserModel.deleteMany({
-            email: { $in: [adminUser.email, donorUser.email] },
+            email: { $in: [adminUser.email, buyerUser.email] },
         });
 
         await request(app).post('/api/auth/register').send(adminUser);
-        await request(app).post('/api/auth/register').send(donorUser);
+        await request(app).post('/api/auth/register').send(buyerUser);
+
+        // Make admin & verify both so login works
+        await UserModel.updateOne({ email: adminUser.email }, { isVerified: true, role: 'admin' });
+        await UserModel.updateOne({ email: buyerUser.email }, { isVerified: true });
 
         const adminLogin = await request(app)
             .post('/api/auth/login')
             .send({ email: adminUser.email, password: adminUser.password });
 
-        const donorLogin = await request(app)
+        const buyerLogin = await request(app)
             .post('/api/auth/login')
-            .send({ email: donorUser.email, password: donorUser.password });
+            .send({ email: buyerUser.email, password: buyerUser.password });
 
         adminToken = adminLogin.body.token;
-        donorToken = donorLogin.body.token;
+        buyerToken = buyerLogin.body.token;
     });
 
     afterAll(async () => {
-        // Clean up admin, donor, and created users after tests
+        // Clean up admin, buyer, and created users after tests
         await UserModel.deleteMany({
-            email: { $in: [adminUser.email, donorUser.email, ...createdEmails] },
+            email: { $in: [adminUser.email, buyerUser.email, ...createdEmails] },
         });
     });
 
@@ -59,7 +67,7 @@ describe('Admin User Integration Tests', () => { // Test Suite function
             async () => { // Test function
                 const response = await request(app)
                     .get('/api/admin/users')
-                    .set('Authorization', `Bearer ${donorToken}`);
+                    .set('Authorization', `Bearer ${buyerToken}`);
 
                 expect(response.status).toBe(403);
                 expect(response.body).toHaveProperty('success', false);
@@ -82,7 +90,7 @@ describe('Admin User Integration Tests', () => { // Test Suite function
                         password: 'User@1234',
                         confirmPassword: 'User@1234',
                         name: 'Created User',
-                        role: 'donor',
+                        role: 'buyer',
                     });
 
                 createdUserId = response.body.data?._id ?? '';

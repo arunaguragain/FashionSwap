@@ -21,7 +21,7 @@ interface ListingCardProps {
 }
 
 export default function ListingCard({ id, image = '/images/placeholder.png', title, price, seller, condition, category }: ListingCardProps) {
-  const [wishlist, setWishlist] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   return (
     <Link href={`/listings/${id}`} className="group">
@@ -32,12 +32,12 @@ export default function ListingCard({ id, image = '/images/placeholder.png', tit
             <button
               onClick={(e) => {
                 e.preventDefault();
-                setWishlist(!wishlist);
+                setSaved(!saved);
               }}
-              aria-label={wishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-              className={cn('p-2 rounded-full transition-colors', wishlist ? 'bg-red-100 text-red-600' : 'bg-white/80 text-gray-600')}
+              aria-label={saved ? 'Remove from saved items' : 'Add to saved items'}
+              className={cn('p-2 rounded-full transition-colors', saved ? 'bg-red-100 text-red-600' : 'bg-white/80 text-gray-600')}
             >
-              {wishlist ? '♥' : '♡'}
+              {saved ? '♥' : '♡'}
             </button>
           </div>
         </div>

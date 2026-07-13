@@ -1,10 +1,13 @@
 {
-  "name": "aashwaas_backend",
+  "name": "fashionswap-backend",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
-    "test": "jest --verbose --detectOpenHandles"
+    "test": "jest --verbose --detectOpenHandles",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "lint": "eslint . --ext .ts"
   },
   "keywords": [],
   "author": "",

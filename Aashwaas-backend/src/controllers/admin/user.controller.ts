@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import z from "zod";
 import { AdminUserService } from "../../services/admin/user.service";
 import { QueryParams } from "../../types/query.type";
+import { recordAuditEvent } from "../../services/audit.service";
 
 let adminUserService = new AdminUserService();
 
@@ -20,6 +21,8 @@ export class AdminUserController {
             }
             const userData: CreateUserDTO = parsedData.data;
             const newUser = await adminUserService.createUser(userData);
+            const adminId = (req as any).user?._id?.toString() || (req as any).user?.userId;
+            recordAuditEvent({ timestamp: new Date().toISOString(), userId: adminId, event: 'ADMIN_USER_CREATED', ip: req.ip, meta: { targetUserId: newUser._id?.toString(), email: userData.email } });
             return res.status(201).json(
                 { success: true, message: "User Created", data: newUser }
             );
@@ -68,6 +71,8 @@ export class AdminUserController {
             }
             const updateData: UpdateUserDTO = parsedData.data;
             const updatedUser = await adminUserService.updateUser(userId, updateData);
+            const adminId = (req as any).user?._id?.toString() || (req as any).user?.userId;
+            recordAuditEvent({ timestamp: new Date().toISOString(), userId: adminId, event: 'ADMIN_USER_UPDATED', ip: req.ip, meta: { targetUserId: userId } });
             return res.status(200).json(
                 { success: true, message: "User Updated", data: updatedUser }
             );
@@ -88,6 +93,8 @@ export class AdminUserController {
                     { success: false, message: "User not found" }
                 );
             }
+            const adminId = (req as any).user?._id?.toString() || (req as any).user?.userId;
+            recordAuditEvent({ timestamp: new Date().toISOString(), userId: adminId, event: 'ADMIN_USER_DELETED', ip: req.ip, meta: { targetUserId: userId } });
             return res.status(200).json(
                 { success: true, message: "User Deleted" }
             );

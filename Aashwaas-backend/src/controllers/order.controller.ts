@@ -3,6 +3,7 @@ import Order from '../models/order.model';
 import Listing from '../models/listing.model';
 import Transaction from '../models/transaction.model';
 import User from '../models/user.model';
+import { recordAuditEvent } from '../services/audit.service';
 
 const getRequestUserId = (req: Request): string => {
   const user = (req as any).user;
@@ -134,6 +135,7 @@ export class OrderController {
       order.status = 'accepted';
       order.acceptedAt = new Date();
       await order.save();
+      recordAuditEvent({ timestamp: new Date().toISOString(), userId, event: 'ORDER_ACCEPTED', meta: { orderId } });
 
       res.status(200).json({ success: true, message: 'Order accepted', data: order });
     } catch (error) {
@@ -164,6 +166,7 @@ export class OrderController {
 
       order.status = 'declined';
       await order.save();
+      recordAuditEvent({ timestamp: new Date().toISOString(), userId, event: 'ORDER_DECLINED', meta: { orderId } });
 
       res.status(200).json({ success: true, message: 'Order declined', data: order });
     } catch (error) {
@@ -198,6 +201,7 @@ export class OrderController {
 
       await User.updateOne({ _id: order.sellerId }, { $inc: { 'sellerProfile.itemsSold': 1 } });
       await User.updateOne({ _id: order.buyerId }, { $inc: { 'buyerProfile.itemsPurchased': 1 } });
+      recordAuditEvent({ timestamp: new Date().toISOString(), userId, event: 'ORDER_COMPLETED', meta: { orderId } });
 
       res.status(200).json({ success: true, message: 'Order completed', data: order });
     } catch (error) {

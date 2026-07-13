@@ -8,6 +8,7 @@ describe('AuthController.googleSignIn', () => {
     // reset modules and provide fresh mocks so module-level instances are
     // constructed from our mocks.
     jest.resetModules();
+    process.env.ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '0000000000000000000000000000000000000000000000000000000000000000';
     jest.doMock('../../../services/user.service', () => ({
       UserService: jest.fn().mockImplementation(() => ({
         getUserByEmail: jest.fn(),

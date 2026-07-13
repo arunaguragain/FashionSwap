@@ -30,8 +30,8 @@ describe('RegisterForm', () => {
     jest.clearAllMocks();
   });
 
-  test('submits valid data and navigates to login link for Volunteer', async () => {
-    render(<RegisterForm userType="Volunteer" loginLink="/volunteer_login" />);
+  test('submits valid data and navigates to login link for Seller', async () => {
+    render(<RegisterForm userType="Seller" loginLink="/seller_login" />);
 
     await userEvent.type(screen.getByLabelText(/Full Name/i), 'Test User');
     await userEvent.type(screen.getByLabelText(/Email Address/i), 'test@gmail.com');
@@ -43,11 +43,11 @@ describe('RegisterForm', () => {
     const submit = screen.getByRole('button', { name: /Create Account/i });
     await userEvent.click(submit);
 
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/volunteer_login'));
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/seller_login'));
   });
 
   test('shows validation errors when fields are empty', async () => {
-    render(<RegisterForm userType="Volunteer" />);
+    render(<RegisterForm userType="Seller" />);
     const submit = screen.getByRole('button', { name: /Create Account/i });
     await userEvent.click(submit);
 

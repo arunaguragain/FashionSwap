@@ -24,14 +24,14 @@ describe("ReviewController", () => {
     });
 
     test("returns 401 when unauthenticated", async () => {
-      const req: any = { body: { title: "t", donationId: "d1", rating: 5 }, user: undefined };
+      const req: any = { body: { title: "t", listingId: "d1", rating: 5 }, user: undefined };
       const res = mockRes();
       await ctrl.createReview(req, res, jest.fn() as any);
       expect(res.status).toHaveBeenCalledWith(401);
     });
 
     test("returns 201 on success", async () => {
-      const req: any = { body: { title: "t", donationId: "d1", rating: 5 }, user: { _id: "u1" } };
+      const req: any = { body: { title: "t", listingId: "d1", rating: 5 }, user: { _id: "u1" } };
       const res = mockRes();
       jest.spyOn(ReviewService.prototype, "createReview").mockResolvedValue({ _id: "r1" } as any);
       await ctrl.createReview(req, res, jest.fn() as any);
@@ -40,7 +40,7 @@ describe("ReviewController", () => {
     });
 
     test("returns service error status when service throws HttpError", async () => {
-      const req: any = { body: { title: "t", donationId: "d1", rating: 5 }, user: { _id: "u1" } };
+      const req: any = { body: { title: "t", listingId: "d1", rating: 5 }, user: { _id: "u1" } };
       const res = mockRes();
       jest.spyOn(ReviewService.prototype, "createReview").mockRejectedValue(new HttpError(418, "teapot"));
       await ctrl.createReview(req, res, jest.fn() as any);
@@ -48,7 +48,7 @@ describe("ReviewController", () => {
     });
 
     test('returns 500 when createReview throws generic error', async () => {
-      const req: any = { body: { title: "t", donationId: "d1", rating: 5 }, user: { _id: "u1" } };
+      const req: any = { body: { title: "t", listingId: "d1", rating: 5 }, user: { _id: "u1" } };
       const res = mockRes();
       jest.spyOn(ReviewService.prototype, "createReview").mockRejectedValueOnce({});
       await ctrl.createReview(req, res, jest.fn() as any);

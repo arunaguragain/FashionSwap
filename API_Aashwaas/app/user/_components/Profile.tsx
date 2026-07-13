@@ -8,17 +8,17 @@ interface ProfilePageProps {
   email: string;
   phone: string;
   address: string;
-  role: "Donor" | "Volunteer";
+  role: "Buyer" | "Seller" | "Admin";
   memberSince: string;
   impactPoints: number;
   sellerRating?: number;
   buyerRating?: number;
   completedSales?: number;
   successfulPurchases?: number;
-  totalDonations?: number;
-  itemsDonated?: number;
+  totalListings?: number;
+  itemsListed?: number;
   onEditProfile: () => void;
-  onAddDonation?: () => void;
+  onAddListing?: () => void;
   onViewAnalytics?: () => void;
   onViewBadges?: () => void;
 }
@@ -35,10 +35,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   buyerRating,
   completedSales,
   successfulPurchases,
-  totalDonations,
-  itemsDonated,
+  totalListings,
+  itemsListed,
   onEditProfile,
-  onAddDonation,
+  onAddListing,
   onViewAnalytics,
   onViewBadges,
 }) => {
@@ -153,7 +153,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
         {/* Quick Actions */}
         <div className="bg-white rounded-lg shadow p-6 min-w-[220px] flex flex-col gap-2">
           <div className="font-semibold mb-2">Quick Actions</div>
-          {onAddDonation && <button className="bg-purple-600 text-white px-4 py-2 rounded" onClick={onAddDonation}>Add New Donation</button>}
+          {onAddListing && <button className="bg-purple-600 text-white px-4 py-2 rounded" onClick={onAddListing}>Add New Listing</button>}
           {onViewAnalytics && <button className="bg-gray-200 px-4 py-2 rounded" onClick={onViewAnalytics}>View Analytics</button>}
           {onViewBadges && <button className="bg-gray-200 px-4 py-2 rounded" onClick={onViewBadges}>View Badges</button>}
         </div>
@@ -193,7 +193,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       <div className="mt-8 bg-green-100 rounded-lg p-6 text-center">
         <div className="font-semibold mb-2">Your Impact this year</div>
         <div>Keep up the amazing work!</div>
-        {typeof itemsDonated === "number" && <div className="mt-2 text-green-700 text-xl font-bold">{itemsDonated} items</div>}
+        {typeof itemsListed === "number" && <div className="mt-2 text-green-700 text-xl font-bold">{itemsListed} items</div>}
       </div>
     </div>
   );

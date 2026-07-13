@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import Listing from '../models/listing.model';
 import User from '../models/user.model';
 import { ListingFilter } from '../types/fashionswap.types';
+import { recordAuditEvent } from '../services/audit.service';
 
 export class ListingController {
   async getAllListings(req: Request, res: Response): Promise<void> {
@@ -143,6 +144,7 @@ export class ListingController {
       });
 
       await listing.save();
+      recordAuditEvent({ timestamp: new Date().toISOString(), userId, event: 'LISTING_CREATED', meta: { listingId: listing._id?.toString(), title } });
 
       res.status(201).json({ success: true, message: 'Listing created', data: listing });
     } catch (error) {
@@ -155,29 +157,28 @@ export class ListingController {
     try {
       const { userId } = (req as any).user;
       const { listingId } = req.params;
-      const allowedFields = [
-        'title',
-        'description',
-        'category',
-        'brand',
-        'size',
-        'color',
-        'condition',
-        'material',
-        'careInstructions',
-        'askingPrice',
-        'negotiable',
-        'images',
-        'location',
-        'pickupAvailable',
-        'shippingAvailable',
-      ];
+      const {
+        title, description, category, brand, size, color, condition,
+        material, careInstructions, askingPrice, negotiable, images,
+        location, pickupAvailable, shippingAvailable
+      } = req.body;
+
       const updateData: Record<string, unknown> = {};
-      Object.entries(req.body || {}).forEach(([key, value]) => {
-        if (allowedFields.includes(key)) {
-          updateData[key] = value;
-        }
-      });
+      if (title !== undefined) updateData.title = title;
+      if (description !== undefined) updateData.description = description;
+      if (category !== undefined) updateData.category = category;
+      if (brand !== undefined) updateData.brand = brand;
+      if (size !== undefined) updateData.size = size;
+      if (color !== undefined) updateData.color = color;
+      if (condition !== undefined) updateData.condition = condition;
+      if (material !== undefined) updateData.material = material;
+      if (careInstructions !== undefined) updateData.careInstructions = careInstructions;
+      if (askingPrice !== undefined) updateData.askingPrice = askingPrice;
+      if (negotiable !== undefined) updateData.negotiable = negotiable;
+      if (images !== undefined) updateData.images = images;
+      if (location !== undefined) updateData.location = location;
+      if (pickupAvailable !== undefined) updateData.pickupAvailable = pickupAvailable;
+      if (shippingAvailable !== undefined) updateData.shippingAvailable = shippingAvailable;
 
       const listing = await Listing.findById(listingId);
       if (!listing) {
@@ -191,6 +192,7 @@ export class ListingController {
       }
 
       const updatedListing = await Listing.findByIdAndUpdate(listingId, updateData, { new: true });
+      recordAuditEvent({ timestamp: new Date().toISOString(), userId, event: 'LISTING_UPDATED', meta: { listingId } });
 
       res.status(200).json({ success: true, message: 'Listing updated', data: updatedListing });
     } catch (error) {
@@ -215,6 +217,7 @@ export class ListingController {
       }
 
       await Listing.deleteOne({ _id: listingId });
+      recordAuditEvent({ timestamp: new Date().toISOString(), userId, event: 'LISTING_DELETED', meta: { listingId } });
 
       res.status(200).json({ success: true, message: 'Listing deleted' });
     } catch (error) {

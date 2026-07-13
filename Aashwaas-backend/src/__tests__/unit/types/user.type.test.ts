@@ -10,7 +10,7 @@ describe('UserSchema', () => {
 
     expect(parsed.success).toBe(true);
     if (parsed.success) {
-      expect(parsed.data.role).toBe('donor');
+      expect(parsed.data.role).toBe('buyer');
     }
   });
 
@@ -21,14 +21,14 @@ describe('UserSchema', () => {
       password: 'longpassword',
       phoneNumber: '1234567890',
       profilePicture: 'pic.png',
-      role: 'volunteer',
+      role: 'seller',
     });
 
     expect(parsed.success).toBe(true);
     if (parsed.success) {
       expect(parsed.data.phoneNumber).toBe('1234567890');
       expect(parsed.data.profilePicture).toBe('pic.png');
-      expect(parsed.data.role).toBe('volunteer');
+      expect(parsed.data.role).toBe('seller');
     }
   });
 

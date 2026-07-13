@@ -10,7 +10,7 @@ describe('ProfilePage', () => {
     email: 'aruna@gmail.com',
     phone: '9800000000',
     address: 'Kathmandu, Nepal',
-    role: 'Volunteer' as const,
+    role: 'Buyer' as const,
     memberSince: '2022-01-01',
     impactPoints: 120,
     onEditProfile: jest.fn(),
@@ -37,22 +37,22 @@ describe('ProfilePage', () => {
   });
 
   test('shows quick actions when callbacks provided and triggers them', async () => {
-    const onAddDonation = jest.fn();
+    const onAddListing = jest.fn();
     const onViewAnalytics = jest.fn();
     const onViewBadges = jest.fn();
 
     render(
       <ProfilePage
         {...baseProps}
-        onAddDonation={onAddDonation}
+        onAddListing={onAddListing}
         onViewAnalytics={onViewAnalytics}
         onViewBadges={onViewBadges}
       />
     );
 
-    const addBtn = screen.getByRole('button', { name: /Add New Donation/i });
+    const addBtn = screen.getByRole('button', { name: /Add New Listing/i });
     await userEvent.click(addBtn);
-    expect(onAddDonation).toHaveBeenCalled();
+    expect(onAddListing).toHaveBeenCalled();
 
     const analyticsBtn = screen.getByRole('button', { name: /View Analytics/i });
     await userEvent.click(analyticsBtn);
@@ -84,12 +84,12 @@ describe('ProfilePage', () => {
     expect(screen.getByText('15')).toBeInTheDocument();
   });
 
-  test('renders correctly for Volunteer role and shows account details', () => {
-    const volunteerProps = { ...baseProps, name: 'Volunteer Test', role: 'Volunteer' as const };
-    render(<ProfilePage {...volunteerProps} />);
+  test('renders correctly for Buyer role and shows account details', () => {
+    const buyerProps = { ...baseProps, name: 'Buyer Test', role: 'Buyer' as const };
+    render(<ProfilePage {...buyerProps} />);
 
-    expect(screen.getByText('Volunteer Test')).toBeInTheDocument();
+    expect(screen.getByText('Buyer Test')).toBeInTheDocument();
     expect(screen.getByText(/Account Type:/)).toBeInTheDocument();
-    expect(screen.getByText('Volunteer')).toBeInTheDocument();
+    expect(screen.getByText('Buyer')).toBeInTheDocument();
   });
 });

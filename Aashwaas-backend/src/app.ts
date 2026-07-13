@@ -1,4 +1,4 @@
-﻿import express, { Application, Request, Response } from 'express';
+import express, { Application, Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -52,7 +52,7 @@ app.use('/api/listings', listingRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/profiles', profileRoutes);
-// wishlist routes removed during cleanup
+
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin/users', adminUserRoutes);
 

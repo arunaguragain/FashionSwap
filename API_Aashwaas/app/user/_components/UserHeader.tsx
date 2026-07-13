@@ -7,7 +7,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface UserHeaderProps {
-  userType: "donor" | "volunteer";
+  userType: "buyer" | "seller" | "admin";
 }
 
 const UserHeader: React.FC<UserHeaderProps> = ({ userType }) => {

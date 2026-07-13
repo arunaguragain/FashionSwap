@@ -1,4 +1,4 @@
-﻿import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import User from '../models/user.model';
@@ -7,6 +7,7 @@ import { mfaService } from '../services/mfa.service';
 import { recordFailedLoginAttempt, resetFailedLoginAttempts } from '../middlewares/rateLimit.middleware';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../services/email.service';
 import { JWT_SECRET } from '../config';
+import { recordAuditEvent } from '../services/audit.service';
 
 const userService = new UserService();
 /* istanbul ignore next */
@@ -39,13 +40,15 @@ export class AuthController {
         firstName,
         lastName,
         location,
-        role: 'buyer',
+        role: 'user',
       } as any);
 
       const verificationOTP = Math.floor(100000 + Math.random() * 900000).toString();
-      newUser.verificationOTP = verificationOTP;
-      newUser.verificationOTPExpiry = new Date(Date.now() + 10 * 60 * 1000);
-      await newUser.save();
+      // Use updateOne to avoid re-triggering the pre('save') password hash hook
+      await User.updateOne({ _id: newUser._id }, {
+        verificationOTP,
+        verificationOTPExpiry: new Date(Date.now() + 10 * 60 * 1000),
+      });
 
       await sendVerificationEmail(email, verificationOTP);
 
@@ -223,6 +226,7 @@ export class AuthController {
 
       if (!user) {
         await recordFailedLoginAttempt(email);
+        recordAuditEvent({ timestamp: new Date().toISOString(), userId: undefined, event: 'LOGIN_FAILED', ip: req.ip, meta: { email, reason: 'user_not_found' } });
         res.status(401).json({ success: false, message: 'Invalid email or password' });
         return;
       }
@@ -235,6 +239,7 @@ export class AuthController {
       const isPasswordValid = await user.comparePassword(password);
       if (!isPasswordValid) {
         await recordFailedLoginAttempt(email);
+        recordAuditEvent({ timestamp: new Date().toISOString(), userId: user._id.toString(), event: 'LOGIN_FAILED', ip: req.ip, meta: { email, reason: 'invalid_password' } });
         res.status(401).json({ success: false, message: 'Invalid email or password' });
         return;
       }
@@ -270,6 +275,7 @@ export class AuthController {
 
       user.lastLogin = new Date();
       await user.save();
+      recordAuditEvent({ timestamp: new Date().toISOString(), userId: user._id.toString(), event: 'LOGIN_SUCCESS', ip: req.ip });
 
       res.status(200).json({
         success: true,
@@ -323,6 +329,7 @@ export class AuthController {
       const isValidOTP = mfaService.verifyTOTP(decryptedSecret, otp);
 
       if (!isValidOTP) {
+        recordAuditEvent({ timestamp: new Date().toISOString(), userId: decoded.userId, event: 'MFA_VERIFY_FAILED', ip: req.ip });
         res.status(401).json({ success: false, message: 'Invalid OTP' });
         return;
       }
@@ -338,6 +345,7 @@ export class AuthController {
 
       user.lastLogin = new Date();
       await user.save();
+      recordAuditEvent({ timestamp: new Date().toISOString(), userId: user._id.toString(), event: 'MFA_VERIFY_SUCCESS', ip: req.ip });
 
       res.status(200).json({
         success: true,
@@ -425,6 +433,7 @@ export class AuthController {
       user.mfaEnabled = true;
       user.totpSecret = encryptedSecret;
       await user.save();
+      recordAuditEvent({ timestamp: new Date().toISOString(), userId: userId.toString(), event: 'MFA_ENABLED', ip: req.ip });
 
       res.status(200).json({
         success: true,
@@ -467,6 +476,7 @@ export class AuthController {
       user.mfaEnabled = false;
       user.totpSecret = undefined;
       await user.save();
+      recordAuditEvent({ timestamp: new Date().toISOString(), userId: userId.toString(), event: 'MFA_DISABLED', ip: req.ip });
 
       res.status(200).json({ success: true, message: 'MFA disabled. Your account is no longer protected with two-factor authentication.' });
     } catch (error: any) {
@@ -543,25 +553,62 @@ export class AuthController {
       await sendPasswordResetEmail(email, resetOTP);
 
       res.status(200).json({ success: true, message: 'Password reset OTP sent to email' });
+      recordAuditEvent({ timestamp: new Date().toISOString(), userId: user._id.toString(), event: 'PASSWORD_RESET_REQUESTED', ip: req.ip, meta: { email } });
     } catch (error: any) {
       console.error('Password reset request error:', error);
       res.status(500).json({ success: false, message: 'Error requesting password reset' });
     }
   }
 
+  // Alias kept for legacy route: POST /reset-password/:token
+  async resetPassword(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { token } = req.params;
+      const { newPassword } = req.body;
+      await userService.resetPassword(token, newPassword);
+      res.status(200).json({ success: true, message: 'Password has been reset successfully.' });
+    } catch (error: any) {
+      console.error('Password reset OTP error:', error);
+      res.status(error.statusCode || 500).json({ success: false, message: error.message || 'Internal Server Error' });
+    }
+  }
+
+  async sendResetPasswordEmail(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { email } = req.body;
+      await userService.sendResetPasswordEmail(email);
+      res.status(200).json({ success: true, message: 'If the email is registered, a password reset link has been sent.' });
+    } catch (error: any) {
+      console.error('Send reset email error:', error);
+      res.status(error.statusCode || 500).json({ success: false, message: error.message || 'Internal Server Error' });
+    }
+  }
+
+  async sendResetPasswordOTP(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { email } = req.body;
+      await userService.sendResetPasswordOTP(email);
+      res.status(200).json({ success: true, message: 'If the email is registered, an OTP has been sent.' });
+    } catch (error: any) {
+      console.error('Send reset OTP error:', error);
+      res.status(error.statusCode || 500).json({ success: false, message: error.message || 'Internal Server Error' });
+    }
+  }
+
   async resetPasswordWithOTP(req: AuthRequest, res: Response): Promise<void> {
-    try {      if (req.params?.token) {
+    try {
+      if (req.params?.token) {
         const { newPassword } = req.body;
         await userService.resetPassword(req.params.token, newPassword);
-        res.status(200).json({ success: true, message: 'Password reset successfully' });
+        res.status(200).json({ success: true, message: 'Password has been reset successfully.' });
         return;
       }
       const { email, otp, newPassword } = req.body;
       await userService.resetPasswordWithOTP(email, otp, newPassword);
-      res.status(200).json({ success: true, message: 'Password reset successfully' });
+      res.status(200).json({ success: true, message: 'Password has been reset successfully.' });
     } catch (error: any) {
       console.error('Password reset OTP error:', error);
-      res.status(500).json({ success: false, message: error.message || 'Error resetting password' });
+      res.status(error.statusCode || 500).json({ success: false, message: error.message || 'Internal Server Error' });
     }
   }
 
