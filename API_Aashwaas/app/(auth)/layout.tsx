@@ -30,29 +30,8 @@ const USER_CONFIGS = {
       { text: 'Protect your storefront with secure access', icon: <Shield className="w-5 h-5 text-purple-700" /> }
     ]
   },
-  volunteer: {
+  user: {
     icon: Users,
-    colors: {
-      gradient: "from-green-600 via-emerald-600 to-teal-700",
-      bg: "from-green-100 via-emerald-100 to-teal-100",
-      heading: "text-emerald-900",
-      body: "text-emerald-800",
-      feature: "text-emerald-700",
-      border: "border-emerald-200",
-    },
-    content: {
-      login: "Welcome Back!",
-      register: "Join FashionSwap",
-      description: "Join our community of style-conscious buyers and sellers sharing great fashion.",
-    },
-    features: [
-      { text: 'Keep track of your listings and offers', icon: <ClipboardList className="w-5 h-5 text-emerald-700" /> },
-      { text: 'Stay on top of activity and messages', icon: <Clock className="w-5 h-5 text-emerald-700" /> },
-      { text: 'Build trust with every successful exchange', icon: <Award className="w-5 h-5 text-emerald-700" /> }
-    ]
-  },
-  donor: {
-    icon: Heart,
     colors: {
       gradient: "from-blue-600 via-cyan-600 to-sky-700",
       bg: "from-sky-100 via-cyan-100 to-blue-100",
@@ -63,7 +42,7 @@ const USER_CONFIGS = {
     },
     content: {
       login: "Welcome Back!",
-      register: "Start Selling or Shopping",
+      register: "Join FashionSwap",
       description: "Discover pre-loved fashion, list your pieces, and connect with trusted buyers and sellers.",
     },
     features: [
@@ -78,9 +57,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   
-  const userType = pathname?.includes('admin') ? 'admin' 
-    : pathname?.includes('volunteer') ? 'volunteer' 
-    : 'donor';
+  const userType = pathname?.includes('admin') ? 'admin' : 'user';
   const isLogin = pathname?.includes('login');
   
   const config = USER_CONFIGS[userType];

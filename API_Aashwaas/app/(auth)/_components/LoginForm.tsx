@@ -12,7 +12,7 @@ import { handleLogin } from "@/lib/actions/auth-actions";
 import { useToast } from "@/app/(platform)/_components/ToastProvider";
 
 interface LoginFormProps {
-  userType: "Admin" | "Donor" | "Volunteer";
+  userType: "Admin" | "User";
   onSubmit?: (values: LoginData) => void;
   registerLink?: string;
   forgotPasswordLink?: string;
@@ -48,17 +48,15 @@ export default function LoginForm({
     defaultValues: { email: "", password: "" }
   });
 
-  const iconMap = { Admin: Shield, Donor: Heart, Volunteer: Users } as const;
+  const iconMap = { Admin: Shield, User: Users } as const;
   const gradientMap: Record<string, string> = {
     Admin: "from-purple-600 to-violet-600",
-    Donor: "from-blue-600 to-cyan-600",
-    Volunteer: "from-green-600 to-emerald-600",
+    User: "from-blue-600 to-cyan-600",
   };
 
   const buttonGradientMap: Record<string, string> = {
     Admin: "from-purple-600 via-violet-600 to-purple-700",
-    Donor: "from-blue-600 via-cyan-600 to-blue-700",
-    Volunteer: "from-green-600 via-emerald-600 to-green-700",
+    User: "from-blue-600 via-cyan-600 to-blue-700",
   };
 
   const IconComponent = iconMap[userType];
@@ -80,10 +78,8 @@ export default function LoginForm({
       let redirectPath = "/listings";
       const userRole = res.data?.role?.toLowerCase();
       
-      if (userRole === "donor") {
-        redirectPath = "/user/donor/dashboard";
-      } else if (userRole === "volunteer") {
-        redirectPath = "/user/volunteer/dashboard";
+      if (userRole === "buyer" || userRole === "seller") {
+        redirectPath = "/profile";
       } else if (userRole === "admin") {
         redirectPath = "/admin/dashboard";
       }

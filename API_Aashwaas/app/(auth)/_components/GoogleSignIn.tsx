@@ -8,7 +8,7 @@ import { useToast } from "@/app/(platform)/_components/ToastProvider";
 import { API } from "@/lib/api/endpoints";
 
 interface Props {
-  userType: "Admin" | "Donor" | "Volunteer";
+  userType: "Admin" | "User";
   autoLogin?: boolean;
 }
 

@@ -40,8 +40,7 @@ export default function LoginPage() {
       const role = res?.data?.role?.toLowerCase?.();
       let path = '/listings';
       if (role === 'admin') path = '/admin/dashboard';
-      else if (role === 'donor') path = '/profile';
-      else if (role === 'volunteer') path = '/profile';
+      else if (role === 'buyer' || role === 'seller') path = '/profile';
       try { await router.prefetch(path); } catch {}
       router.push(path);
     } catch (err: any) {

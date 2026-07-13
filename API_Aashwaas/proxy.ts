@@ -28,7 +28,7 @@ export async function proxy(req: NextRequest) {
             return NextResponse.redirect(new URL('/', req.url));
         }
         // User routes - all authenticated users
-        if (isUserRoute && user.role !== 'admin' && user.role !== 'donor' && user.role !== 'volunteer') {
+        if (isUserRoute && user.role !== 'admin' && user.role !== 'buyer' && user.role !== 'seller') {
             return NextResponse.redirect(new URL('/', req.url));
         }
     }
@@ -37,7 +37,7 @@ export async function proxy(req: NextRequest) {
         // Redirect authenticated users to their respective dashboards
         if (user.role === 'admin') {
             return NextResponse.redirect(new URL('/admin/dashboard', req.url));
-        } else if (user.role === 'donor' || user.role === 'volunteer') {
+        } else if (user.role === 'buyer' || user.role === 'seller') {
             return NextResponse.redirect(new URL('/profile', req.url));
         }
         return NextResponse.redirect(new URL('/', req.url));

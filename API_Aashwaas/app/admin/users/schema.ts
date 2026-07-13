@@ -9,7 +9,7 @@ const BaseUserSchema = z.object({
   phone: z.string().min(10, { message: "Enter a valid phone number" }),
   password: z.string().min(6, { message: "Minimum 6 characters" }),
   confirmPassword: z.string().min(6, { message: "Minimum 6 characters" }),
-  role: z.enum(["admin", "donor", "volunteer"]),
+  role: z.enum(["admin", "buyer", "seller"]),
   image: z.any().optional(),
 });
 
@@ -34,7 +34,7 @@ export type UserData = {
   phone: string;
   password: string;
   confirmPassword: string;
-  role: "admin" | "donor" | "volunteer";
+  role: "admin" | "buyer" | "seller";
   image?: File;
 };
 

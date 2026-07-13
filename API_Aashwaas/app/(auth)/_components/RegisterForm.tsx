@@ -11,7 +11,7 @@ import { handleRegister } from "@/lib/actions/auth-actions";
 import { useToast } from "@/app/(platform)/_components/ToastProvider";
 
 interface Props {
-  userType: "Admin" | "Donor" | "Volunteer";
+  userType: "Admin" | "User";
   onSubmit?: (values: RegisterData) => void;
   loginLink?: string;
 }
@@ -45,8 +45,7 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
 
   const buttonGradientMap: Record<string, string> = {
     Admin: "from-purple-600 via-violet-600 to-purple-700",
-    Donor: "from-blue-600 via-cyan-600 to-blue-700",
-    Volunteer: "from-green-600 via-emerald-600 to-green-700",
+    User: "from-blue-600 via-cyan-600 to-blue-700",
   };
 
   const buttonGradient = buttonGradientMap[userType];
@@ -54,10 +53,7 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
   const onSubmitForm = async (data: RegisterData) => {
     setErrorMessage("");
     try {
-      // Ensure role is set for Volunteer
-      const res = await handleRegister(
-        userType === "Volunteer" ? { ...data, role: "volunteer" } : data
-      );
+      const res = await handleRegister(data);
       if (!res.success) {
         // show error toast and set error message
         try { pushToast({ title: res.message || 'Registration failed', tone: 'error' }); } catch(e) {}
@@ -67,9 +63,7 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
       startTransition(() => {
         if (loginLink) {
           router.push(loginLink);
-        } else if (userType === "Donor") {
-          router.push("/login");
-        } else if (userType === "Volunteer") {
+        } else if (userType === "User") {
           router.push("/login");
         } else {
           router.push("/");

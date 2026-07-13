@@ -167,9 +167,9 @@ export default function EditPage() {
                       onChange={(e) => setForm((s) => ({ ...s, role: e.target.value }))}
                       className="appearance-none w-full rounded border border-gray-300 bg-white px-3 py-2 pr-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
                     >
-                      <option value="donor">Donor</option>
+                      <option value="buyer">Buyer</option>
                       <option value="admin">Admin</option>
-                      <option value="volunteer">Volunteer</option>
+                      <option value="seller">Seller</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                       <svg className="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>

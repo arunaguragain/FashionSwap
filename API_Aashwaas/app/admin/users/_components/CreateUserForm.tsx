@@ -15,13 +15,13 @@ export default function CreateUserForm() {
     const { register, handleSubmit, control, reset, formState: { errors, isSubmitting } } = useForm<UserData>({
         resolver: zodResolver(UserSchema),
         defaultValues: {
-            role: "donor"
+            role: "buyer"
         }
     });
     const roleOptions = [
         { value: "admin", label: "Admin" },
-        { value: "donor", label: "Donor" },
-        { value: "volunteer", label: "Volunteer" },
+        { value: "buyer", label: "Buyer" },
+        { value: "seller", label: "Seller" },
     ];
     const [error, setError] = useState<string | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
