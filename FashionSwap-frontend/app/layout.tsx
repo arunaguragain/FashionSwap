@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import ToastProvider from "@/app/(platform)/_components/ToastProvider";
+import Layout from '@/components/Layout';
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -30,7 +31,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${jakarta.variable} ${inter.variable} font-body antialiased`}>
         <AuthProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <Layout>{children}</Layout>
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>

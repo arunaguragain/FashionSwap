@@ -100,3 +100,61 @@ body {
     opacity: 1;
   }
 }
+
+/* Figma export theme tokens (merged) */
+@theme {
+  --font-display: 'Outfit', system-ui, sans-serif;
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+
+  --color-parchment: #FAF7F2;
+  --color-parchment-dark: #F0EAE0;
+  --color-charcoal: #1C1917;
+  --color-charcoal-soft: #3D3530;
+  --color-terracotta: #C4622D;
+  --color-terracotta-light: #D97A47;
+  --color-terracotta-dark: #A3501F;
+  --color-sage: #6B7F5E;
+  --color-sage-light: #8EA07E;
+  --color-sage-dark: #4E5D44;
+  --color-sand: #E8DDD0;
+  --color-sand-light: #F4EEE6;
+  --color-ink: #7A6E64;
+  --color-border: #E2D9CE;
+}
+
+:root {
+  --background: #FAF7F2;
+  --foreground: #1C1917;
+  --card: #FFFFFF;
+  --card-foreground: #1C1917;
+  --primary: #C4622D;
+  --primary-foreground: #FEFDF9;
+  --secondary: #6B7F5E;
+  --secondary-foreground: #FFFFFF;
+  --muted: #F0EAE0;
+  --muted-foreground: #7A6E64;
+  --accent: #C4622D;
+  --accent-foreground: #FEFDF9;
+  --border: #E2D9CE;
+  --ring: #C4622D;
+  --radius: 14px;
+}
+
+/* Listing card helpers from export */
+.listing-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.listing-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(28, 25, 23, 0.1);
+}
+
+.img-zoom {
+  overflow: hidden;
+}
+.img-zoom img {
+  transition: transform 0.4s ease;
+}
+.img-zoom:hover img {
+  transform: scale(1.04);
+}

@@ -1,13 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, BadgeCheck, Building, Package, ShieldCheck, Smartphone, Sparkles, TrendingUp, Truck, Users } from 'lucide-react';
-import { FaBook, FaCouch, FaTshirt, FaUtensils } from 'react-icons/fa';
+import { ArrowRight, BadgeCheck, Building, BookOpen, Package, ShieldCheck, Smartphone, Sofa, Sparkles, Shirt, TrendingUp, Truck, Users } from 'lucide-react';
 
 const cards = [
-  { title: 'Clothing', description: 'Gently used clothes, shoes, and accessories for all ages.', icon: FaTshirt, image: '/images/clothing.jpg' },
-  { title: 'Accessories', description: 'Bags, belts, jewelry, and small style accents.', icon: FaUtensils, image: '/images/food.jpg' },
-  { title: 'Vintage Finds', description: 'Unique pieces, statement items, and timeless classics.', icon: FaBook, image: '/images/Stationery.jpg' },
-  { title: 'Furniture', description: 'Household furniture and home essentials in good condition.', icon: FaCouch, image: '/images/furniture.jpg' },
+  { title: 'Clothing', description: 'Gently used clothes, shoes, and accessories for all ages.', icon: Shirt, image: '/images/clothing.jpg' },
+  { title: 'Accessories', description: 'Bags, belts, jewelry, and small style accents.', icon: BookOpen, image: '/images/Stationery.jpg' },
+  { title: 'Furniture', description: 'Household furniture and home essentials in good condition.', icon: Sofa, image: '/images/furniture.jpg' },
 ];
 
 const steps = [

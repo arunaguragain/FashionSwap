@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { getUsers } from "@/lib/api/admin/user";
 import { getListings, getOrders } from "@/lib/api";
-import { FaGift, FaUsers, FaStore, FaShoppingCart } from "react-icons/fa";
+import { Gift, Users, Store, ShoppingBag } from "lucide-react";
 
 const AdminAnalyticsPage = () => {
   const [loading, setLoading] = useState(true);
@@ -75,7 +75,7 @@ const AdminAnalyticsPage = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="rounded-xl bg-white shadow border border-gray-100 p-4">
           <div className="flex items-center gap-2">
-            <FaStore className="text-green-500 text-xl" />
+            <Store className="text-green-500 text-xl" />
             <span className="text-2xl font-semibold text-gray-900">{loading ? "--" : metrics.listings}</span>
           </div>
           <div className="text-sm text-gray-700 mt-1 font-medium">Active Listings</div>
@@ -83,7 +83,7 @@ const AdminAnalyticsPage = () => {
         </div>
         <div className="rounded-xl bg-white shadow border border-gray-100 p-4">
           <div className="flex items-center gap-2">
-            <FaShoppingCart className="text-purple-500 text-xl" />
+            <ShoppingBag className="text-purple-500 text-xl" />
             <span className="text-2xl font-semibold text-gray-900">{loading ? "--" : metrics.orders}</span>
           </div>
           <div className="text-sm text-gray-700 mt-1 font-medium">Orders</div>
@@ -91,7 +91,7 @@ const AdminAnalyticsPage = () => {
         </div>
         <div className="rounded-xl bg-white shadow border border-gray-100 p-4">
           <div className="flex items-center gap-2">
-            <FaUsers className="text-orange-400 text-xl" />
+            <Users className="text-orange-400 text-xl" />
             <span className="text-2xl font-semibold text-gray-900">{loading ? "--" : metrics.users}</span>
           </div>
           <div className="text-sm text-gray-700 mt-1 font-medium">Registered Users</div>
