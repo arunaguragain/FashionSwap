@@ -6,12 +6,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { forgotPasswordSchema, ForgotPasswordData } from "../../(auth)/schema";
 import { forgotPassword } from "@/lib/api/auth";
+import { Mail, Check } from "lucide-react";
+import Input from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
+import Link from "next/link";
 
 export default function ForgotPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const from = searchParams?.get("from") || "/";
-  const [message, setMessage] = useState("");
+  const [sent, setSent] = useState(false);
+  const [sentEmail, setSentEmail] = useState("");
   const [error, setError] = useState("");
 
   const {
@@ -27,52 +31,55 @@ export default function ForgotPasswordForm() {
     setError("");
     try {
       await forgotPassword(data.email);
-      setMessage("We have sent a reset link.");
+      setSentEmail(data.email);
+      setSent(true);
     } catch (err: any) {
       setError(err?.message || "Failed to send reset email");
     }
   };
 
-  const buttonGradient = "from-blue-600 via-cyan-600 to-blue-700";
+  if (sent) {
+    return (
+      <div>
+        <div className="w-14 h-14 rounded-full bg-sage/15 flex items-center justify-center mb-5">
+          <Mail size={24} className="text-sage" />
+        </div>
+        <h2 className="font-display text-2xl font-bold text-charcoal mb-2" style={{ letterSpacing: "-0.02em" }}>Check your email</h2>
+        <p className="text-ink text-sm mb-2">We sent a reset link to</p>
+        <p className="font-medium text-charcoal mb-6">{sentEmail}</p>
+        <p className="text-xs text-ink mb-6">
+          Didn't get it? Check your spam folder, or{" "}
+          <button onClick={() => setSent(false)} className="text-terracotta hover:text-terracotta-dark font-medium">try a different email</button>.
+        </p>
+        <Link href="/login">
+          <Button variant="outline" fullWidth>Back to sign in</Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 w-full">
-      <div className="text-center mb-6">
-        <h1 className="text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">Forgot Your Password?</h1>
-        <p className="text-slate-500 text-sm">Enter your email address and we'll send a link so you can create a new password.</p>
-      </div>
-
-      {message && <div className="mb-4 text-green-600">{message}</div>}
-      {error && <div className="mb-4 text-red-600">{error}</div>}
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <input
-            type="email"
-            {...register("email")}
-            className="w-full h-12 px-4 rounded-lg border border-gray-200 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-shadow"
-            placeholder="Email Address"
-          />
-          {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
-        </div>
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className={`w-full h-12 text-sm font-bold rounded-lg bg-gradient-to-r ${buttonGradient} text-white shadow-lg hover:scale-[1.01] active:scale-100 transition-transform`}
-        >
-          {isSubmitting ? "Sending..." : "SEND LINK"}
-        </button>
-
-        <div className="text-center mt-3">
-          <button
-            type="button"
-            onClick={() => router.push(from)}
-            className="text-sm text-slate-500 hover:text-slate-700"
-          >
-            Back to Login
-          </button>
-        </div>
+    <div>
+      <h1 className="font-display text-2xl font-bold text-charcoal mb-2" style={{ letterSpacing: "-0.02em" }}>Forgot your password?</h1>
+      <p className="text-ink text-sm mb-6 leading-relaxed">
+        Enter your email address and we'll send you a link to reset your password.
+      </p>
+      
+      {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
+      
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+        <Input
+          label="Email address"
+          type="email"
+          compact
+          placeholder="priya@example.com"
+          {...register("email")}
+          error={errors.email?.message}
+          leftIcon={<Mail size={14} />}
+        />
+        <Button type="submit" fullWidth disabled={isSubmitting}>
+          {isSubmitting ? "Sending..." : "Send reset link"}
+        </Button>
       </form>
     </div>
   );

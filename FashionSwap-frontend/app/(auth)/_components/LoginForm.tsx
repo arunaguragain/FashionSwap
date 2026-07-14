@@ -6,10 +6,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { loginSchema, LoginData } from "../schema";
-import { Shield, Heart, Users, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import GoogleSignIn from "./GoogleSignIn";
 import { handleLogin } from "@/lib/actions/auth-actions";
 import { useToast } from "@/app/(platform)/_components/ToastProvider";
+import Input from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
 
 interface LoginFormProps {
   userType: "Admin" | "User";
@@ -48,21 +50,6 @@ export default function LoginForm({
     defaultValues: { email: "", password: "" }
   });
 
-  const iconMap = { Admin: Shield, User: Users } as const;
-  const gradientMap: Record<string, string> = {
-    Admin: "from-purple-600 to-violet-600",
-    User: "from-blue-600 to-cyan-600",
-  };
-
-  const buttonGradientMap: Record<string, string> = {
-    Admin: "from-purple-600 via-violet-600 to-purple-700",
-    User: "from-blue-600 via-cyan-600 to-blue-700",
-  };
-
-  const IconComponent = iconMap[userType];
-  const headerGradient = gradientMap[userType];
-  const buttonGradient = buttonGradientMap[userType];
-
   const onSubmitForm = async (data: LoginData) => {
     setError("");
     try {
@@ -74,7 +61,6 @@ export default function LoginForm({
       try { pushToast({ title: res.message || 'Login successful', tone: 'success' }); } catch(e) {}
       if (onSubmit) onSubmit(data);
       
-      // Determine redirect path based on user role
       let redirectPath = "/listings";
       const userRole = res.data?.role?.toLowerCase();
       
@@ -84,9 +70,7 @@ export default function LoginForm({
         redirectPath = "/admin/dashboard";
       }
       
-      // prefetch the destination so dashboard/home loads faster after login
       await router.prefetch(redirectPath);
-
       startTransition(() => {
         router.push(redirectPath);
       });
@@ -96,119 +80,58 @@ export default function LoginForm({
     }
   };
 
-
   return (
-    <div className="w-full max-w-lg mx-auto relative px-4 sm:px-6 lg:px-0">
-      <div className="absolute -top-40 -left-40 w-120 h-120 bg-gradient-to-br from-sky-200 to-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse hidden md:block"></div>
-      <div className="absolute -bottom-40 -right-40 w-104 h-104 bg-gradient-to-br from-pink-200 to-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse hidden md:block" style={{ animationDelay: '1.5s' }}></div>
-        <div className="relative bg-white rounded-3xl shadow-2xl border border-gray-100/50 overflow-hidden transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl">
-          <div className="h-1.5 bg-gradient-to-r from-sky-400 to-indigo-400"></div>
-
-         
-          <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-sky-100 to-blue-200 rounded-2xl opacity-40 blur-xl transform rotate-12 pointer-events-none"></div>
-          <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-gradient-to-br from-pink-100 to-rose-200 rounded-2xl opacity-30 blur-xl transform -rotate-12 pointer-events-none"></div>
-
-        <div className="p-5">
-          <div className="text-center mb-6">
-            <div className="flex items-center justify-center mb-4">
-              <div className={`w-12 h-12 lg:w-14 lg:h-14 rounded-2xl bg-gradient-to-br ${headerGradient} flex items-center justify-center shadow-md transform transition-all hover:scale-105`}>
-                <IconComponent className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
-              </div>
-            </div>
-
-            <h1 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2 tracking-tight">
-              {userType === "Admin" ? "Admin Sign In" : "Welcome back"}
-            </h1>
-            <p className="text-gray-600 text-xs">
-              {userType === "Admin" ? "Secure portal for authorized personnel" : "Sign in to continue exploring FashionSwap."}
-            </p>
-          </div>
-
-          {error && <div className="text-red-500 mb-4">{error}</div>}
-          <form className="space-y-3" onSubmit={handleSubmit(onSubmitForm)}>
-            <div>
-              <label htmlFor="email" className="text-sm font-semibold text-gray-700 mb-2 block">Email Address</label>
-              <input
-                id="email"
-                type="email"
-                placeholder={`${userType.toLowerCase()}@gmail.com`}
-                {...register("email")}
-                onBlur={() => trigger("email")}
-                className={`w-full h-10 px-4 text-xs rounded-xl border-2 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:bg-white transition-all ${
-                  errors.email && (touchedFields.email || isSubmitted) ? 'border-red-400 focus:ring-2 focus:ring-red-500' : 'border-gray-500 focus:ring-2'
-                }`}
-              />
-              {errors.email && (touchedFields.email || isSubmitted) && <p className="mt-1.5 text-xs text-red-600">{errors.email.message}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="password" className="text-sm font-semibold text-gray-700 mb-2 block">Password</label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  {...register("password")}
-                  onBlur={() => trigger("password")}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSubmit(onSubmitForm)();
-                    }
-                  }}
-                  className={`w-full h-10 px-4 pr-12 text-xs rounded-xl border-2 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:bg-white transition-all ${
-                    errors.password && (touchedFields.password || isSubmitted) ? 'border-red-400 focus:ring-2 focus:ring-red-500' : 'border-gray-500 focus:ring-2'
-                  }`}
-                />
-                <button type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1.5 hover:bg-gray-100 rounded-lg">
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-              {errors.password && (touchedFields.password || isSubmitted) && <p className="mt-1.5 text-xs text-red-600">{errors.password.message}</p>}
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div />
-              {forgotPasswordLink && (
-                <Link href={forgotPasswordLink} className="text-sm text-blue-600">Forgot Password?</Link>
-              )}
-            </div>
-
-            <button type="submit" disabled={isSubmitting || pending} className={`w-full h-10 text-xs font-bold rounded-xl bg-gradient-to-r ${buttonGradient} text-white focus:outline-none focus:ring-4 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-transform transform hover:scale-[1.02] active:scale-[0.98] shadow-lg`}>
-              {(isSubmitting || pending) ? 'Signing in...' : 'Sign In'}
-            </button>
-
-            {userType === "Admin" && (
-              <div className="mt-4 p-4 rounded-xl bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-100">
-                <div className="flex gap-3 items-start">
-                  <div className="bg-purple-600 p-2 rounded-lg shrink-0">
-                    <Shield className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs font-semibold text-gray-900 mb-1">Secure Access</p>
-                    <p className="text-xs text-gray-600 leading-relaxed">This portal is protected and monitored.</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {userType !== "Admin" && (
-              <div className="flex items-center gap-3 my-4">
-                <span className="h-px bg-gray-500 flex-1"></span>
-                <span className="text-sm text-gray-500">Or continue with</span>
-                <span className="h-px bg-gray-500 flex-1"></span>
-              </div>
-            )}
-         
-            {showGoogleSignIn && <GoogleSignIn userType={userType} autoLogin={true} />}
-
-            {registerLink && (
-              <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600">New to FashionSwap? <Link href={registerLink} className="font-bold text-blue-600">Create an account</Link></p>
-              </div>
-            )}
-          </form>
-        </div>
+    <form className="space-y-2.5" onSubmit={handleSubmit(onSubmitForm)}>
+      {error && <div className="text-red-500 text-xs mb-1">{error}</div>}
+      
+      <Input
+        label="Email address"
+        type="email"
+        compact
+        placeholder="priya@example.com"
+        {...register("email")}
+        onBlur={() => trigger("email")}
+        error={errors.email?.message}
+        leftIcon={<Mail size={14} />}
+      />
+      
+      <Input
+        label="Password"
+        type={showPassword ? "text" : "password"}
+        compact
+        placeholder="Your password"
+        {...register("password")}
+        onBlur={() => trigger("password")}
+        error={errors.password?.message}
+        leftIcon={<Lock size={14} />}
+        rightElement={
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-ink hover:text-charcoal transition-colors">
+            {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+          </button>
+        }
+      />
+      
+      <div className="flex justify-end">
+        {forgotPasswordLink && (
+          <Link href={forgotPasswordLink} className="text-xs text-ink hover:text-terracotta transition-colors">
+            Forgot password?
+          </Link>
+        )}
       </div>
-    </div>
+
+      <Button type="submit" fullWidth size="lg" disabled={isSubmitting || pending}>
+        {(isSubmitting || pending) ? "Signing in..." : "Sign in"}
+      </Button>
+
+      {userType !== "Admin" && (
+        <div className="my-4 flex items-center gap-4">
+          <div className="flex-1 border-t border-border" />
+          <span className="text-xs text-ink">or continue with</span>
+          <div className="flex-1 border-t border-border" />
+        </div>
+      )}
+
+      {showGoogleSignIn && userType !== "Admin" && <GoogleSignIn userType={userType} autoLogin={true} />}
+    </form>
   );
 }

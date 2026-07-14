@@ -23,6 +23,12 @@ export default function FilterPanel({ onFilter }: FilterPanelProps) {
 
   const handleFilterChange = (key: keyof FilterState, value: any) => {
     const newFilters = { ...filters, [key]: value };
+    if (key === 'category' && value === undefined) {
+      delete newFilters.category;
+    }
+    if (key === 'condition' && value === undefined) {
+      delete newFilters.condition;
+    }
     setFilters(newFilters);
     onFilter(newFilters);
   };
@@ -34,10 +40,14 @@ export default function FilterPanel({ onFilter }: FilterPanelProps) {
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary">Category</h3>
           <div className="space-y-2">
             {categories.map((cat) => (
-              <label key={cat} className="flex items-center gap-2 text-sm text-on-surface-variant">
-                <input type="checkbox" onChange={(e) => handleFilterChange('category', e.target.checked ? cat : undefined)} className="h-4 w-4 rounded border-outline/30 accent-primary" />
-                <span>{cat}</span>
-              </label>
+              <button
+                key={cat}
+                type="button"
+                onClick={() => handleFilterChange('category', filters.category === cat ? undefined : cat)}
+                className={`w-full rounded-2xl border px-3 py-2 text-left text-sm transition ${filters.category === cat ? 'border-terracotta bg-terracotta/10 text-charcoal' : 'border-outline/30 bg-surface-container text-on-surface-variant hover:border-terracotta/50'}`}
+              >
+                {cat}
+              </button>
             ))}
           </div>
         </div>
@@ -45,8 +55,8 @@ export default function FilterPanel({ onFilter }: FilterPanelProps) {
         <div>
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary">Price range</h3>
           <div className="space-y-2">
-            <input type="number" placeholder="Min" onChange={(e) => handleFilterChange('minPrice', e.target.value ? Number(e.target.value) : undefined)} className="w-full rounded-2xl border border-outline/30 bg-surface-container-low px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15" aria-label="Minimum price" />
-            <input type="number" placeholder="Max" onChange={(e) => handleFilterChange('maxPrice', e.target.value ? Number(e.target.value) : undefined)} className="w-full rounded-2xl border border-outline/30 bg-surface-container-low px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15" aria-label="Maximum price" />
+            <input type="number" placeholder="Min" value={filters.minPrice ?? ''} onChange={(e) => handleFilterChange('minPrice', e.target.value ? Number(e.target.value) : undefined)} className="w-full rounded-2xl border border-outline/30 bg-surface-container-low px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15" aria-label="Minimum price" />
+            <input type="number" placeholder="Max" value={filters.maxPrice ?? ''} onChange={(e) => handleFilterChange('maxPrice', e.target.value ? Number(e.target.value) : undefined)} className="w-full rounded-2xl border border-outline/30 bg-surface-container-low px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15" aria-label="Maximum price" />
           </div>
         </div>
 
@@ -54,10 +64,14 @@ export default function FilterPanel({ onFilter }: FilterPanelProps) {
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary">Condition</h3>
           <div className="space-y-2">
             {conditions.map((cond) => (
-              <label key={cond} className="flex items-center gap-2 text-sm text-on-surface-variant">
-                <input type="checkbox" onChange={(e) => handleFilterChange('condition', e.target.checked ? cond : undefined)} className="h-4 w-4 rounded border-outline/30 accent-primary" />
-                <span>{cond}</span>
-              </label>
+              <button
+                key={cond}
+                type="button"
+                onClick={() => handleFilterChange('condition', filters.condition === cond ? undefined : cond)}
+                className={`w-full rounded-2xl border px-3 py-2 text-left text-sm transition ${filters.condition === cond ? 'border-terracotta bg-terracotta/10 text-charcoal' : 'border-outline/30 bg-surface-container text-on-surface-variant hover:border-terracotta/50'}`}
+              >
+                {cond}
+              </button>
             ))}
           </div>
         </div>

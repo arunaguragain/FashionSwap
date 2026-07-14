@@ -1,116 +1,251 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import SearchBar from '../../components/marketplace/SearchBar';
-import FilterPanel from '../../components/marketplace/FilterPanel';
-import ListingCard from '../../components/marketplace/ListingCard';
-import SkeletonCard from '../../components/common/SkeletonCard';
-import { getListings } from '../../lib/api';
+import React, { useState, useMemo, Suspense, useEffect } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Search, SlidersHorizontal, X } from "lucide-react";
+import ListingCard from "@/components/ui/ListingCard";
+import Badge from "@/components/ui/Badge";
+import { LISTINGS } from "@/data/listings";
 
-interface ListingItem {
-  _id?: string;
-  id?: string;
-  title: string;
-  askingPrice?: number;
-  price?: number;
-  images?: string[];
-  image?: string;
-  sellerName?: string;
-  seller?: { name?: string; rating?: number };
-  condition?: string;
-  category?: string;
-  description?: string;
-}
+const CONDITIONS = ["New", "Like New", "Good", "Fair"];
+const CATEGORIES = ["clothes", "bags", "shoes"];
 
-export default function ListingsPage() {
-  const [items, setItems] = useState<ListingItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [query, setQuery] = useState('');
-  const [filters, setFilters] = useState<{ category?: string; minPrice?: number; maxPrice?: number; condition?: string; size?: string }>({});
-
-  const loadListings = useCallback(async (search = '', currentFilters: { category?: string; minPrice?: number; maxPrice?: number; condition?: string; size?: string } = {}) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await getListings(search, currentFilters);
-      const payload = (res as any)?.data ?? res ?? [];
-      setItems(Array.isArray(payload) ? payload : []);
-    } catch (e: any) {
-      setError(e.message || 'Failed to load listings');
-      setItems([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const handleSearch = async (q: string) => {
-    setQuery(q);
-    await loadListings(q, filters);
-  };
-
-  const handleFilter = (nextFilters: { category?: string; minPrice?: number; maxPrice?: number; condition?: string; size?: string }) => {
-    setFilters(nextFilters);
-    void loadListings(query, nextFilters);
-  };
+function BrowseContent() {
+  const searchParams = useSearchParams();
+  const [query, setQuery] = useState(searchParams?.get("q") || "");
+  const [selectedCats, setSelectedCats] = useState<string[]>(
+    searchParams?.get("cat") ? [searchParams.get("cat")!] : []
+  );
+  const [selectedConds, setSelectedConds] = useState<string[]>([]);
+  const [priceMin, setPriceMin] = useState("");
+  const [priceMax, setPriceMax] = useState("");
+  const [sort, setSort] = useState("newest");
+  const [filterOpen, setFilterOpen] = useState(false);
 
   useEffect(() => {
-    void loadListings('', {});
-  }, [loadListings]);
+    setQuery(searchParams?.get("q") || "");
+    setSelectedCats(searchParams?.get("cat") ? [searchParams.get("cat")!] : []);
+  }, [searchParams]);
 
-  const content = useMemo(() => {
-    if (loading) {
-      return (
-        <>
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-        </>
-      );
-    }
+  const toggleFilter = <T extends string>(arr: T[], val: T, setter: (a: T[]) => void) => {
+    setter(arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val]);
+  };
 
-    if (error) {
-      return <div className="rounded-[1.5rem] border border-error/20 bg-error/10 p-4 text-sm text-error">{error}</div>;
-    }
+  const filtered = useMemo(() => {
+    let list = [...LISTINGS];
+    if (query) list = list.filter((l) => l.title.toLowerCase().includes(query.toLowerCase()));
+    if (selectedCats.length) list = list.filter((l) => selectedCats.includes(l.category || ""));
+    if (selectedConds.length) list = list.filter((l) => selectedConds.includes(l.condition));
+    if (priceMin) list = list.filter((l) => l.price >= parseInt(priceMin));
+    if (priceMax) list = list.filter((l) => l.price <= parseInt(priceMax));
+    if (sort === "price-asc") list.sort((a, b) => a.price - b.price);
+    if (sort === "price-desc") list.sort((a, b) => b.price - a.price);
+    return list;
+  }, [query, selectedCats, selectedConds, priceMin, priceMax, sort]);
 
-    if (items.length === 0) {
-      return (
-        <div className="rounded-[1.5rem] border border-dashed border-outline/30 bg-surface-container-low p-8 text-sm text-on-surface-variant md:col-span-3">
-          <p className="font-semibold text-on-surface">No listings match your search yet.</p>
-          <p className="mt-2">Try a broader keyword or clear a filter to see more fashion pieces.</p>
+  const activeFilterCount = selectedCats.length + selectedConds.length + (priceMin ? 1 : 0) + (priceMax ? 1 : 0);
+
+  const FilterPanel = () => (
+    <div className="space-y-6">
+      {/* Category */}
+      <div>
+        <h4 className="text-sm font-semibold text-charcoal mb-3">Category</h4>
+        <div className="space-y-2">
+          {CATEGORIES.map((cat) => (
+            <label key={cat} className="flex items-center gap-2.5 cursor-pointer group">
+              <div
+                onClick={() => toggleFilter(selectedCats, cat, setSelectedCats)}
+                className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors cursor-pointer ${
+                  selectedCats.includes(cat)
+                    ? "bg-terracotta border-terracotta"
+                    : "border-border group-hover:border-terracotta/50"
+                }`}
+              >
+                {selectedCats.includes(cat) && (
+                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                    <path d="M1 4L3.5 6.5L9 1.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                )}
+              </div>
+              <span className="text-[14px] text-charcoal capitalize">{cat}</span>
+            </label>
+          ))}
         </div>
-      );
-    }
+      </div>
 
-    return items.map((l) => {
-      const id = l._id || l.id;
-      const image = l.images?.[0] || l.image || '/images/placeholder.png';
-      const sellerName = l.seller?.name || l.sellerName || 'seller';
-      const price = l.askingPrice ?? l.price ?? 0;
-      return (
-        <ListingCard key={id} id={String(id)} image={image} title={l.title} price={price} seller={{ name: sellerName, rating: l.seller?.rating }} condition={l.condition} category={l.category} />
-      );
-    });
-  }, [error, items, loading]);
+      {/* Condition */}
+      <div>
+        <h4 className="text-sm font-semibold text-charcoal mb-3">Condition</h4>
+        <div className="space-y-2">
+          {CONDITIONS.map((cond) => (
+            <label key={cond} className="flex items-center gap-2.5 cursor-pointer group">
+              <div
+                onClick={() => toggleFilter(selectedConds, cond, setSelectedConds)}
+                className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors cursor-pointer ${
+                  selectedConds.includes(cond)
+                    ? "bg-terracotta border-terracotta"
+                    : "border-border group-hover:border-terracotta/50"
+                }`}
+              >
+                {selectedConds.includes(cond) && (
+                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                    <path d="M1 4L3.5 6.5L9 1.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                )}
+              </div>
+              <span className="text-[14px] text-charcoal">{cond}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Price */}
+      <div>
+        <h4 className="text-sm font-semibold text-charcoal mb-3">Price (Rs.)</h4>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            placeholder="Min"
+            value={priceMin}
+            onChange={e => setPriceMin(e.target.value)}
+            className="flex-1 min-w-0 px-3 py-2 text-sm rounded-[10px] border border-border bg-white text-charcoal outline-none focus:border-terracotta"
+          />
+          <span className="flex items-center text-ink text-sm">–</span>
+          <input
+            type="number"
+            placeholder="Max"
+            value={priceMax}
+            onChange={e => setPriceMax(e.target.value)}
+            className="flex-1 min-w-0 px-3 py-2 text-sm rounded-[10px] border border-border bg-white text-charcoal outline-none focus:border-terracotta"
+          />
+        </div>
+      </div>
+
+      {activeFilterCount > 0 && (
+        <button
+          onClick={() => { setSelectedCats([]); setSelectedConds([]); setPriceMin(""); setPriceMax(""); }}
+          className="w-full text-sm text-terracotta border border-terracotta/30 rounded-[10px] py-2 hover:bg-terracotta/5 transition-colors"
+        >
+          Clear all filters
+        </button>
+      )}
+    </div>
+  );
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-6 rounded-[2rem] border border-outline/15 bg-surface-container-lowest p-5 shadow-[0_12px_40px_rgba(27,28,25,0.06)]">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">Marketplace</p>
-            <h1 className="mt-2 font-headline text-3xl text-on-surface">Discover pieces worth keeping.</h1>
-            <p className="mt-2 text-sm leading-7 text-on-surface-variant">Browse the latest pre-loved fashion with a calm, editorial feel.</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      {/* Search bar */}
+      <div className="flex gap-3 mb-6">
+        <div className="flex-1 relative">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink" />
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search for anything…"
+            className="w-full pl-11 pr-4 py-3 rounded-[14px] bg-white border border-border text-charcoal text-[15px] outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/15"
+          />
+        </div>
+        <button
+          onClick={() => setFilterOpen(!filterOpen)}
+          className={`flex items-center gap-2 px-4 py-3 rounded-[14px] border text-sm font-medium transition-colors ${
+            filterOpen || activeFilterCount > 0
+              ? "bg-terracotta text-white border-terracotta"
+              : "bg-white border-border text-charcoal hover:bg-parchment-dark"
+          }`}
+        >
+          <SlidersHorizontal size={16} />
+          Filters
+          {activeFilterCount > 0 && (
+            <span className="ml-0.5 bg-white text-terracotta text-xs w-4 h-4 rounded-full flex items-center justify-center font-bold">
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+        <select
+          value={sort}
+          onChange={e => setSort(e.target.value)}
+          className="hidden sm:block px-4 py-3 rounded-[14px] bg-white border border-border text-charcoal text-sm outline-none"
+        >
+          <option value="newest">Newest first</option>
+          <option value="price-asc">Price: low to high</option>
+          <option value="price-desc">Price: high to low</option>
+        </select>
+      </div>
+
+      {/* Active filters */}
+      {activeFilterCount > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {selectedCats.map(c => (
+            <Badge key={c} variant="terracotta">
+              {c}
+              <button onClick={() => toggleFilter(selectedCats, c, setSelectedCats)}><X size={11} /></button>
+            </Badge>
+          ))}
+          {selectedConds.map(c => (
+            <Badge key={c} variant="sand">
+              {c}
+              <button onClick={() => toggleFilter(selectedConds, c, setSelectedConds)}><X size={11} /></button>
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      <div className="flex gap-6">
+        {/* Desktop filter sidebar */}
+        <div className="hidden lg:block w-56 shrink-0">
+          <div className="sticky top-24 bg-white rounded-[20px] border border-border p-5">
+            <h3 className="font-semibold text-charcoal mb-5 text-[15px]">Filter</h3>
+            <FilterPanel />
           </div>
-          <div className="w-full lg:max-w-xl"><SearchBar onSearch={handleSearch} /></div>
+        </div>
+
+        {/* Grid */}
+        <div className="flex-1">
+          {/* Mobile filter drawer */}
+          {filterOpen && (
+            <div className="lg:hidden bg-white rounded-[20px] border border-border p-5 mb-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-charcoal">Filter</h3>
+                <button onClick={() => setFilterOpen(false)} className="text-ink hover:text-charcoal">
+                  <X size={18} />
+                </button>
+              </div>
+              <FilterPanel />
+            </div>
+          )}
+
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm text-ink">
+              <span className="font-medium text-charcoal">{filtered.length}</span> listings
+            </p>
+          </div>
+
+          {filtered.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="font-display text-xl font-semibold text-charcoal mb-2" style={{ letterSpacing: "-0.01em" }}>No results found</p>
+              <p className="text-ink text-sm">Try adjusting your search or filters</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filtered.map((listing) => (
+                <Link key={listing.id} href={`/listing/${listing.id}`}>
+                  <ListingCard listing={listing} />
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-        <aside className="md:col-span-1"><FilterPanel onFilter={handleFilter} /></aside>
-        <main className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 md:col-span-3">
-          {content}
-        </main>
-      </div>
     </div>
+  );
+}
+
+export default function Browse() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BrowseContent />
+    </Suspense>
   );
 }

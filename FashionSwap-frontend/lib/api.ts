@@ -1,9 +1,28 @@
 "use client";
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 export async function fetchJSON(path: string, opts: RequestInit = {}) {
+  const method = (opts.method || 'GET').toString().toUpperCase();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(opts.headers as Record<string, string> | undefined),
+  };
+
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    const csrfToken = getCookie('x-csrf-token');
+    if (csrfToken) {
+      headers['x-csrf-token'] = csrfToken;
+    }
+  }
+
   const res = await fetch(path, {
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     ...opts,
   });
 

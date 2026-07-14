@@ -1,11 +1,10 @@
-import React from "react";
-import { IconType } from "react-icons";
+import type { ReactNode } from "react";
 
 interface KeyMetricCardProps {
   label: string;
   value: number | string;
   growth: number;
-  icon: React.ReactNode;
+  icon: ReactNode;
   loading?: boolean;
 }
 

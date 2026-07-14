@@ -5,7 +5,7 @@ import ForgotPasswordForm from "./ForgotPasswordForm";
 
 export default function ForgotPasswordFormSuspense() {
   return (
-    <Suspense fallback={<div className="p-6 text-sm text-slate-500">Loading...</div>}>
+    <Suspense fallback={<div className="bg-white rounded-[24px] border border-border p-8 text-sm text-ink animate-pulse">Loading...</div>}>
       <ForgotPasswordForm />
     </Suspense>
   );

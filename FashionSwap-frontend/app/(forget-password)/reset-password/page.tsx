@@ -1,43 +1,38 @@
 "use client";
 import React from 'react';
-
-export const dynamic = 'force-static';
+import Link from 'next/link';
+import Logo from '@/components/Logo';
 import ResetPasswordFormSuspense from "../_components/ResetPasswordFormSuspense";
 
-// client component to allow static rendering; token handled client‑side
 export default function Page() {
-  React.useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
-  }, []);
-
   return (
-
-
-    <div className="h-screen overflow-hidden flex items-start justify-center py-0 px-0">
-      <div className="w-full max-w-none mx-auto px-0 md:px-6 bg-blue-50 rounded-2xl shadow-xl overflow-hidden backdrop-blur-sm min-h-[480px] md:min-h-[600px]" style={{ width: 'min(1150px, calc(100vw - 140px))', maxWidth: '1150px', paddingLeft: 0, paddingRight: 0 }}>
-        <div className="flex flex-col md:flex-row">
-          <div className="w-full md:w-7/12 flex items-center justify-center">
-            <div className="w-full h-full rounded-tr-2xl rounded-br-2xl md:rounded-l-2xl md:rounded-r-none overflow-hidden flex items-center justify-center">
-                <img
-                  src="/images/reset.png"
-                  alt="reset illustration"
-                  className="w-full max-w-none h-80 md:h-[520px] object-contain"
-                />
-            </div>
-          </div>
-
-          <div className="w-full md:w-5/12 flex items-center justify-center">
-            <div className="w-full">
-              <ResetPasswordFormSuspense />
-            </div>
-          </div>
+    <div className="h-screen bg-parchment flex overflow-hidden">
+      {/* Left panel — image */}
+      <div className="hidden lg:block lg:w-[45%] h-full relative bg-charcoal">
+        <img
+          src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=900&h=1200&fit=crop&auto=format"
+          alt="Fashion"
+          className="w-full h-full object-cover opacity-80"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent" />
+        <div className="absolute bottom-12 left-10 right-10">
+          <p className="font-display text-2xl font-bold text-parchment leading-tight" style={{ letterSpacing: '-0.02em' }}>
+            Pre-loved fashion, new stories.
+          </p>
+          <p className="text-parchment/60 text-sm mt-3">Buy and sell second-hand fashion directly in your city.</p>
         </div>
       </div>
+
+      {/* Right panel — form */}
+      <div className="flex-1 h-full flex flex-col justify-center px-6 py-8 max-w-md mx-auto w-full">
+        <div className="mb-6">
+          <Link href="/">
+            <Logo size="sm" />
+          </Link>
+        </div>
+
+        <ResetPasswordFormSuspense />
+      </div>
     </div>
-
-    
   );
-
 }
