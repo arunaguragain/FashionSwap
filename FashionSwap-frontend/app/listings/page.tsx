@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import ListingCard from "@/components/ui/ListingCard";
 import Badge from "@/components/ui/Badge";
-import { LISTINGS } from "@/data/listings";
+import { getListings } from "@/lib/api";
 
 const CONDITIONS = ["New", "Like New", "Good", "Fair"];
 const CATEGORIES = ["clothes", "bags", "shoes", "accessories", "jewellery"];
@@ -22,6 +22,14 @@ function BrowseContent() {
   const [priceMax, setPriceMax] = useState("");
   const [sort, setSort] = useState("newest");
   const [filterOpen, setFilterOpen] = useState(false);
+  const [allListings, setAllListings] = useState<any[]>([]);
+
+  useEffect(() => {
+    getListings().then(res => {
+      const data = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+      setAllListings(data);
+    }).catch(() => setAllListings([]));
+  }, []);
 
   useEffect(() => {
     setQuery(searchParams?.get("q") || "");
@@ -33,16 +41,20 @@ function BrowseContent() {
   };
 
   const filtered = useMemo(() => {
-    let list = [...LISTINGS];
-    if (query) list = list.filter((l) => l.title.toLowerCase().includes(query.toLowerCase()));
-    if (selectedCats.length) list = list.filter((l) => selectedCats.includes(l.category || ""));
-    if (selectedConds.length) list = list.filter((l) => selectedConds.includes(l.condition));
-    if (priceMin) list = list.filter((l) => l.price >= parseInt(priceMin));
-    if (priceMax) list = list.filter((l) => l.price <= parseInt(priceMax));
-    if (sort === "price-asc") list.sort((a, b) => a.price - b.price);
-    if (sort === "price-desc") list.sort((a, b) => b.price - a.price);
+    let list = [...allListings];
+    const getTitle = (l: any) => l.title || l.name || '';
+    const getPrice = (l: any) => l.price || l.askingPrice || 0;
+    const getCat = (l: any) => l.category || '';
+    const getCond = (l: any) => l.condition || 'Good';
+    if (query) list = list.filter((l) => getTitle(l).toLowerCase().includes(query.toLowerCase()));
+    if (selectedCats.length) list = list.filter((l) => selectedCats.includes(getCat(l)));
+    if (selectedConds.length) list = list.filter((l) => selectedConds.includes(getCond(l)));
+    if (priceMin) list = list.filter((l) => getPrice(l) >= parseInt(priceMin));
+    if (priceMax) list = list.filter((l) => getPrice(l) <= parseInt(priceMax));
+    if (sort === "price-asc") list.sort((a, b) => getPrice(a) - getPrice(b));
+    if (sort === "price-desc") list.sort((a, b) => getPrice(b) - getPrice(a));
     return list;
-  }, [query, selectedCats, selectedConds, priceMin, priceMax, sort]);
+  }, [query, selectedCats, selectedConds, priceMin, priceMax, sort, allListings]);
 
   const activeFilterCount = selectedCats.length + selectedConds.length + (priceMin ? 1 : 0) + (priceMax ? 1 : 0);
 
@@ -230,7 +242,7 @@ function BrowseContent() {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
               {filtered.map((listing) => (
-                <Link key={listing.id} href={`/listing/${listing.id}`}>
+                <Link key={listing._id || listing.id} href={`/listing/${listing._id || listing.id}`}>
                   <ListingCard listing={listing} />
                 </Link>
               ))}

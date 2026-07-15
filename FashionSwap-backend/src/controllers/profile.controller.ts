@@ -129,4 +129,51 @@ export class ProfileController {
       res.status(500).json({ success: false, message: 'Error exporting data' });
     }
   }
+
+  async toggleFavorite(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = getRequestUserId(req);
+      const { listingId } = req.params;
+
+      const user = await User.findById(userId);
+      if (!user) {
+        res.status(404).json({ success: false, message: 'User not found' });
+        return;
+      }
+
+      const listing = await Listing.findById(listingId);
+      if (!listing) {
+        res.status(404).json({ success: false, message: 'Listing not found' });
+        return;
+      }
+
+      const favoriteIndex = user.favorites.findIndex(id => id.toString() === listingId);
+      if (favoriteIndex > -1) {
+        user.favorites.splice(favoriteIndex, 1);
+      } else {
+        user.favorites.push(listing._id);
+      }
+
+      await user.save();
+      res.status(200).json({ success: true, isFavorite: favoriteIndex === -1 });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Error toggling favorite' });
+    }
+  }
+
+  async getFavorites(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = getRequestUserId(req);
+
+      const user = await User.findById(userId).populate('favorites');
+      if (!user) {
+        res.status(404).json({ success: false, message: 'User not found' });
+        return;
+      }
+
+      res.status(200).json({ success: true, data: user.favorites });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Error fetching favorites' });
+    }
+  }
 }

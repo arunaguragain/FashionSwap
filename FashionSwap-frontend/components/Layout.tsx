@@ -20,7 +20,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user, logout, loading } = useAuth();
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/forgot-password" || pathname.startsWith("/mfa-");
+  const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/forgot-password" || pathname === "/reset-password" || pathname.startsWith("/mfa-");
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href.split("?")[0]);
@@ -40,7 +40,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return <main className="flex-1 min-h-screen bg-parchment">{children}</main>;
   }
 
-  const userInitial = (user?.name || user?.fullName || user?.email || "U").charAt(0).toUpperCase();
+  const userName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : (user?.name || user?.fullName || "User");
+  const userInitial = userName.charAt(0).toUpperCase();
 
   return (
     <div className="min-h-screen flex flex-col bg-parchment">
@@ -99,8 +100,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     {userMenuOpen && (
                       <div className="absolute right-0 mt-2 w-56 rounded-xl border border-border bg-white shadow-lg ring-1 ring-black/5 py-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
                         <div className="px-4 py-3 border-b border-border/60">
-                          <p className="text-sm font-semibold text-charcoal truncate">{user?.name || user?.fullName || "User"}</p>
-                          <p className="text-xs text-ink truncate mt-0.5">{user?.email || ""}</p>
+                          <p className="text-sm font-semibold text-charcoal truncate">{userName}</p>
+                          <p className="text-xs text-ink truncate mt-0.5 capitalize">{user?.role || 'User'}</p>
                         </div>
                         <Link
                           href="/profile"
@@ -189,8 +190,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                       {userInitial}
                     </span>
                     <div>
-                      <p className="text-sm font-semibold text-charcoal">{user?.name || user?.fullName || "User"}</p>
-                      <p className="text-xs text-ink">{user?.email || ""}</p>
+                      <p className="text-sm font-semibold text-charcoal">{userName}</p>
+                      <p className="text-xs text-ink capitalize">{user?.role || 'User'}</p>
                     </div>
                   </div>
                 </div>

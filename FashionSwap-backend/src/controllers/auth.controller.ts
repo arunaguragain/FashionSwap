@@ -25,7 +25,7 @@ interface AuthRequest extends Request {
 export class AuthController {
   async registerUser(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { email, password, firstName, lastName, location } = req.body;
+      const { email, password, firstName, lastName, phone, location } = req.body;
       const existingUser = await userService.getUserByEmail(email);
 
       if (existingUser) {
@@ -39,6 +39,7 @@ export class AuthController {
         confirmPassword: password,
         firstName,
         lastName,
+        phone,
         location,
         role: 'user',
       } as any);
@@ -161,12 +162,15 @@ export class AuthController {
   }
 
   async whoami(req: AuthRequest, res: Response): Promise<void> {
+    console.log("WHOAMI route hit! User:", req.user?._id);
     try {
       if (!req.user) {
+        console.log("WHOAMI failed: No req.user");
         res.status(401).json({ success: false, message: 'Unauthorized' });
         return;
       }
 
+      console.log("WHOAMI success for user:", req.user.email);
       res.status(200).json({ success: true, data: req.user, message: 'Authenticated user info' });
     } catch (error: any) {
       console.error('Whoami error:', error);
@@ -539,21 +543,8 @@ export class AuthController {
   async requestPasswordReset(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { email } = req.body;
-      const user = await userService.getUserByEmail(email);
-      if (!user) {
-        res.status(200).json({ success: true, message: 'If email exists, password reset OTP has been sent.' });
-        return;
-      }
-
-      const resetOTP = Math.floor(100000 + Math.random() * 900000).toString();
-      user.passwordResetOTP = resetOTP;
-      user.passwordResetOTPExpiry = new Date(Date.now() + 10 * 60 * 1000);
-      await user.save();
-
-      await sendPasswordResetEmail(email, resetOTP);
-
-      res.status(200).json({ success: true, message: 'Password reset OTP sent to email' });
-      recordAuditEvent({ timestamp: new Date().toISOString(), userId: user._id.toString(), event: 'PASSWORD_RESET_REQUESTED', ip: req.ip, meta: { email } });
+      await userService.sendResetPasswordOTP(email);
+      res.status(200).json({ success: true, message: 'If email exists, password reset OTP has been sent.' });
     } catch (error: any) {
       console.error('Password reset request error:', error);
       res.status(500).json({ success: false, message: 'Error requesting password reset' });

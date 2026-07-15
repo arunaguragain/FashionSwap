@@ -31,8 +31,8 @@ const corsOptions = {
 app.use(configureHelmet());
 app.use(generalLimiter);
 app.use(cors(corsOptions));
-app.use(bodyParser.json({ limit: '10mb' }));
-app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 app.use(csrfTokenMiddleware);
 app.use(validateCSRFToken);
@@ -45,6 +45,10 @@ app.use('/item_photos', express.static(path.join(__dirname, '../uploads')));
 
 app.get('/', (req: Request, res: Response) => {
   return res.status(200).json({ success: 'true', message: 'Welcome to the api of FashionSwap' });
+});
+
+app.get('/api/csrf', (req: Request, res: Response) => {
+  return res.status(200).json({ success: true });
 });
 
 app.use('/api/auth', authRoutes);

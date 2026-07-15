@@ -42,7 +42,9 @@ export interface IUser extends Document {
   verificationOTPExpiry?: Date;
   passwordResetOTP?: string;
   passwordResetOTPExpiry?: Date;
+  passwordHistory?: string[];
   lastLogin?: Date;
+  favorites: mongoose.Types.ObjectId[];
   createdAt?: Date;
   updatedAt?: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -63,6 +65,15 @@ const userSchema = new Schema<IUser>(
       required: true,
       minlength: 12,
     },
+    passwordHistory: {
+      type: [String],
+      default: [],
+    },
+    favorites: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Listing',
+      default: []
+    }],
     firstName: {
       type: String,
       required: true,

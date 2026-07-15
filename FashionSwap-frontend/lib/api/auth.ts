@@ -59,14 +59,14 @@ export const whoAmI = async () => {
   }
 }
 
-export const updateProfile = async (userId: string, profileData: any) => {
+export const updateProfile = async (userId: string, profileData: Record<string, string>) => {
   try {
     const response = await axios.put(
       `/api/auth/${userId}`,
       profileData,
       {
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "application/json",
         },
       }
     );
@@ -78,6 +78,7 @@ export const updateProfile = async (userId: string, profileData: any) => {
     throw new Error(msg);
   }
 }
+
 
 export const forgotPassword = async (email: string) => {
   try {
@@ -94,6 +95,18 @@ export const forgotPassword = async (email: string) => {
 export const resetPassword = async (token: string, password: string) => {
   try {
     const response = await axios.post(API.AUTH.RESET_PASSWORD(token), { newPassword: password });
+    return response.data;
+  } catch (error: Error | any) {
+    const resp = error.response?.data;
+    let msg = error.message || "Reset password failed";
+    if (resp && resp.message) msg = typeof resp.message === 'string' ? resp.message : JSON.stringify(resp.message);
+    throw new Error(msg);
+  }
+}
+
+export const resetPasswordWithOTP = async (email: string, otp: string, password: string) => {
+  try {
+    const response = await axios.post(API.AUTH.RESET_PASSWORD_OTP, { email, otp, newPassword: password });
     return response.data;
   } catch (error: Error | any) {
     const resp = error.response?.data;

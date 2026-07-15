@@ -13,6 +13,7 @@ export const RegisterDTO = z.object({
   password: passwordSchema,
   firstName: z.string().min(2, 'First name is required').max(50, 'First name must not exceed 50 characters').trim(),
   lastName: z.string().min(2, 'Last name is required').max(50, 'Last name must not exceed 50 characters').trim(),
+  phone: z.string().min(7, 'Phone number must be at least 7 digits').max(20, 'Phone number is too long').trim().optional(),
   location: z.string().min(2, 'Location is required').max(100, 'Location must not exceed 100 characters').trim(),
   captchaToken: z.string().optional(),
 });

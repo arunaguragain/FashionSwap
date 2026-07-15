@@ -11,14 +11,17 @@ export function generateCSRFToken(): string {
 
 export const csrfTokenMiddleware = (req: Request, res: Response, next: NextFunction) => {
   if (req.method === 'GET') {
-    const token = generateCSRFToken();
-    res.cookie(CSRF_COOKIE_NAME, token, {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 1000,
-      path: '/',
-    });
+    let token = req.cookies?.[CSRF_COOKIE_NAME];
+    if (!token) {
+      token = generateCSRFToken();
+      res.cookie(CSRF_COOKIE_NAME, token, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 1000,
+        path: '/',
+      });
+    }
   }
   next();
 };
@@ -30,7 +33,11 @@ export const validateCSRFToken = (req: Request, res: Response, next: NextFunctio
 
   const authHeader = req.get('authorization');
   const isAuthRoute = req.path === '/api/auth' || req.path.startsWith('/api/auth/');
-  if (isAuthRoute || authHeader?.startsWith('Bearer ')) {
+  const hasAuthCookie = !!req.cookies?.auth_token;
+
+  // Skip CSRF for auth routes, Bearer token auth, or cookie-based auth
+  // (httpOnly + sameSite cookie already prevents cross-site request forgery)
+  if (isAuthRoute || authHeader?.startsWith('Bearer ') || hasAuthCookie) {
     return next();
   }
 

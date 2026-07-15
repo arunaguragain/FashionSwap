@@ -14,7 +14,7 @@ export default function Protected({ children }: { children: React.ReactNode }) {
     }
   }, [loading, isAuthenticated, router]);
 
-  if (loading || !isAuthenticated) return <div className="p-6">Checking authentication...</div>;
+  if (loading || !isAuthenticated) return null;
 
   return <>{children}</>;
 }

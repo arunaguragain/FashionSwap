@@ -161,3 +161,14 @@ export function disableMfa(password: string) {
     body: JSON.stringify({ password }),
   });
 }
+
+// Favorites
+export function toggleFavorite(listingId: string) {
+  return fetchJSON(`/api/profiles/favorites/${listingId}`, {
+    method: 'POST',
+  });
+}
+
+export function getFavorites() {
+  return fetchJSON('/api/profiles/favorites');
+}

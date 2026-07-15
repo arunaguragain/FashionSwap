@@ -24,14 +24,16 @@ export default function Page() {
       </div>
 
       {/* Right panel — form */}
-      <div className="flex-1 h-full flex flex-col justify-center px-6 py-8 max-w-md mx-auto w-full">
-        <div className="mb-6">
-          <Link href="/">
-            <Logo size="sm" />
-          </Link>
-        </div>
+      <div className="flex-1 h-full overflow-y-auto">
+        <div className="flex flex-col justify-center min-h-full px-6 py-8 max-w-md mx-auto w-full">
+          <div className="mb-6">
+            <Link href="/">
+              <Logo size="sm" />
+            </Link>
+          </div>
 
-        <ResetPasswordFormSuspense />
+          <ResetPasswordFormSuspense />
+        </div>
       </div>
     </div>
   );

@@ -41,6 +41,8 @@ export const forgotPasswordSchema = z.object({
 export type ForgotPasswordData = z.infer<typeof forgotPasswordSchema>;
 
 export const resetPasswordSchema = z.object({
+  email: z.string().email(),
+  otp: z.string().min(6, "OTP must be 6 digits").max(6, "OTP must be 6 digits"),
   password: passwordWithSpecial,
   confirmPassword: z.string(),
 }).refine((v) => v.password === v.confirmPassword, {

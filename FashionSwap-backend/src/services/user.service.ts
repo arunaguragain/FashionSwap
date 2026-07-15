@@ -49,7 +49,22 @@ export class UserService{
 
         // If password is being updated, hash it
         if (updateData.password) {
-            updateData.password = await bcrypts.hash(updateData.password, 10);
+            const isSamePassword = await bcrypts.compare(updateData.password, user.password);
+            if (isSamePassword) {
+                throw new HttpError(400, "New password cannot be the same as your current password");
+            }
+
+            const history = user.passwordHistory || [];
+            for (const oldHash of history) {
+                const isMatch = await bcrypts.compare(updateData.password, oldHash);
+                if (isMatch) {
+                    throw new HttpError(400, "You've used this password recently. Please choose a different one.");
+                }
+            }
+
+            const hashedPassword = await bcrypts.hash(updateData.password, 10);
+            updateData.password = hashedPassword;
+            (updateData as any).passwordHistory = [user.password, ...history].slice(0, 5);
         }
 
         // Check if email is being updated and if it's already in use
@@ -186,8 +201,26 @@ export class UserService{
             throw new HttpError(400, "Invalid OTP");
         }
 
+        const isSamePassword = await bcrypts.compare(newPassword, user.password);
+        if (isSamePassword) {
+            throw new HttpError(400, "New password cannot be the same as your current password");
+        }
+
+        const history = user.passwordHistory || [];
+        for (const oldHash of history) {
+            const isMatch = await bcrypts.compare(newPassword, oldHash);
+            if (isMatch) {
+                throw new HttpError(400, "You've used this password recently. Please choose a different one.");
+            }
+        }
+
         const hashedPassword = await bcrypts.hash(newPassword, 10);
-        await userRepository.updateUser(user._id.toString(), { password: hashedPassword });
+        const updatedHistory = [user.password, ...history].slice(0, 5);
+
+        await userRepository.updateUser(user._id.toString(), { 
+            password: hashedPassword,
+            passwordHistory: updatedHistory
+        } as any);
         await passwordResetRepository.markUsed(record._id.toString());
         return user;
     }

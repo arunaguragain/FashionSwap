@@ -13,5 +13,6 @@ router.get('/seller/:userId/stats', (req: Request, res: Response) => profileCont
 router.get('/me', authenticateJWT, (req: Request, res: Response) => profileController.getMyProfile(req, res));
 router.put('/me', generalLimiter, authenticateJWT, validateSchema(UpdateProfileDTO), (req: Request, res: Response) => profileController.updateMyProfile(req, res));
 router.get('/me/export', authenticateJWT, (req: Request, res: Response) => profileController.exportMyData(req, res));
-
+router.post('/favorites/:listingId', authenticateJWT, (req: Request, res: Response) => profileController.toggleFavorite(req, res));
+router.get('/favorites', authenticateJWT, (req: Request, res: Response) => profileController.getFavorites(req, res));
 export default router;

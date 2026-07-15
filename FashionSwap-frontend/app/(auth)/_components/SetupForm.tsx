@@ -45,7 +45,7 @@ export default function SetupForm() {
     try {
       await confirmMfaSetup(secret, otp);
       pushToast({ title: 'MFA enabled', description: 'Two-step verification enabled', tone: 'success' });
-      router.push('/profile');
+      router.push('/settings');
     } catch (e: any) {
       pushToast({ title: 'Verification failed', description: e?.message || 'Invalid code', tone: 'error' });
     } finally {

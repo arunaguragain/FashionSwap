@@ -2,7 +2,6 @@ import { Router, Request, Response } from 'express';
 import { ListingController } from '../controllers/listing.controller';
 import { authenticateJWT } from '../middlewares/authentication.middleware';
 import { validateSchema } from '../middlewares/validation.middleware';
-import { requireSeller } from '../middlewares/rbac.middleware';
 import { requireListingOwner } from '../middlewares/ownership.middleware';
 import { CreateListingDTO, UpdateListingDTO } from '../dtos/listing.dto';
 import { generalLimiter } from '../middlewares/rateLimit.middleware';
@@ -21,7 +20,6 @@ router.post(
   '/',
   generalLimiter,
   authenticateJWT,
-  requireSeller,
   validateSchema(CreateListingDTO),
   (req: Request, res: Response) => listingController.createListing(req, res)
 );

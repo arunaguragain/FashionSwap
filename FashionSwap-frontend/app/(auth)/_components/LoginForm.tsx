@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 import { loginSchema, LoginData } from "../schema";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import GoogleSignIn from "./GoogleSignIn";
@@ -31,6 +32,7 @@ export default function LoginForm({
 }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const { checkAuth } = useAuth();
   const [error, setError] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -65,6 +67,10 @@ export default function LoginForm({
         throw new Error(res.message || "Login failed");
       }
       try { pushToast({ title: res.message || 'Login successful', tone: 'success' }); } catch(e) {}
+      
+      // Update global auth state immediately
+      await checkAuth();
+
       if (onSubmit) onSubmit(data);
       
       let redirectPath = "/listings";

@@ -16,19 +16,25 @@ let userRepository = new UserRepository();
 
 export const authorizedMiddleware = async(req: Request, res: Response, next: NextFunction) => {
     try{
+        let token = "";
         const authHeader = req.headers.authorization;
-        if(!authHeader || !authHeader.startsWith("Bearer ")){
-            throw new HttpError(401, "Unauthorized, Header malformed");
+        console.log("Auth Middleware Debug - Header:", authHeader);
+        console.log("Auth Middleware Debug - Cookies:", req.cookies);
+        if(authHeader && authHeader.startsWith("Bearer ")){
+            token = authHeader.split(" ")[1]; 
+        } else if (req.cookies && req.cookies.auth_token) {
+            token = req.cookies.auth_token;
         }
-        const token = authHeader.split(" ")[1]; 
+
         if(!token){
-            throw new HttpError(401, "Unauthorized, Token missing");
+            throw new HttpError(401, "Unauthorized, Token missing or malformed");
         }
         const decodedToken = jwt.verify(token, JWT_SECRET) as Record<string, any>; 
-        if(!decodedToken || !decodedToken.id){
+        const userId = decodedToken.id || decodedToken.userId;
+        if(!decodedToken || !userId){
             throw new HttpError(401, "Unauthorized, Token invalid");
         }
-        const user = await userRepository.getUserById(decodedToken.id);
+        const user = await userRepository.getUserById(userId);
         if(!user){
             throw new HttpError(401, "Unauthorized, User not found");
         }

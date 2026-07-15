@@ -4,21 +4,21 @@ import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { resetPasswordSchema, ResetPasswordData } from "../../(auth)/schema";
-import { resetPassword } from "@/lib/api/auth";
+import { resetPasswordWithOTP } from "@/lib/api/auth";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff, Lock, Check } from "lucide-react";
+import { Eye, EyeOff, Lock, Check, Mail, KeyRound } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
 
 interface Props {
-  token?: string;
+  email?: string;
 }
 
-export default function ResetPasswordForm({ token }: Props) {
+export default function ResetPasswordForm({ email }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const effectiveToken = token || searchParams?.get("token") || undefined;
+  const effectiveEmail = email || searchParams?.get("email") || "";
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -32,7 +32,7 @@ export default function ResetPasswordForm({ token }: Props) {
     formState: { errors, isSubmitting }
   } = useForm<ResetPasswordData>({
     resolver: zodResolver(resetPasswordSchema),
-    defaultValues: { password: "", confirmPassword: "" }
+    defaultValues: { email: effectiveEmail, otp: "", password: "", confirmPassword: "" }
   });
 
   const watchedPassword = watch("password", "");
@@ -58,8 +58,7 @@ export default function ResetPasswordForm({ token }: Props) {
   const onSubmit = async (data: ResetPasswordData) => {
     setError("");
     try {
-      if (!effectiveToken) throw new Error("Reset token not found");
-      await resetPassword(effectiveToken, data.password);
+      await resetPasswordWithOTP(data.email, data.otp, data.password);
       setDone(true);
     } catch (err: any) {
       setError(err?.message || "Failed to reset password");
@@ -88,8 +87,27 @@ export default function ResetPasswordForm({ token }: Props) {
 
       {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-        <div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <Input
+          label="Email address"
+          type="email"
+          compact
+          {...register("email")}
+          error={errors.email?.message}
+          leftIcon={<Mail size={14} />}
+          disabled
+        />
+        <Input
+          label="6-Digit OTP"
+          type="text"
+          placeholder="123456"
+          compact
+          {...register("otp")}
+          error={errors.otp?.message}
+          leftIcon={<KeyRound size={14} />}
+          maxLength={6}
+        />
+        <div className="space-y-1">
           <Input
             label="New password"
             type={showPassword ? "text" : "password"}

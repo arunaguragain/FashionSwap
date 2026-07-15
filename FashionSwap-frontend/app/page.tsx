@@ -1,15 +1,28 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, ArrowRight, Leaf, RefreshCw, Shield } from "lucide-react";
 import ListingCard from "@/components/ui/ListingCard";
 import Badge from "@/components/ui/Badge";
-import { LISTINGS, CATEGORIES } from "@/data/listings";
+import { CATEGORIES } from "@/data/listings";
+import { getListings } from "@/lib/api";
 
 export default function Home() {
   const [query, setQuery] = useState("");
+  const [listings, setListings] = useState<any[]>([]);
   const router = useRouter();
+
+  useEffect(() => {
+    // Fetch latest listings from backend
+    getListings().then(res => {
+      if (res && Array.isArray(res.data)) {
+        setListings(res.data.slice(0, 4)); // Show 4 latest
+      } else if (Array.isArray(res)) {
+        setListings(res.slice(0, 4));
+      }
+    }).catch(err => console.error("Failed to fetch listings", err));
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,8 +148,8 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {LISTINGS.map((listing) => (
-            <Link key={listing.id} href={`/listing/${listing.id}`}>
+          {listings.map((listing) => (
+            <Link key={listing._id || listing.id} href={`/listing/${listing._id || listing.id}`}>
               <ListingCard listing={listing} />
             </Link>
           ))}
