@@ -1,6 +1,7 @@
 export const API = {
     AUTH: {
         REGISTER: "/api/auth/register",
+        VERIFY_EMAIL: "/api/auth/verify-email",
         LOGIN: "/api/auth/login",
         WHOAMI: "/api/auth/whoami",
         UPDATEPROFILE: "/api/auth/update-profile",

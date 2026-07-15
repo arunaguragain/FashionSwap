@@ -8,7 +8,7 @@ const skipRateLimit = (req: Request) => isTestEnvironment || req.path === '/heal
 export const generalLimiter: RateLimitRequestHandler = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: 'Too many requests from this IP, please try again later',
+  message: { success: false, message: 'Too many requests from this IP, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
   skip: skipRateLimit,
@@ -17,7 +17,7 @@ export const generalLimiter: RateLimitRequestHandler = rateLimit({
 export const authLimiter: RateLimitRequestHandler = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
-  message: 'Too many login/register attempts, please try again later',
+  message: { success: false, message: 'Too many login/register attempts, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: false,
@@ -27,7 +27,7 @@ export const authLimiter: RateLimitRequestHandler = rateLimit({
 export const passwordResetLimiter: RateLimitRequestHandler = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 3,
-  message: 'Too many password reset attempts, please try again in an hour',
+  message: { success: false, message: 'Too many password reset attempts, please try again in an hour' },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -35,7 +35,7 @@ export const passwordResetLimiter: RateLimitRequestHandler = rateLimit({
 export const otpLimiter: RateLimitRequestHandler = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 5,
-  message: 'Too many OTP attempts, please try again later',
+  message: { success: false, message: 'Too many OTP attempts, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });

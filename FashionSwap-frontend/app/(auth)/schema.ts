@@ -2,13 +2,13 @@ import z from "zod";
 
 const passwordSchema = z
   .string()
-  .min(8, {message :"Password must be at least 8 characters"})
-  .regex(/[A-Z]/, {message: "Must include at least one uppercase letter"})
-  .regex(/[a-z]/, {message:"Must include at least one lowercase letter"})
-  .regex(/[0-9]/, {message:"Must include at least one number"});
+  .min(12, { message: "Password must be at least 12 characters" })
+  .regex(/[A-Z]/, { message: "Must include at least one uppercase letter" })
+  .regex(/[a-z]/, { message: "Must include at least one lowercase letter" })
+  .regex(/[0-9]/, { message: "Must include at least one number" })
+  .regex(/[^A-Za-z0-9]/, { message: "Must include at least one special character" });
 
-// Require at least one special (non-alphanumeric) character as many backends expect this
-const passwordWithSpecial = passwordSchema.regex(/[^A-Za-z0-9]/, { message: "Must include at least one special character" });
+const passwordWithSpecial = passwordSchema;
 
 export const loginSchema = z.object({
   email:z.email({ message: "Enter a valid email" }),

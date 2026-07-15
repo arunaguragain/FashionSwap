@@ -11,7 +11,7 @@ export const CreateUserDTO = UserSchema.pick(
     }
 ).extend(
     {
-        confirmPassword: z.string().min(8),
+        confirmPassword: z.string().min(12),
         role: z.enum(['admin', 'buyer', 'seller']).default('buyer'),
     }
 ).refine(
@@ -25,7 +25,7 @@ export type CreateUserDTO = z.infer<typeof CreateUserDTO>;
 
 export const LoginUserDTO = z.object({
     email: z.email(),
-    password: z.string().min(8)
+    password: z.string().min(12)
 });
 
 export type LoginUserDTO = z.infer<typeof LoginUserDTO>;

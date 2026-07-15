@@ -17,6 +17,21 @@ export const register = async (registerData: RegisterData) => {
   }
 }
 
+export const verifyEmail = async (email: string, otp: string) => {
+  try {
+    const response = await axios.post(API.AUTH.VERIFY_EMAIL, { email, otp });
+    return response.data;
+  } catch (error: Error | any) {
+    const resp = error.response?.data;
+    let msg = error.message || "Verification failed";
+    if (resp) {
+      if (Array.isArray(resp.errors)) msg = resp.errors.map((e: any) => e.msg || e.message || String(e)).join(', ');
+      else if (resp.message) msg = typeof resp.message === 'string' ? resp.message : JSON.stringify(resp.message);
+    }
+    throw new Error(msg);
+  }
+}
+
 export const login = async (loginData: LoginData) => {
   try {
     const response = await axios.post(API.AUTH.LOGIN, loginData);

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import GoogleSignIn from "./GoogleSignIn";
 import { registerSchema, RegisterData } from "../schema";
-import { handleRegister } from "@/lib/actions/auth-actions";
+import { handleRegister, handleVerifyEmail } from "@/lib/actions/auth-actions";
 import { useToast } from "@/app/(platform)/_components/ToastProvider";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
@@ -23,6 +23,10 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [otpPending, setOtpPending] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState("");
+  const [otpValue, setOtpValue] = useState("");
+  const [otpMessage, setOtpMessage] = useState("");
   const [pending, startTransition] = useTransition();
 
   let pushToast = (notification: any) => {};
@@ -32,16 +36,39 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
     pushToast = (notification: any) => console.log('toast', notification);
   }
 
+  const [passwordValue, setPasswordValue] = useState("");
+
   const {
     register,
     handleSubmit,
     trigger,
+    watch,
     formState: { errors, isSubmitting, touchedFields, isSubmitted }
   } = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
     mode: "onTouched",
     defaultValues: { firstName: "", lastName: "", email: "", phone: "", location: "", password: "", confirmPassword: "", tos: false }
   });
+
+  const watchedPassword = watch("password", "");
+
+  const passwordStrength = useMemo(() => {
+    const value = watchedPassword || passwordValue;
+    if (!value) return { label: "", color: "text-ink/60" };
+
+    const checks = [
+      value.length >= 12,
+      /[A-Z]/.test(value),
+      /[a-z]/.test(value),
+      /[0-9]/.test(value),
+      /[^A-Za-z0-9]/.test(value),
+    ];
+
+    const score = checks.filter(Boolean).length;
+    if (score <= 2) return { label: "Weak", color: "text-red-600" };
+    if (score <= 4) return { label: "Medium", color: "text-amber-600" };
+    return { label: "Strong", color: "text-emerald-600" };
+  }, [watchedPassword, passwordValue]);
 
   const onSubmitForm = async (data: RegisterData) => {
     setErrorMessage("");
@@ -53,20 +80,52 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
         throw new Error(res.message || "Registration failed");
       }
       try { pushToast({ title: res.message || 'Registration successful', tone: 'success' }); } catch(e) {}
-      startTransition(() => {
-        if (loginLink) {
-          router.push(loginLink);
-        } else if (userType === "User") {
-          router.push("/login");
-        } else {
-          router.push("/");
-        }
-      });
+      // If backend queued verification, show OTP entry UI instead of redirecting
+      setSubmittedEmail(data.email);
+      setOtpPending(true);
     } catch (err: any) {
       setErrorMessage(err?.message || "Registration failed");
       try { pushToast({ title: err?.message || 'Registration failed', tone: 'error' }); } catch(e) {}
     }
   };
+
+  const verifyOtp = async () => {
+    setOtpMessage("");
+    try {
+      const res = await handleVerifyEmail(submittedEmail, otpValue);
+      if (!res.success) {
+        setOtpMessage(res.message || 'Verification failed');
+        return;
+      }
+      try { pushToast({ title: res.message || 'Verification successful', tone: 'success' }); } catch(e) {}
+      // after verification redirect to login
+      startTransition(() => {
+        if (loginLink) router.push(loginLink);
+        else router.push('/login');
+      });
+    } catch (err: any) {
+      setOtpMessage(err?.message || 'Verification failed');
+    }
+  };
+
+  if (otpPending) {
+    return (
+      <div className="space-y-2.5">
+        <div className="text-sm text-ink">A verification code was sent to <strong>{submittedEmail}</strong>. Enter the 6-digit code below.</div>
+        <div>
+          <label className="font-medium text-charcoal text-xs">Verification code</label>
+          <div className="relative">
+            <input value={otpValue} onChange={(e) => setOtpValue(e.target.value)} placeholder="123456" className="w-full bg-white border px-3 py-2 rounded-[10px]" />
+          </div>
+          {otpMessage && <p className="mt-1 text-xs text-red-600">{otpMessage}</p>}
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={verifyOtp} size="md">Verify</Button>
+          <Button onClick={() => { setOtpPending(false); setOtpValue(''); }} size="md" variant="secondary">Back</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-2.5">
@@ -127,21 +186,32 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
       </div>
       
       <div className="grid grid-cols-2 gap-2">
-        <Input
-          label="Password"
-          type={showPassword ? "text" : "password"}
-          compact
-          {...register("password")}
-          onBlur={() => trigger("password")}
-          error={errors.password?.message}
-          placeholder="Min. 8 characters"
-          leftIcon={<Lock size={14} />}
-          rightElement={
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-ink hover:text-charcoal transition-colors">
-              {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
-            </button>
-          }
-        />
+        <div>
+          <Input
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            compact
+            {...register("password", {
+              onChange: (event) => {
+                setPasswordValue(event.target.value);
+              },
+            })}
+            onBlur={() => trigger("password")}
+            error={errors.password?.message}
+            placeholder="Min. 12 characters"
+            leftIcon={<Lock size={14} />}
+            rightElement={
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-ink hover:text-charcoal transition-colors">
+                {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            }
+          />
+          {passwordStrength.label && (
+            <p className={`mt-1 text-[11px] font-medium ${passwordStrength.color}`}>
+              Strength: {passwordStrength.label}
+            </p>
+          )}
+        </div>
         <Input
           label="Confirm password"
           type={showConfirmPassword ? "text" : "password"}

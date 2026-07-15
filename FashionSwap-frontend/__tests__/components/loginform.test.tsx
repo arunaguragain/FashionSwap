@@ -34,29 +34,29 @@ describe('LoginForm', () => {
 
   test('successful login navigates based on role (seller)', async () => {
     (handleLogin as jest.Mock).mockResolvedValueOnce({ success: true, data: { role: 'seller' } });
-    render(<LoginForm userType="Seller" />);
+    render(<LoginForm userType="User" />);
 
-    await userEvent.type(screen.getByLabelText(/Email Address/i), 'seller@example.com');
+    await userEvent.type(screen.getByLabelText(/Email address/i), 'seller@example.com');
     await userEvent.type(screen.getByLabelText(/Password/i, { selector: 'input' }), 'Password123!');
 
     const submit = screen.getByRole('button', { name: /Sign In/i });
     await userEvent.click(submit);
 
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/user/seller/dashboard'));
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/profile'));
   });
 
   test('shows validation errors when fields are empty', async () => {
-    render(<LoginForm userType="Seller" />);
+    render(<LoginForm userType="User" />);
     const submit = screen.getByRole('button', { name: /Sign In/i });
     await userEvent.click(submit);
 
     expect(await screen.findByText(/Enter a valid email/i)).toBeInTheDocument();
-    expect(await screen.findByText(/Password must be at least 8 characters/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Password must be at least 12 characters/i)).toBeInTheDocument();
   });
 
   test('invalid email prevents submission', async () => {
-    render(<LoginForm userType="Seller" />);
-    await userEvent.type(screen.getByLabelText(/Email Address/i), 'not-an-email');
+    render(<LoginForm userType="User" />);
+    await userEvent.type(screen.getByLabelText(/Email address/i), 'not-an-email');
     await userEvent.type(screen.getByLabelText(/Password/i, { selector: 'input' }), 'Password123!');
 
     const submit = screen.getByRole('button', { name: /Sign In/i });
@@ -67,12 +67,12 @@ describe('LoginForm', () => {
 
   test('GoogleSignIn is rendered with autoLogin prop', () => {
     // enable the google signin button via prop
-    render(<LoginForm userType="Seller" showGoogleSignIn />);
+    render(<LoginForm userType="User" showGoogleSignIn />);
     const google = screen.getByTestId('mock-google-signin');
     expect(google).toBeInTheDocument();
     // verify props received by the mocked component
     expect(lastGoogleProps).toBeTruthy();
     expect(lastGoogleProps.autoLogin).toBe(true);
-    expect(lastGoogleProps.userType).toBe('Volunteer');
+    expect(lastGoogleProps.userType).toBe('User');
   });
 });

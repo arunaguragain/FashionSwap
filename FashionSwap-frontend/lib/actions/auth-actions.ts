@@ -1,6 +1,6 @@
 "use server";
 import { LoginData, RegisterData } from "@/app/(auth)/schema";
-import { register, login, whoAmI, updateProfile } from "@/lib/api/auth";
+import { register, login, whoAmI, updateProfile, verifyEmail } from "@/lib/api/auth";
 import { clearAuthCookies, setAuthToken, setUserData } from "@/lib/cookie";
 import { revalidatePath } from "next/cache";
 import axios from "@/lib/api/axios";
@@ -25,16 +25,29 @@ export const handleRegister = async (data: RegisterData) => {
     }
 }
 
+export const handleVerifyEmail = async (email: string, otp: string) => {
+    try {
+        const response = await verifyEmail(email, otp);
+        if (response.success) {
+            return { success: true, message: response.message || 'Verification successful' };
+        }
+        return { success: false, message: response.message || 'Verification failed' };
+    } catch (error: Error | any) {
+        return { success: false, message: error.message || 'Verification action failed' };
+    }
+}
+
 export const handleLogin = async (data: LoginData) => {
     try {
         const response = await login(data);
         if (response.success) {
             await setAuthToken(response.token);
-            await setUserData(response.data);
+            const user = response.data?.user ?? response.data;
+            await setUserData(user);
             return {
                 success: true,
                 message: "Login successful",
-                data: response.data
+                data: user
             };
         }
         return {

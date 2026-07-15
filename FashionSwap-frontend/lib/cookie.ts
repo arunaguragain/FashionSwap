@@ -18,7 +18,19 @@ export const getAuthToken = async () => {
 }
 export const setUserData = async (userData: any) => {
     const cookieStore = await cookies();
-    cookieStore.set({ name: "user_data", value: JSON.stringify(userData) })
+    const minUserData = {
+        id: userData?.id || userData?._id,
+        firstName: userData?.firstName,
+        lastName: userData?.lastName,
+        role: userData?.role
+    };
+    cookieStore.set({ 
+        name: "user_data", 
+        value: JSON.stringify(minUserData),
+        httpOnly: false, // intentionally readable client-side for UI display
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+    })
 }
 export const getUserData = async () => {
     const cookieStore = await cookies();
