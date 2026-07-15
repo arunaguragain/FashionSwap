@@ -1,10 +1,11 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import z from 'zod';
 import AuthController from '../controllers/auth.controller';
 import { authenticateJWT } from '../middlewares/authentication.middleware';
 import { validateSchema } from '../middlewares/validation.middleware';
 import { RegisterDTO, LoginDTO, MFASetupDTO, PasswordResetDTO } from '../dtos/auth.dto';
 import { authLimiter, passwordResetLimiter, otpLimiter, createAccountLockoutMiddleware } from '../middlewares/rateLimit.middleware';
+import { verifyCaptcha } from '../middlewares/captcha.middleware';
 
 const router = Router();
 const authController = new AuthController();
@@ -12,6 +13,7 @@ const authController = new AuthController();
 router.post(
   '/register',
   authLimiter,
+  verifyCaptcha,
   validateSchema(RegisterDTO),
   (req, res) => authController.registerUser(req, res)
 );
@@ -27,6 +29,7 @@ router.post(
   '/login',
   authLimiter,
   createAccountLockoutMiddleware(15, 15),
+  verifyCaptcha,
   validateSchema(LoginDTO),
   (req, res) => authController.loginUser(req, res)
 );

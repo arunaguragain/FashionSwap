@@ -12,7 +12,8 @@ const passwordWithSpecial = passwordSchema;
 
 export const loginSchema = z.object({
   email:z.email({ message: "Enter a valid email" }),
-  password: passwordWithSpecial
+  password: passwordWithSpecial,
+  captchaToken: z.string().optional(),
 });
 export type LoginData = z.infer<typeof loginSchema>;
 
@@ -26,6 +27,7 @@ export const registerSchema = z.object({
   password: passwordWithSpecial,
   confirmPassword: z.string(),
   tos: z.boolean().refine((v) => v === true, { message: "You must agree to the Terms & Conditions" }),
+  captchaToken: z.string().optional(),
 }).refine((v) => v.password === v.confirmPassword, {
     path: ["confirmPassword"],
     message: "Passwords do not match",

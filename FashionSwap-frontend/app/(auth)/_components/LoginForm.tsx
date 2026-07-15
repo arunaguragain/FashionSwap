@@ -12,6 +12,7 @@ import { handleLogin } from "@/lib/actions/auth-actions";
 import { useToast } from "@/app/(platform)/_components/ToastProvider";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
+import ReCaptcha from "@/components/ui/ReCaptcha";
 
 interface LoginFormProps {
   userType: "Admin" | "User";
@@ -31,6 +32,7 @@ export default function LoginForm({
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const [error, setError] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   let pushToast: any = () => {};
   try {
@@ -52,8 +54,12 @@ export default function LoginForm({
 
   const onSubmitForm = async (data: LoginData) => {
     setError("");
+    if (!captchaToken) {
+      setError("Please complete the CAPTCHA");
+      return;
+    }
     try {
-      const res = await handleLogin(data);
+      const res = await handleLogin({ ...data, captchaToken });
       if (!res.success) {
         try { useToast({ title: res.message || 'Login failed', tone: 'error' }); } catch(e) {}
         throw new Error(res.message || "Login failed");
@@ -119,7 +125,15 @@ export default function LoginForm({
         )}
       </div>
 
-      <Button type="submit" fullWidth size="lg" disabled={isSubmitting || pending}>
+      <div className="flex justify-start w-full">
+        <ReCaptcha 
+          onVerify={(token) => { setCaptchaToken(token); setError(""); }} 
+          onExpire={() => setCaptchaToken(null)}
+          onError={() => setError("CAPTCHA error. Please try again.")}
+        />
+      </div>
+
+      <Button type="submit" fullWidth size="lg" disabled={isSubmitting || pending || !captchaToken}>
         {(isSubmitting || pending) ? "Signing in..." : "Sign in"}
       </Button>
 

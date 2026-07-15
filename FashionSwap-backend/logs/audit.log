@@ -79,3 +79,12 @@
 {"timestamp":"2026-07-15T13:08:07.442Z","userId":"6a57854243ba9eda61e723ba","event":"LOGIN_FAILED","ip":"127.0.0.1","meta":{"email":"guragainaruna2060@gmail.com","reason":"invalid_password"}}
 {"timestamp":"2026-07-15T13:08:08.134Z","userId":"6a57854243ba9eda61e723ba","event":"LOGIN_FAILED","ip":"127.0.0.1","meta":{"email":"guragainaruna2060@gmail.com","reason":"invalid_password"}}
 {"timestamp":"2026-07-15T13:08:08.925Z","userId":"6a57854243ba9eda61e723ba","event":"LOGIN_FAILED","ip":"127.0.0.1","meta":{"email":"guragainaruna2060@gmail.com","reason":"invalid_password"}}
+{"timestamp":"2026-07-15T13:23:17.701Z","userId":"6a57854243ba9eda61e723ba","event":"LOGIN_FAILED","ip":"127.0.0.1","meta":{"email":"guragainaruna2060@gmail.com","reason":"invalid_password"}}
+{"timestamp":"2026-07-15T13:23:19.923Z","userId":"6a57854243ba9eda61e723ba","event":"LOGIN_FAILED","ip":"127.0.0.1","meta":{"email":"guragainaruna2060@gmail.com","reason":"invalid_password"}}
+{"timestamp":"2026-07-15T13:23:21.913Z","userId":"6a57854243ba9eda61e723ba","event":"LOGIN_FAILED","ip":"127.0.0.1","meta":{"email":"guragainaruna2060@gmail.com","reason":"invalid_password"}}
+{"timestamp":"2026-07-15T13:23:23.348Z","userId":"6a57854243ba9eda61e723ba","event":"LOGIN_FAILED","ip":"127.0.0.1","meta":{"email":"guragainaruna2060@gmail.com","reason":"invalid_password"}}
+{"timestamp":"2026-07-15T13:23:24.311Z","userId":"6a57854243ba9eda61e723ba","event":"LOGIN_FAILED","ip":"127.0.0.1","meta":{"email":"guragainaruna2060@gmail.com","reason":"invalid_password"}}
+{"timestamp":"2026-07-15T13:51:12.399Z","userId":"6a57854243ba9eda61e723ba","event":"LOGIN_FAILED","ip":"127.0.0.1","meta":{"email":"guragainaruna2060@gmail.com","reason":"invalid_password"}}
+{"timestamp":"2026-07-15T13:56:26.391Z","userId":"6a577cd543ba9eda61e7239d","event":"LOGIN_SUCCESS","ip":"127.0.0.1"}
+{"timestamp":"2026-07-15T13:57:44.213Z","userId":"6a577cd543ba9eda61e7239d","event":"LOGIN_SUCCESS","ip":"127.0.0.1"}
+{"timestamp":"2026-07-15T14:01:41.574Z","userId":"6a577cd543ba9eda61e7239d","event":"LOGIN_SUCCESS","ip":"127.0.0.1"}

@@ -14,11 +14,13 @@ export const RegisterDTO = z.object({
   firstName: z.string().min(2, 'First name is required').max(50, 'First name must not exceed 50 characters').trim(),
   lastName: z.string().min(2, 'Last name is required').max(50, 'Last name must not exceed 50 characters').trim(),
   location: z.string().min(2, 'Location is required').max(100, 'Location must not exceed 100 characters').trim(),
+  captchaToken: z.string().optional(),
 });
 
 export const LoginDTO = z.object({
   email: z.string().email().transform((value) => value.toLowerCase()),
   password: z.string(),
+  captchaToken: z.string().optional(),
 });
 
 export const MFASetupDTO = z.object({

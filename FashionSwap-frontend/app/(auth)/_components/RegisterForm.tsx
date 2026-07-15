@@ -11,6 +11,7 @@ import { handleRegister, handleVerifyEmail } from "@/lib/actions/auth-actions";
 import { useToast } from "@/app/(platform)/_components/ToastProvider";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
+import ReCaptcha from "@/components/ui/ReCaptcha";
 
 interface Props {
   userType: "Admin" | "User";
@@ -27,6 +28,7 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
   const [submittedEmail, setSubmittedEmail] = useState("");
   const [otpValue, setOtpValue] = useState("");
   const [otpMessage, setOtpMessage] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   let pushToast = (notification: any) => {};
@@ -72,9 +74,13 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
 
   const onSubmitForm = async (data: RegisterData) => {
     setErrorMessage("");
+    if (!captchaToken) {
+      setErrorMessage("Please complete the CAPTCHA");
+      return;
+    }
     try {
       // Minimal: send form data; backend should treat new users as allowed to buy and create listings
-      const res = await handleRegister(data);
+      const res = await handleRegister({ ...data, captchaToken });
       if (!res.success) {
         try { pushToast({ title: res.message || 'Registration failed', tone: 'error' }); } catch(e) {}
         throw new Error(res.message || "Registration failed");
@@ -237,7 +243,15 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
         {errors.tos && <p className="mt-1 text-xs text-red-600">{errors.tos.message}</p>}
       </div>
 
-      <Button type="submit" fullWidth size="lg" disabled={isSubmitting || pending}>
+      <div className="flex justify-start w-full">
+        <ReCaptcha 
+          onVerify={(token) => { setCaptchaToken(token); setErrorMessage(""); }} 
+          onExpire={() => setCaptchaToken(null)}
+          onError={() => setErrorMessage("CAPTCHA error. Please try again.")}
+        />
+      </div>
+
+      <Button type="submit" fullWidth size="lg" disabled={isSubmitting || pending || !captchaToken}>
         {(isSubmitting || pending) ? "Creating..." : "Create account"}
       </Button>
 
