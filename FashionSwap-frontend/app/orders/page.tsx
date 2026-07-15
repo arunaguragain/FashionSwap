@@ -13,7 +13,8 @@ import {
 import SkeletonOrder from '../../components/common/SkeletonOrder';
 import Protected from '../../components/common/Protected';
 import { useToast } from '@/app/(platform)/_components/ToastProvider';
-import { CheckCircle2, Clock3, Handshake, ShieldCheck, XCircle, Sparkles } from 'lucide-react';
+import { CheckCircle2, Clock3, Handshake, Sparkles, Package, ArrowRight, ShoppingBag } from 'lucide-react';
+import Link from 'next/link';
 
 function getUserId(user: any) {
   return user?._id || user?.id || null;
@@ -103,7 +104,7 @@ export default function OrdersPage() {
             type="button"
             onClick={() => handleSellerDecision(order, true)}
             disabled={actionLoading === (order._id || order.id)}
-            className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-on-primary disabled:opacity-70"
+            className="inline-flex items-center gap-2 bg-terracotta text-white px-5 py-2.5 rounded-[14px] text-sm font-medium hover:bg-terracotta-dark transition-colors disabled:opacity-70"
           >
             {actionLoading === (order._id || order.id) ? 'Working…' : 'Accept order'}
           </button>
@@ -111,7 +112,7 @@ export default function OrdersPage() {
             type="button"
             onClick={() => handleSellerDecision(order, false)}
             disabled={actionLoading === (order._id || order.id)}
-            className="rounded-full border border-outline/20 bg-surface-container-low px-4 py-2 text-sm font-semibold text-on-surface-variant disabled:opacity-70"
+            className="inline-flex items-center gap-2 border border-border bg-white px-5 py-2.5 rounded-[14px] text-sm font-medium text-charcoal-soft hover:bg-parchment-dark transition-colors disabled:opacity-70"
           >
             {actionLoading === (order._id || order.id) ? 'Working…' : 'Decline order'}
           </button>
@@ -127,7 +128,7 @@ export default function OrdersPage() {
               type="button"
               onClick={() => handleTransactionAction(order, 'delivery')}
               disabled={actionLoading === (order._id || order.id)}
-              className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-on-primary disabled:opacity-70"
+              className="inline-flex items-center gap-2 bg-terracotta text-white px-5 py-2.5 rounded-[14px] text-sm font-medium hover:bg-terracotta-dark transition-colors disabled:opacity-70"
             >
               {actionLoading === (order._id || order.id) ? 'Working…' : 'Confirm delivery'}
             </button>
@@ -137,36 +138,67 @@ export default function OrdersPage() {
               type="button"
               onClick={() => handleTransactionAction(order, 'handover')}
               disabled={actionLoading === (order._id || order.id)}
-              className="rounded-full border border-outline/20 bg-surface-container-low px-4 py-2 text-sm font-semibold text-on-surface-variant disabled:opacity-70"
+              className="inline-flex items-center gap-2 border border-border bg-white px-5 py-2.5 rounded-[14px] text-sm font-medium text-charcoal-soft hover:bg-parchment-dark transition-colors disabled:opacity-70"
             >
               {actionLoading === (order._id || order.id) ? 'Working…' : 'Confirm handover'}
             </button>
           )}
           {!isBuyer && !isSeller && (
-            <span className="rounded-full bg-surface-container px-4 py-2 text-sm font-semibold text-on-surface-variant">Waiting for next step</span>
+            <span className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-full bg-sand text-ink">Waiting for next step</span>
           )}
         </div>
       );
     }
 
     if (status === 'completed') {
-      return <span className="rounded-full bg-secondary/10 px-4 py-2 text-sm font-semibold text-secondary">Completed</span>;
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-sage/12 px-4 py-2 text-sm font-medium text-sage-dark uppercase tracking-wider">
+          <CheckCircle2 className="h-4 w-4" /> Completed
+        </span>
+      );
     }
 
-    return <span className="rounded-full bg-surface-container px-4 py-2 text-sm font-semibold text-on-surface-variant">Awaiting seller response</span>;
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-parchment-dark px-4 py-2 text-sm font-medium text-ink uppercase tracking-wider">
+        <Clock3 className="h-4 w-4" /> Awaiting seller response
+      </span>
+    );
   };
 
   if (!loading && orders.length === 0) {
     return (
       <Protected>
-        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="mb-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">Orders</p>
-            <h1 className="mt-2 font-headline text-3xl text-on-surface">My orders</h1>
-            <p className="mt-2 text-sm leading-7 text-on-surface-variant">No orders yet. Browse listings and make an offer to get started.</p>
+        <div className="w-full px-6 py-10 md:px-8">
+          <div className="mb-10">
+            <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full bg-terracotta/12 text-terracotta-dark mb-3">
+              Orders
+            </span>
+            <h1 className="font-display text-3xl md:text-4xl font-bold text-charcoal" style={{ letterSpacing: '-0.02em' }}>My orders</h1>
+            <p className="mt-2 text-sm text-ink leading-relaxed max-w-md">No orders yet. Browse listings and make an offer to get started.</p>
           </div>
-          <div className="rounded-[1.5rem] border border-outline/15 bg-surface-container-lowest p-8 text-center text-sm text-on-surface-variant">
-            You don’t have any active orders yet.
+
+          <div className="flex flex-col items-center justify-center bg-white rounded-[20px] border border-border/60 p-16 text-center">
+            <div className="relative mb-6">
+              <div className="flex h-20 w-20 items-center justify-center rounded-[20px] bg-terracotta/10">
+                <Package className="h-9 w-9 text-terracotta" />
+              </div>
+              <div className="absolute -right-1.5 -top-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-sage/12">
+                <Sparkles className="h-4 w-4 text-sage" />
+              </div>
+            </div>
+
+            <h2 className="font-display text-2xl font-bold text-charcoal" style={{ letterSpacing: '-0.01em' }}>No orders yet</h2>
+            <p className="mt-3 max-w-sm text-sm text-ink leading-relaxed">
+              When you make an offer on a listing and the seller accepts, your order will appear here.
+            </p>
+
+            <Link
+              href="/listings"
+              className="mt-8 inline-flex items-center gap-2 bg-terracotta text-white px-6 py-3.5 rounded-[14px] text-[15px] font-medium hover:bg-terracotta-dark transition-colors"
+            >
+              Browse listings
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </Protected>
@@ -175,21 +207,23 @@ export default function OrdersPage() {
 
   return (
     <Protected>
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-6">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">Orders</p>
-          <h1 className="mt-2 font-headline text-3xl text-on-surface">My orders</h1>
-          <p className="mt-2 text-sm leading-7 text-on-surface-variant">Follow each exchange from offer to handoff in one calm view.</p>
+      <div className="w-full px-6 py-10 md:px-8">
+        <div className="mb-10">
+          <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full bg-terracotta/12 text-terracotta-dark mb-3">
+            Orders
+          </span>
+          <h1 className="font-display text-3xl md:text-4xl font-bold text-charcoal" style={{ letterSpacing: '-0.02em' }}>My orders</h1>
+          <p className="mt-2 text-sm text-ink leading-relaxed max-w-md">Follow each exchange from offer to handoff in one calm view.</p>
         </div>
 
         {loading && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <SkeletonOrder />
             <SkeletonOrder />
           </div>
         )}
 
-        {error && <div className="rounded-[1.25rem] border border-error/20 bg-error/10 p-4 text-sm text-error">{error}</div>}
+        {error && <div className="rounded-[14px] border border-red-200 bg-red-50 p-4 text-sm text-red-600">{error}</div>}
 
         <div className="space-y-4">
           {orders.map((o) => {
@@ -201,30 +235,35 @@ export default function OrdersPage() {
             const role = userId === getUserId(o.sellerId) ? 'Seller' : userId === getUserId(o.buyerId) ? 'Buyer' : 'Participant';
             const badgeClasses =
               status === 'completed'
-                ? 'bg-secondary/10 text-secondary'
+                ? 'bg-sage/12 text-sage-dark'
                 : status === 'accepted'
-                ? 'bg-primary/10 text-primary'
-                : 'bg-surface-container text-on-surface-variant';
+                ? 'bg-terracotta/12 text-terracotta-dark'
+                : 'bg-parchment-dark text-ink';
 
             return (
-              <div key={id} className="flex flex-col justify-between gap-4 rounded-[1.5rem] border border-outline/15 bg-surface-container-lowest p-5 shadow-[0_10px_30px_rgba(27,28,25,0.04)] md:flex-row md:items-center">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-on-surface">
-                    <Sparkles className="h-4 w-4 text-primary" />
-                    <span className="font-semibold">{listingTitle}</span>
+              <div
+                key={id}
+                className="group listing-card flex flex-col justify-between gap-4 rounded-[20px] border border-border/60 bg-white p-6 md:flex-row md:items-center"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 text-charcoal">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-terracotta/10">
+                      <ShoppingBag className="h-5 w-5 text-terracotta" />
+                    </div>
+                    <span className="font-display text-lg font-bold" style={{ letterSpacing: '-0.01em' }}>{listingTitle}</span>
                   </div>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <div className="text-sm text-on-surface-variant">Offer: <span className="font-semibold text-on-surface">₹{o.offerPrice ?? o.total ?? 0}</span></div>
-                    <div className="text-sm text-on-surface-variant">Your role: <span className="font-semibold text-on-surface">{role}</span></div>
-                    <div className="text-sm text-on-surface-variant">Buyer: <span className="font-semibold text-on-surface">{buyerName}</span></div>
-                    <div className="text-sm text-on-surface-variant">Seller: <span className="font-semibold text-on-surface">{sellerName}</span></div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="text-sm text-ink">Offer: <span className="font-semibold text-charcoal">Rs. {o.offerPrice ?? o.total ?? 0}</span></div>
+                    <div className="text-sm text-ink">Your role: <span className="font-semibold text-charcoal">{role}</span></div>
+                    <div className="text-sm text-ink">Buyer: <span className="font-semibold text-charcoal">{buyerName}</span></div>
+                    <div className="text-sm text-ink">Seller: <span className="font-semibold text-charcoal">{sellerName}</span></div>
                   </div>
-                  <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-semibold ${badgeClasses}`}>
+                  <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wider ${badgeClasses}`}>
                     {status === 'completed' ? <CheckCircle2 className="h-4 w-4" /> : status === 'accepted' ? <Handshake className="h-4 w-4" /> : <Clock3 className="h-4 w-4" />}
-                    <span className="capitalize">{status}</span>
+                    <span>{status}</span>
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">{renderActions(o)}</div>
+                <div className="flex flex-wrap items-center gap-3">{renderActions(o)}</div>
               </div>
             );
           })}

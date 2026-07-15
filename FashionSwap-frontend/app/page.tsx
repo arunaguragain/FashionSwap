@@ -29,7 +29,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-charcoal/90 via-charcoal/60 to-transparent" />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-6 py-24 md:py-36">
+        <div className="relative w-full px-6 py-24 md:px-8 md:py-36">
           <div className="max-w-xl">
             <Badge variant="terracotta" className="mb-6">
               <Leaf size={12} />
@@ -80,25 +80,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Stats strip */}
-        <div className="relative border-t border-parchment/10">
-          <div className="max-w-7xl mx-auto px-6 py-5 grid grid-cols-3 gap-4 text-center">
-            {[
-              { n: "12,400+", label: "Active listings" },
-              { n: "4,800+", label: "Sellers" },
-              { n: "Rs. 2.8M+", label: "Saved by buyers" },
-            ].map(({ n, label }) => (
-              <div key={label}>
-                <div className="font-display text-xl md:text-2xl font-bold text-parchment" style={{ letterSpacing: "-0.02em" }}>{n}</div>
-                <div className="text-xs text-parchment/50 mt-0.5">{label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Stats strip removed — kept layout simpler for current UI */}
       </section>
 
       {/* Categories */}
-      <section className="max-w-7xl mx-auto px-6 py-16">
+      <section className="w-full px-6 py-16 md:px-8">
         <div className="flex items-end justify-between mb-8">
           <div>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-charcoal" style={{ letterSpacing: "-0.02em" }}>
@@ -135,7 +121,7 @@ export default function Home() {
       </section>
 
       {/* Featured Listings */}
-      <section className="max-w-7xl mx-auto px-6 pb-16">
+      <section className="w-full px-6 pb-16 md:px-8">
         <div className="flex items-end justify-between mb-8">
           <div>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-charcoal" style={{ letterSpacing: "-0.02em" }}>
@@ -159,7 +145,7 @@ export default function Home() {
 
       {/* Value props */}
       <section className="bg-charcoal text-parchment py-16">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="w-full px-6 md:px-8">
           <div className="text-center mb-12">
             <h2 className="font-display text-3xl md:text-4xl font-bold" style={{ letterSpacing: "-0.02em" }}>
               Why FashionSwap?

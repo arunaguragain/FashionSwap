@@ -7,9 +7,13 @@ export const register = async (registerData: RegisterData) => {
     const response = await axios.post(API.AUTH.REGISTER, registerData);
     return response.data;
   } catch (error: Error | any) {
-    throw new Error(
-      error.response?.data?.message || error.message || "Registration failed"
-    );
+    const resp = error.response?.data;
+    let msg = error.message || "Registration failed";
+    if (resp) {
+      if (Array.isArray(resp.errors)) msg = resp.errors.map((e: any) => e.msg || e.message || String(e)).join(', ');
+      else if (resp.message) msg = typeof resp.message === 'string' ? resp.message : JSON.stringify(resp.message);
+    }
+    throw new Error(msg);
   }
 }
 
@@ -18,9 +22,13 @@ export const login = async (loginData: LoginData) => {
     const response = await axios.post(API.AUTH.LOGIN, loginData);
     return response.data;
   } catch (error: Error | any) {
-    throw new Error(
-      error.response?.data?.message || error.message || "Login failed"
-    );
+    const resp = error.response?.data;
+    let msg = error.message || "Login failed";
+    if (resp) {
+      if (Array.isArray(resp.errors)) msg = resp.errors.map((e: any) => e.msg || e.message || String(e)).join(', ');
+      else if (resp.message) msg = typeof resp.message === 'string' ? resp.message : JSON.stringify(resp.message);
+    }
+    throw new Error(msg);
   }
 }
 
@@ -29,9 +37,10 @@ export const whoAmI = async () => {
     const response = await axios.get(API.AUTH.WHOAMI);
     return response.data;
   } catch (error: Error | any) {
-    throw new Error(
-      error.response?.data?.message || error.message || "Whoami failed"
-    );
+    const resp = error.response?.data;
+    let msg = error.message || "Whoami failed";
+    if (resp && resp.message) msg = typeof resp.message === 'string' ? resp.message : JSON.stringify(resp.message);
+    throw new Error(msg);
   }
 }
 
@@ -48,9 +57,10 @@ export const updateProfile = async (userId: string, profileData: any) => {
     );
     return response.data;
   } catch (error: Error | any) {
-    throw new Error(
-      error.response?.data?.message || error.message || "Update profile failed"
-    );
+    const resp = error.response?.data;
+    let msg = error.message || "Update profile failed";
+    if (resp && resp.message) msg = typeof resp.message === 'string' ? resp.message : JSON.stringify(resp.message);
+    throw new Error(msg);
   }
 }
 
@@ -59,9 +69,10 @@ export const forgotPassword = async (email: string) => {
     const response = await axios.post(API.AUTH.FORGOT_PASSWORD, { email });
     return response.data;
   } catch (error: Error | any) {
-    throw new Error(
-      error.response?.data?.message || error.message || "Forgot password request failed"
-    );
+    const resp = error.response?.data;
+    let msg = error.message || "Forgot password request failed";
+    if (resp && resp.message) msg = typeof resp.message === 'string' ? resp.message : JSON.stringify(resp.message);
+    throw new Error(msg);
   }
 }
 
@@ -70,9 +81,10 @@ export const resetPassword = async (token: string, password: string) => {
     const response = await axios.post(API.AUTH.RESET_PASSWORD(token), { newPassword: password });
     return response.data;
   } catch (error: Error | any) {
-    throw new Error(
-      error.response?.data?.message || error.message || "Reset password failed"
-    );
+    const resp = error.response?.data;
+    let msg = error.message || "Reset password failed";
+    if (resp && resp.message) msg = typeof resp.message === 'string' ? resp.message : JSON.stringify(resp.message);
+    throw new Error(msg);
   }
 }
 

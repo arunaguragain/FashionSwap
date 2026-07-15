@@ -9,7 +9,7 @@ import Badge from "@/components/ui/Badge";
 import { LISTINGS } from "@/data/listings";
 
 const CONDITIONS = ["New", "Like New", "Good", "Fair"];
-const CATEGORIES = ["clothes", "bags", "shoes"];
+const CATEGORIES = ["clothes", "bags", "shoes", "accessories", "jewellery"];
 
 function BrowseContent() {
   const searchParams = useSearchParams();
@@ -134,7 +134,7 @@ function BrowseContent() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <div className="w-full px-4 sm:px-6 md:px-8 py-8">
       {/* Search bar */}
       <div className="flex gap-3 mb-6">
         <div className="flex-1 relative">

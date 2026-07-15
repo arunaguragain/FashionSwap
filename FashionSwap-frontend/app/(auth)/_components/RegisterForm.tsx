@@ -40,12 +40,13 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
   } = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
     mode: "onTouched",
-    defaultValues: { name: "", email: "", phone: "", password: "", confirmPassword: "", tos: false }
+    defaultValues: { firstName: "", lastName: "", email: "", phone: "", location: "", password: "", confirmPassword: "", tos: false }
   });
 
   const onSubmitForm = async (data: RegisterData) => {
     setErrorMessage("");
     try {
+      // Minimal: send form data; backend should treat new users as allowed to buy and create listings
       const res = await handleRegister(data);
       if (!res.success) {
         try { pushToast({ title: res.message || 'Registration failed', tone: 'error' }); } catch(e) {}
@@ -71,16 +72,27 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
     <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-2.5">
       {errorMessage && <div className="text-red-500 text-xs mb-1">{errorMessage}</div>}
       
-      <Input 
-        label="Full name" 
-        type="text" 
-        compact
-        {...register("name")} 
-        onBlur={() => trigger("name")}
-        error={errors.name?.message} 
-        placeholder="Priya Maharjan" 
-        leftIcon={<User size={14} />} 
-      />
+      <div className="grid grid-cols-2 gap-2">
+        <Input 
+          label="First name" 
+          type="text" 
+          compact
+          {...register("firstName")} 
+          onBlur={() => trigger("firstName")}
+          error={errors.firstName?.message} 
+          placeholder="Priya" 
+          leftIcon={<User size={14} />} 
+        />
+        <Input 
+          label="Last name" 
+          type="text" 
+          compact
+          {...register("lastName")} 
+          onBlur={() => trigger("lastName")}
+          error={errors.lastName?.message} 
+          placeholder="Maharjan" 
+        />
+      </div>
       
       <Input 
         label="Email address" 
@@ -93,50 +105,62 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
         leftIcon={<Mail size={14} />} 
       />
       
-      <Input 
-        label="Phone number" 
-        type="tel" 
-        compact
-        {...register("phone")} 
-        onBlur={() => trigger("phone")}
-        error={errors.phone?.message} 
-        placeholder="9800000000" 
-      />
+      <div className="grid grid-cols-2 gap-2">
+        <Input 
+          label="Phone number" 
+          type="tel" 
+          compact
+          {...register("phone")} 
+          onBlur={() => trigger("phone")}
+          error={errors.phone?.message} 
+          placeholder="9800000000" 
+        />
+        <Input
+          label="Location"
+          type="text"
+          compact
+          {...register("location")}
+          onBlur={() => trigger("location")}
+          error={errors.location?.message}
+          placeholder="Kathmandu, Nepal"
+        />
+      </div>
       
-      <Input
-        label="Password"
-        type={showPassword ? "text" : "password"}
-        compact
-        {...register("password")}
-        onBlur={() => trigger("password")}
-        error={errors.password?.message}
-        placeholder="Min. 8 characters"
-        leftIcon={<Lock size={14} />}
-        rightElement={
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-ink hover:text-charcoal transition-colors">
-            {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
-          </button>
-        }
-      />
-      
-      <Input
-        label="Confirm password"
-        type={showConfirmPassword ? "text" : "password"}
-        compact
-        {...register("confirmPassword")}
-        onBlur={() => trigger("confirmPassword")}
-        error={errors.confirmPassword?.message}
-        placeholder="Re-enter your password"
-        leftIcon={<Lock size={14} />}
-        rightElement={
-          <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="text-ink hover:text-charcoal transition-colors">
-            {showConfirmPassword ? <EyeOff size={14} /> : <Eye size={14} />}
-          </button>
-        }
-      />
+      <div className="grid grid-cols-2 gap-2">
+        <Input
+          label="Password"
+          type={showPassword ? "text" : "password"}
+          compact
+          {...register("password")}
+          onBlur={() => trigger("password")}
+          error={errors.password?.message}
+          placeholder="Min. 8 characters"
+          leftIcon={<Lock size={14} />}
+          rightElement={
+            <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-ink hover:text-charcoal transition-colors">
+              {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+            </button>
+          }
+        />
+        <Input
+          label="Confirm password"
+          type={showConfirmPassword ? "text" : "password"}
+          compact
+          {...register("confirmPassword")}
+          onBlur={() => trigger("confirmPassword")}
+          error={errors.confirmPassword?.message}
+          placeholder="Re-enter password"
+          leftIcon={<Lock size={14} />}
+          rightElement={
+            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="text-ink hover:text-charcoal transition-colors">
+              {showConfirmPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+            </button>
+          }
+        />
+      </div>
       
       <div>
-        <label className="flex items-center gap-2 cursor-pointer">
+        <label className="flex items-center gap-2 cursor-pointer mt-1">
           <input type="checkbox" {...register("tos")} className="w-3.5 h-3.5 rounded border-border text-terracotta focus:ring-terracotta/30" />
           <span className="text-[11px] text-ink">I agree to the <a href="/terms" className="text-terracotta font-medium hover:text-terracotta-dark">Terms & Conditions</a> and <a href="/privacy" className="text-terracotta font-medium hover:text-terracotta-dark">Privacy Policy</a></span>
         </label>

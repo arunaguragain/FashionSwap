@@ -1,9 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Heart, User, Plus, Menu, X, Package } from "lucide-react";
+import { Search, Heart, User, Plus, Menu, X, Package, LogOut, Settings, ChevronDown } from "lucide-react";
 import Logo from "./Logo";
+import { useAuth } from "@/context/AuthContext";
 
 const navLinks = [
   { label: "Browse", href: "/listings" },
@@ -14,22 +15,38 @@ const navLinks = [
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const pathname = usePathname() || "/";
+  const { isAuthenticated, user, logout, loading } = useAuth();
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/forgot-password" || pathname.startsWith("/mfa-");
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href.split("?")[0]);
 
+  // Close user menu on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   if (isAuthPage) {
     return <main className="flex-1 min-h-screen bg-parchment">{children}</main>;
   }
+
+  const userInitial = (user?.name || user?.fullName || user?.email || "U").charAt(0).toUpperCase();
 
   return (
     <div className="min-h-screen flex flex-col bg-parchment">
       {/* Nav */}
       <header className="sticky top-0 z-50 bg-parchment/95 backdrop-blur-sm border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="w-full px-4 sm:px-6 md:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex-shrink-0">
               <Logo size="sm" />
@@ -57,22 +74,87 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <Link href="/listings" className="p-2 text-ink hover:text-charcoal rounded-lg hover:bg-parchment-dark transition-colors">
                 <Search size={18} />
               </Link>
-              <Link href="/saved" className="p-2 text-ink hover:text-charcoal rounded-lg hover:bg-parchment-dark transition-colors">
-                <Heart size={18} />
-              </Link>
-              <Link href="/orders" className="p-2 text-ink hover:text-charcoal rounded-lg hover:bg-parchment-dark transition-colors">
-                <Package size={18} />
-              </Link>
-              <Link href="/profile" className="p-2 text-ink hover:text-charcoal rounded-lg hover:bg-parchment-dark transition-colors">
-                <User size={18} />
-              </Link>
-              <Link
-                href="/listing/create"
-                className="ml-2 flex items-center gap-1.5 bg-terracotta text-white text-sm font-medium px-4 py-2 rounded-[10px] hover:bg-terracotta-dark transition-colors"
-              >
-                <Plus size={15} />
-                Sell
-              </Link>
+
+              {!loading && isAuthenticated ? (
+                <>
+                  <Link href="/saved" className="p-2 text-ink hover:text-charcoal rounded-lg hover:bg-parchment-dark transition-colors">
+                    <Heart size={18} />
+                  </Link>
+                  <Link href="/orders" className="p-2 text-ink hover:text-charcoal rounded-lg hover:bg-parchment-dark transition-colors">
+                    <Package size={18} />
+                  </Link>
+
+                  {/* User dropdown */}
+                  <div className="relative" ref={userMenuRef}>
+                    <button
+                      onClick={() => setUserMenuOpen(!userMenuOpen)}
+                      className="flex items-center gap-1.5 p-1.5 rounded-lg hover:bg-parchment-dark transition-colors"
+                    >
+                      <span className="flex items-center justify-center h-7 w-7 rounded-full bg-terracotta text-white text-xs font-bold">
+                        {userInitial}
+                      </span>
+                      <ChevronDown size={14} className={`text-ink transition-transform duration-200 ${userMenuOpen ? "rotate-180" : ""}`} />
+                    </button>
+
+                    {userMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-56 rounded-xl border border-border bg-white shadow-lg ring-1 ring-black/5 py-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="px-4 py-3 border-b border-border/60">
+                          <p className="text-sm font-semibold text-charcoal truncate">{user?.name || user?.fullName || "User"}</p>
+                          <p className="text-xs text-ink truncate mt-0.5">{user?.email || ""}</p>
+                        </div>
+                        <Link
+                          href="/profile"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-charcoal-soft hover:bg-parchment-dark transition-colors"
+                        >
+                          <User size={15} className="text-ink" /> My Profile
+                        </Link>
+                        <Link
+                          href="/settings"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-charcoal-soft hover:bg-parchment-dark transition-colors"
+                        >
+                          <Settings size={15} className="text-ink" /> Settings
+                        </Link>
+                        <div className="border-t border-border/60 mt-1 pt-1">
+                          <button
+                            onClick={() => {
+                              setUserMenuOpen(false);
+                              logout();
+                            }}
+                            className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                          >
+                            <LogOut size={15} /> Logout
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <Link
+                    href="/listing/create"
+                    className="ml-2 flex items-center gap-1.5 bg-terracotta text-white text-sm font-medium px-4 py-2 rounded-[10px] hover:bg-terracotta-dark transition-colors"
+                  >
+                    <Plus size={15} />
+                    Sell
+                  </Link>
+                </>
+              ) : !loading ? (
+                <>
+                  <Link
+                    href="/login"
+                    className="text-sm font-medium text-charcoal-soft hover:text-charcoal transition-colors px-3 py-2"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="flex items-center gap-1.5 bg-terracotta text-white text-sm font-medium px-4 py-2 rounded-[10px] hover:bg-terracotta-dark transition-colors"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              ) : null}
             </div>
 
             {/* Mobile menu button */}
@@ -98,24 +180,69 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 {link.label}
               </Link>
             ))}
-            <div className="pt-3 border-t border-border grid grid-cols-2 gap-2">
-              <Link href="/saved" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2 text-sm text-ink">
-                <Heart size={16} /> Saved
-              </Link>
-              <Link href="/orders" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2 text-sm text-ink">
-                <Package size={16} /> Orders
-              </Link>
-              <Link href="/profile" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2 text-sm text-ink">
-                <User size={16} /> Profile
-              </Link>
-            </div>
-            <Link
-              href="/listing/create"
-              onClick={() => setMenuOpen(false)}
-              className="mt-2 w-full flex items-center justify-center gap-2 bg-terracotta text-white py-3 rounded-[12px] font-medium"
-            >
-              <Plus size={16} /> List an Item
-            </Link>
+
+            {!loading && isAuthenticated ? (
+              <>
+                <div className="pt-3 border-t border-border">
+                  <div className="flex items-center gap-3 px-1 py-2 mb-2">
+                    <span className="flex items-center justify-center h-8 w-8 rounded-full bg-terracotta text-white text-sm font-bold">
+                      {userInitial}
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-charcoal">{user?.name || user?.fullName || "User"}</p>
+                      <p className="text-xs text-ink">{user?.email || ""}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link href="/saved" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2 text-sm text-ink">
+                    <Heart size={16} /> Saved
+                  </Link>
+                  <Link href="/orders" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2 text-sm text-ink">
+                    <Package size={16} /> Orders
+                  </Link>
+                  <Link href="/profile" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2 text-sm text-ink">
+                    <User size={16} /> Profile
+                  </Link>
+                  <Link href="/settings" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2 text-sm text-ink">
+                    <Settings size={16} /> Settings
+                  </Link>
+                </div>
+                <Link
+                  href="/listing/create"
+                  onClick={() => setMenuOpen(false)}
+                  className="mt-2 w-full flex items-center justify-center gap-2 bg-terracotta text-white py-3 rounded-[12px] font-medium"
+                >
+                  <Plus size={16} /> List an Item
+                </Link>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    logout();
+                  }}
+                  className="mt-2 w-full flex items-center justify-center gap-2 border border-red-200 text-red-600 py-3 rounded-[12px] font-medium hover:bg-red-50 transition-colors"
+                >
+                  <LogOut size={16} /> Logout
+                </button>
+              </>
+            ) : !loading ? (
+              <div className="pt-3 border-t border-border space-y-2">
+                <Link
+                  href="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="block w-full text-center py-3 border border-border text-charcoal font-medium rounded-[12px] hover:bg-parchment-dark transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMenuOpen(false)}
+                  className="block w-full text-center py-3 bg-terracotta text-white font-medium rounded-[12px] hover:bg-terracotta-dark transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            ) : null}
           </div>
         )}
       </header>
@@ -124,7 +251,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Footer */}
       <footer className="bg-charcoal text-parchment/70 mt-16">
-        <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="w-full px-6 py-12 md:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
               <Logo size="sm" variant="light" />
@@ -145,11 +272,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div>
               <h4 className="text-sm font-semibold text-parchment mb-3">Account</h4>
               <ul className="space-y-2 text-sm">
-                {["Sell an Item", "My Orders", "Saved Items", "Settings", "Help"].map((item) => (
-                  <li key={item}>
-                    <span className="hover:text-parchment cursor-pointer transition-colors">{item}</span>
-                  </li>
-                ))}
+                <li><Link href="/listing/create" className="hover:text-parchment transition-colors">Sell an Item</Link></li>
+                <li><Link href="/orders" className="hover:text-parchment transition-colors">My Orders</Link></li>
+                <li><Link href="/saved" className="hover:text-parchment transition-colors">Saved Items</Link></li>
+                <li><Link href="/settings" className="hover:text-parchment transition-colors">Settings</Link></li>
               </ul>
             </div>
           </div>

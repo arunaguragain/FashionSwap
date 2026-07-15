@@ -121,17 +121,26 @@ export class UserService{
         if (!email) {
             throw new HttpError(400, "Email is required");
         }
+
         const existingUser = await userRepository.getUserByEmail(email);
         if (existingUser) return existingUser;
 
         const randomPassword = Math.random().toString(36).slice(-8);
         const hashedPassword = await bcrypts.hash(randomPassword, 10);
+
+        const [firstName, ...rest] = (name || "Google User").trim().split(" ");
+        const lastName = rest.length > 0 ? rest.join(" ") : "User";
+
         const newUser = await userRepository.createUser({
             email,
-            name: name || "Google User",
+            firstName: firstName || "Google",
+            lastName: lastName || "User",
+            location: "Nepal",
             password: hashedPassword,
             avatar: picture || undefined,
-        });
+            role: 'user',
+            isVerified: true,
+        } as any);
         return newUser;
     }
 

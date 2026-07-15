@@ -21,7 +21,7 @@ export default function RegisterPage() {
       </div>
 
       <div className="flex-1 h-full overflow-y-auto">
-        <div className="flex flex-col justify-center px-6 py-6 max-w-md mx-auto w-full min-h-full">
+        <div className="flex flex-col justify-center px-6 py-6 max-w-xl mx-auto w-full min-h-full">
           <div className="mb-4">
             <Link href="/"><Logo size="sm" /></Link>
           </div>

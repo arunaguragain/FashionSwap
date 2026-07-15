@@ -75,39 +75,8 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
             if (!response?.credential) return;
             (async () => {
               try {
-                // for login flow, make a quick email-existence check before the
-                // primary request.  this prevents account creation when the server
-                // wrongly upserts on login.
-                if (autoLogin) {
-                  const payload = parseJwt(response.credential);
-                  const email = payload.email;
-                  if (email) {
-                    try {
-                      const existsResp = await fetch(
-                        `${API.AUTH.EXISTS}?email=${encodeURIComponent(email)}`
-                      );
-                      if (existsResp.ok) {
-                        const { exists } = await existsResp.json();
-                        if (!exists) {
-                          try {
-                            pushToast({
-                              title: 'No account found - please register first',
-                              tone: 'error',
-                            });
-                          } catch (_) {}
-                          return; // abort early
-                        }
-                      }
-                      // if response not ok, ignore and continue; backend may not support endpoint
-                    } catch (e) {
-                      console.error('email check failed', e);
-                      // log error but don't block login – backend fix required
-                    }
-                  }
-                }
-
                 // always send an explicit action so the server can differentiate
-              // between login (existing account only) and register (create new user).
+                // between login (existing account only) and register (create new user).
               const payloadBody: Record<string, any> = {
                 idToken: response.credential,
                 action: autoLogin ? 'login' : 'register',
@@ -157,41 +126,35 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
                 }
 
                 if (data?.success) {
-                  // if we're on the login page and the server responded with a freshly
-                  // created user (this is the bug the user reported), treat that as a
-                  // failure rather than silently logging them in.  the backend should
-                  // reject, but some instances still return success+token.
-                  const newUserIndicator =
-                    data.newUser || data.created || data.isNew ||
-                    (typeof data.message === 'string' && /register|created|new user/i.test(data.message));
+                  // Normalize user object from server
+                  const user = data.data?.user ?? data.data;
 
-                  if (autoLogin && newUserIndicator) {
-                    try { pushToast({ title: 'No account found - please register first', tone: 'error' }); } catch (e) {}
-                    return; // don't treat as a successful login
-                  }
-
+                  // Registration flow: if component was rendered on the register page
+                  // (autoLogin === false) we should NOT auto-login the user even
+                  // if the server returned a token. Instead prompt to login.
                   if (!autoLogin) {
-                    // when creating a new account we don't want confusing server messages
                     try { pushToast({ title: 'Account created', description: 'Please login.', tone: 'success' }); } catch (e) {}
                     const loginPath = userType === 'Admin' ? '/admin_login' : '/login';
                     try { (router.push as any)(loginPath); } catch (e) { try { window.location.href = loginPath; } catch (_) {} }
                     return;
                   }
 
+                  // Login flow: persist token and user, then set auth state
                   if (data.token) {
                     try { localStorage.setItem("auth_token", data.token); } catch(e){}
                   }
-                  if (data.data) {
-                    try { localStorage.setItem("user_data", JSON.stringify(data.data)); } catch(e){}
-                    setUser && setUser(data.data);
+                  if (user) {
+                    try { localStorage.setItem("user_data", JSON.stringify(user)); } catch(e){}
+                    setUser && setUser(user);
                   }
+
                   try {
                     if (typeof document !== 'undefined' && data.token) {
                       const maxAge = 60 * 60 * 24 * 30; // 30 days
                       document.cookie = `auth_token=${encodeURIComponent(data.token)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
                     }
-                    if (typeof document !== 'undefined' && data.data) {
-                      const ud = encodeURIComponent(JSON.stringify(data.data));
+                    if (typeof document !== 'undefined' && user) {
+                      const ud = encodeURIComponent(JSON.stringify(user));
                       const maxAge = 60 * 60 * 24 * 30;
                       document.cookie = `user_data=${ud}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
                     }
@@ -200,7 +163,7 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
                     console.error('Could not set cookies in client', e);
                   }
                   setIsAuthenticated && setIsAuthenticated(true);
-                  const userRole = data.data?.role?.toLowerCase();
+                  const userRole = user?.role?.toLowerCase();
                   let redirectPath = "/profile";
                   if (userRole === "admin") redirectPath = "/admin/dashboard";
                   try {
@@ -278,10 +241,25 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
   }, [router]);
 
   const handleClick = () => {
-    const btn = document.getElementById("googleBtnHidden")?.querySelector("button, div[role=button]");
-    if (!btn) {
-      pushToast({ title: "Google sign-in not ready", description: "Please try again.", tone: "info" });
+    // Prefer programmatic prompt if available, otherwise click the rendered hidden button
+    try {
+      // @ts-ignore
+      if (window.google && window.google.accounts && typeof window.google.accounts.id.prompt === 'function') {
+        // prompt() will show the One Tap / GSI prompt if available
+        // It returns immediately; no need to toast on failure.
+        // @ts-ignore
+        window.google.accounts.id.prompt();
+        return;
+      }
+    } catch (e) {
+      // ignore
     }
+
+    const btn = document.getElementById("googleBtnHidden")?.querySelector("button, div[role=button]") as HTMLElement | null;
+    if (btn) {
+      try { btn.click(); } catch (e) { btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })); }
+    }
+    // If still not available, do not show a toast — the component will show an inline status message instead.
   };
 
   return (
@@ -289,16 +267,10 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
       <div className="mt-4">
         <button
           type="button"
-          onClick={() => {
-            const hidden = document.getElementById("googleBtnHidden");
-            const inner = hidden?.querySelector("button, div[role=button]") as HTMLElement | null;
-            if (inner) {
-              try { inner.click(); } catch (e) { inner.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })); }
-            } else {
-              try { pushToast({ title: 'Google sign-in not ready', description: 'Please try again.', tone: 'info' }); } catch(e){}
-            }
-          }}
-          className="w-full flex items-center justify-center gap-3 bg-white border border-border text-charcoal py-3 rounded-[12px] text-[15px] font-medium hover:bg-parchment-dark transition-colors"
+          onClick={handleClick}
+          disabled={!(gsiStatus === 'button-rendered' || gsiStatus === 'initialized')}
+          title={gsiStatus === 'button-rendered' ? 'Continue with Google' : 'Google sign-in loading'}
+          className={`w-full flex items-center justify-center gap-3 bg-white border border-border text-charcoal py-3 rounded-[12px] text-[15px] font-medium transition-colors ${gsiStatus === 'button-rendered' ? 'hover:bg-parchment-dark' : 'opacity-60 cursor-wait'}`}
         >
           <svg width="18" height="18" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -314,6 +286,9 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
           style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", overflow: "hidden" }}
           aria-hidden="true"
         />
+        {gsiStatus !== 'button-rendered' && (
+          <p className="mt-2 text-xs text-ink/60">Google sign-in loading…</p>
+        )}
       </div>
 
       <style jsx>{`

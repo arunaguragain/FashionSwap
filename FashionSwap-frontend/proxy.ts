@@ -8,7 +8,7 @@ const publicRoutes = [
     '/forget-password'
 ];
 const adminRoutes = ['/admin'];
-const userRoutes = ['/user'];
+const userRoutes = ['/user', '/saved'];
 
 export async function proxy(req: NextRequest) {
     const { pathname } = req.nextUrl;
@@ -50,6 +50,7 @@ export const config = {
     matcher: [
         '/admin/:path*',
         '/user/:path*',
+        '/saved',
         '/admin_login',
         '/login',
         '/register',

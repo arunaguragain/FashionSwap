@@ -60,9 +60,10 @@ export const handleGoogleSignIn = async (idToken: string) => {
         const response = await axios.post(API.AUTH.GOOGLE, { idToken });
         const data = response.data;
         if (data.success) {
+            const user = data.data?.user ?? data.data;
             await setAuthToken(data.token);
-            await setUserData(data.data);
-            return { success: true, data: data.data };
+            await setUserData(user);
+            return { success: true, data: user };
         }
         return { success: false, message: data.message || 'Google sign-in failed' };
     } catch (error: Error | any) {

@@ -7,21 +7,25 @@ const passwordSchema = z
   .regex(/[a-z]/, {message:"Must include at least one lowercase letter"})
   .regex(/[0-9]/, {message:"Must include at least one number"});
 
+// Require at least one special (non-alphanumeric) character as many backends expect this
+const passwordWithSpecial = passwordSchema.regex(/[^A-Za-z0-9]/, { message: "Must include at least one special character" });
+
 export const loginSchema = z.object({
-    email:z.email({ message: "Enter a valid email" }),
-    password: passwordSchema
+  email:z.email({ message: "Enter a valid email" }),
+  password: passwordWithSpecial
 });
 export type LoginData = z.infer<typeof loginSchema>;
 
 
 export const registerSchema = z.object({
-  name: z.string().min(2, { message: "Enter your full name" }),
+  firstName: z.string().min(2, { message: "Enter your first name" }),
+  lastName: z.string().min(2, { message: "Enter your last name" }),
   email: z.email({ message: "Enter a valid email" }),
   phone: z.string().min(10, { message: "Enter a valid phone number" }),
-  password: passwordSchema,
+  location: z.string().min(2, { message: "Enter your location" }),
+  password: passwordWithSpecial,
   confirmPassword: z.string(),
   tos: z.boolean().refine((v) => v === true, { message: "You must agree to the Terms & Conditions" }),
-  role: z.string().optional(),
 }).refine((v) => v.password === v.confirmPassword, {
     path: ["confirmPassword"],
     message: "Passwords do not match",
@@ -35,7 +39,7 @@ export const forgotPasswordSchema = z.object({
 export type ForgotPasswordData = z.infer<typeof forgotPasswordSchema>;
 
 export const resetPasswordSchema = z.object({
-  password: passwordSchema,
+  password: passwordWithSpecial,
   confirmPassword: z.string(),
 }).refine((v) => v.password === v.confirmPassword, {
   path: ["confirmPassword"],
