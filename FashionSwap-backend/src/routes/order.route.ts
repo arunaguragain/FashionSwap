@@ -25,5 +25,6 @@ router.get('/:orderId', authenticateJWT, requireOrderParticipant, (req: Request,
 router.put('/:orderId/accept', generalLimiter, authenticateJWT, requireOrderParticipant, (req: Request, res: Response) => orderController.acceptOrder(req, res));
 router.put('/:orderId/decline', generalLimiter, authenticateJWT, requireOrderParticipant, (req: Request, res: Response) => orderController.declineOrder(req, res));
 router.put('/:orderId/complete', generalLimiter, authenticateJWT, requireOrderParticipant, (req: Request, res: Response) => orderController.completeOrder(req, res));
+router.put('/:orderId/cancel', generalLimiter, authenticateJWT, requireOrderParticipant, (req: Request, res: Response) => orderController.cancelOrder(req, res));
 
 export default router;

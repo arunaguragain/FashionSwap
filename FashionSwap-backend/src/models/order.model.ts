@@ -5,8 +5,8 @@ export interface IOrder extends Document {
   listingId: mongoose.Types.ObjectId;
   buyerId: mongoose.Types.ObjectId;
   sellerId: mongoose.Types.ObjectId;
-  offerPrice: number;
-  offerMessage?: string;
+  price: number;
+  deliveryAddress?: string;
   status: 'created' | 'accepted' | 'declined' | 'completed' | 'cancelled';
   deliveryMethod: 'cash_on_delivery' | 'meet_at_location';
   meetingLocation?: string;
@@ -34,12 +34,12 @@ const orderSchema = new Schema<IOrder>(
       ref: 'User',
       required: true,
     },
-    offerPrice: {
+    price: {
       type: Number,
       required: true,
       min: 0,
     },
-    offerMessage: {
+    deliveryAddress: {
       type: String,
       maxlength: 500,
       trim: true,

@@ -8,15 +8,57 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import { getListing, getListings, toggleFavorite } from "@/lib/api";
 import ListingCard from "@/components/ui/ListingCard";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ListingDetail() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
+  const { user } = useAuth();
   const [listing, setListing] = useState<any>(null);
   const [related, setRelated] = useState<any[]>([]);
   const [imgIdx, setImgIdx] = useState(0);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
+  
+  // Buy Now Modal States
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [deliveryDetails, setDeliveryDetails] = useState({
+    fullName: "",
+    phone: "",
+    street: "",
+    city: "",
+    zipCode: ""
+  });
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+
+  const handleBuyNow = async () => {
+    const { fullName, phone, street, city, zipCode } = deliveryDetails;
+    if (!fullName.trim() || !phone.trim() || !street.trim() || !city.trim()) {
+      alert("Please fill in all required delivery details (Name, Phone, Street, City).");
+      return;
+    }
+
+    const formattedAddress = `${fullName}\nPhone: ${phone}\n${street}, ${city} ${zipCode}`.trim();
+
+    setIsSubmittingOrder(true);
+    try {
+      const { createOrder } = await import("@/lib/api");
+      const res = await createOrder({
+        listingId: listing._id || listing.id,
+        price: listing.price || listing.askingPrice,
+        deliveryMethod: "cash_on_delivery",
+        deliveryAddress: formattedAddress,
+      });
+
+      setIsCheckoutModalOpen(false);
+      alert("Order placed successfully!");
+      router.push("/orders");
+    } catch (err: any) {
+      alert(err.message || "Failed to place order.");
+    } finally {
+      setIsSubmittingOrder(false);
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -91,6 +133,11 @@ export default function ListingDetail() {
   const daysAgo = createdAt
     ? Math.max(0, Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24)))
     : null;
+  const isOwner = user && listing && (
+    (user._id || user.id) === listing.sellerId || 
+    (user._id || user.id) === listing.sellerId?._id || 
+    (user._id || user.id) === listing.seller
+  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -101,48 +148,40 @@ export default function ListingDetail() {
         <ChevronLeft size={16} /> Back to browse
       </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 xl:gap-16">
-        {/* Image gallery */}
-        <div>
-          {/* Main image */}
-          <div className="relative bg-sand-light rounded-[24px] overflow-hidden" style={{ aspectRatio: "3/4" }}>
-            <img
-              src={images[imgIdx]}
-              alt={displayTitle}
-              className="w-full h-full object-cover transition-opacity duration-300"
-            />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        {/* Left Col - Images */}
+        <div className="space-y-4">
+          <div className="w-full bg-sand-light rounded-[24px] overflow-hidden relative group" style={{ aspectRatio: "3/4" }}>
+            <img src={images[imgIdx]} alt={displayTitle} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <button
               onClick={handleToggleFavorite}
-              className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center shadow-sm transition-all ${
-                saved ? "bg-terracotta text-white" : "bg-white text-ink hover:text-terracotta"
-              }`}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-charcoal shadow-sm hover:bg-white hover:scale-110 transition-all z-10"
             >
-              <Heart size={18} fill={saved ? "currentColor" : "none"} />
+              <Heart size={20} className={saved ? "fill-terracotta text-terracotta" : ""} />
             </button>
-            <button className="absolute top-4 right-16 w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-ink hover:text-charcoal transition-colors">
-              <Share2 size={16} />
-            </button>
-            {imgIdx > 0 && (
-              <button
-                onClick={() => setImgIdx(imgIdx - 1)}
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm"
-              >
-                <ChevronLeft size={16} />
-              </button>
-            )}
-            {imgIdx < images.length - 1 && (
-              <button
-                onClick={() => setImgIdx(imgIdx + 1)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm"
-              >
-                <ChevronRight size={16} />
-              </button>
+            
+            {images.length > 1 && (
+              <>
+                <button
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-charcoal opacity-0 group-hover:opacity-100 transition-all shadow-sm hover:bg-white disabled:opacity-0"
+                  onClick={() => setImgIdx(prev => prev > 0 ? prev - 1 : prev)}
+                  disabled={imgIdx === 0}
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-charcoal opacity-0 group-hover:opacity-100 transition-all shadow-sm hover:bg-white disabled:opacity-0"
+                  onClick={() => setImgIdx(prev => prev < images.length - 1 ? prev + 1 : prev)}
+                  disabled={imgIdx === images.length - 1}
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </>
             )}
           </div>
-
-          {/* Thumbnails */}
+          
           {images.length > 1 && (
-            <div className="flex gap-2.5 mt-3">
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {images.map((img: string, i: number) => (
                 <button
                   key={i}
@@ -223,24 +262,111 @@ export default function ListingDetail() {
 
           {/* CTAs */}
           <div className="flex gap-3 mt-auto">
-            <Button
-              fullWidth
-              size="lg"
-            >
-              Make an Offer
-            </Button>
-            <button className="flex items-center gap-2 border border-border text-charcoal px-5 py-3.5 rounded-[14px] font-medium hover:bg-parchment-dark transition-colors text-[15px] whitespace-nowrap">
-              <MessageCircle size={18} />
-              Message
-            </button>
+            {isOwner ? (
+              <Button
+                fullWidth
+                size="lg"
+                onClick={() => router.push(`/listing/${id}/edit`)}
+              >
+                Edit Listing
+              </Button>
+            ) : (
+              <Button
+                fullWidth
+                size="lg"
+                onClick={() => setIsCheckoutModalOpen(true)}
+              >
+                Buy Now
+              </Button>
+            )}
           </div>
 
-          <div className="flex items-center gap-2 mt-4 text-xs text-ink justify-center">
-            <Shield size={12} className="text-sage" />
-            Cash on delivery · Meet in person · No platform fees
-          </div>
+          {!isOwner && (
+            <div className="flex items-center gap-2 mt-4 text-xs text-ink justify-center">
+              <Shield size={12} className="text-sage" />
+              Cash on delivery · Meet in person · No platform fees
+            </div>
+          )}
         </div>
       </div>
+
+      {isCheckoutModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/50 backdrop-blur-sm">
+          <div className="bg-white rounded-[24px] p-6 w-full max-w-md shadow-lg relative">
+            <button
+              onClick={() => setIsCheckoutModalOpen(false)}
+              className="absolute right-4 top-4 text-ink hover:text-charcoal transition-colors"
+            >
+              <Shield size={20} className="hidden" /> {/* just keeping import happy if unused, wait shield is used above. I'll just use X from lucide but it's not imported. Let me use HTML entity */}
+              ✕
+            </button>
+            <h2 className="font-display text-2xl font-bold text-charcoal mb-4">Checkout</h2>
+            <div className="mb-4">
+              <p className="text-sm font-semibold text-charcoal">Item: {displayTitle}</p>
+              <p className="text-lg font-bold text-terracotta">Rs. {displayPrice.toLocaleString()}</p>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-charcoal mb-1">Full Name</label>
+                <input
+                  type="text"
+                  value={deliveryDetails.fullName}
+                  onChange={(e) => setDeliveryDetails(prev => ({ ...prev, fullName: e.target.value }))}
+                  placeholder="John Doe"
+                  className="w-full rounded-[14px] border border-border px-3 py-2 text-sm text-charcoal"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-charcoal mb-1">Phone Number</label>
+                <input
+                  type="tel"
+                  value={deliveryDetails.phone}
+                  onChange={(e) => setDeliveryDetails(prev => ({ ...prev, phone: e.target.value }))}
+                  placeholder="+1234567890"
+                  className="w-full rounded-[14px] border border-border px-3 py-2 text-sm text-charcoal"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-charcoal mb-1">Street Address</label>
+                <input
+                  type="text"
+                  value={deliveryDetails.street}
+                  onChange={(e) => setDeliveryDetails(prev => ({ ...prev, street: e.target.value }))}
+                  placeholder="123 Main St, Apt 4B"
+                  className="w-full rounded-[14px] border border-border px-3 py-2 text-sm text-charcoal"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-charcoal mb-1">City</label>
+                  <input
+                    type="text"
+                    value={deliveryDetails.city}
+                    onChange={(e) => setDeliveryDetails(prev => ({ ...prev, city: e.target.value }))}
+                    placeholder="New York"
+                    className="w-full rounded-[14px] border border-border px-3 py-2 text-sm text-charcoal"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-charcoal mb-1">Zip Code <span className="text-ink font-normal">(Optional)</span></label>
+                  <input
+                    type="text"
+                    value={deliveryDetails.zipCode}
+                    onChange={(e) => setDeliveryDetails(prev => ({ ...prev, zipCode: e.target.value }))}
+                    placeholder="10001"
+                    className="w-full rounded-[14px] border border-border px-3 py-2 text-sm text-charcoal"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="mt-6">
+              <Button fullWidth onClick={handleBuyNow} disabled={isSubmittingOrder}>
+                {isSubmittingOrder ? "Placing Order..." : "Confirm Purchase"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Related listings */}
       {related.length > 0 && (

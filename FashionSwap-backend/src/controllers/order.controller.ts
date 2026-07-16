@@ -4,6 +4,7 @@ import Listing from '../models/listing.model';
 import Transaction from '../models/transaction.model';
 import User from '../models/user.model';
 import { recordAuditEvent } from '../services/audit.service';
+import { sendOrderPlacedEmail, sendOrderApprovedEmail } from '../utils/email';
 
 const getRequestUserId = (req: Request): string => {
   const user = (req as any).user;
@@ -14,7 +15,7 @@ export class OrderController {
   async createOrder(req: Request, res: Response): Promise<void> {
     try {
       const userId = getRequestUserId(req);
-      const { listingId, offerPrice, offerMessage, deliveryMethod, meetingLocation } = req.body;
+      const { listingId, price, deliveryAddress, deliveryMethod, meetingLocation } = req.body;
 
       const listing = await Listing.findById(listingId);
       if (!listing) {
@@ -36,8 +37,8 @@ export class OrderController {
         listingId,
         buyerId: userId,
         sellerId: listing.sellerId,
-        offerPrice,
-        offerMessage,
+        price,
+        deliveryAddress,
         deliveryMethod,
         meetingLocation,
       });
@@ -51,6 +52,17 @@ export class OrderController {
       });
 
       await transaction.save();
+
+      // Fetch seller email
+      const seller = await User.findById(listing.sellerId);
+      if (seller?.email) {
+        await sendOrderPlacedEmail(seller.email, {
+          listingTitle: listing.title,
+          price,
+          deliveryMethod,
+          deliveryAddress,
+        });
+      }
 
       res.status(201).json({ success: true, message: 'Order created', data: order });
     } catch (error) {
@@ -111,12 +123,43 @@ export class OrderController {
     }
   }
 
-  async acceptOrder(req: Request, res: Response): Promise<void> {
+  async cancelOrder(req: Request, res: Response): Promise<void> {
     try {
       const userId = getRequestUserId(req);
       const { orderId } = req.params;
 
       const order = await Order.findById(orderId);
+      if (!order) {
+        res.status(404).json({ success: false, message: 'Order not found' });
+        return;
+      }
+
+      if (order.buyerId.toString() !== userId && order.sellerId.toString() !== userId) {
+        res.status(403).json({ success: false, message: 'Only buyer or seller can cancel order' });
+        return;
+      }
+
+      if (order.status === 'accepted' || order.status === 'completed') {
+        res.status(400).json({ success: false, message: 'Order cannot be cancelled once accepted' });
+        return;
+      }
+
+      order.status = 'cancelled';
+      await order.save();
+      recordAuditEvent({ timestamp: new Date().toISOString(), userId, event: 'ORDER_CANCELLED', meta: { orderId } });
+
+      res.status(200).json({ success: true, message: 'Order cancelled', data: order });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Error cancelling order' });
+    }
+  }
+
+  async acceptOrder(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = getRequestUserId(req);
+      const { orderId } = req.params;
+
+      const order = await Order.findById(orderId).populate('listingId');
       if (!order) {
         res.status(404).json({ success: false, message: 'Order not found' });
         return;
@@ -135,6 +178,17 @@ export class OrderController {
       order.status = 'accepted';
       order.acceptedAt = new Date();
       await order.save();
+      
+      const buyer = await User.findById(order.buyerId);
+      if (buyer?.email) {
+        await sendOrderApprovedEmail(buyer.email, {
+          listingTitle: (order.listingId as any).title,
+          price: order.price,
+          deliveryMethod: order.deliveryMethod,
+          deliveryAddress: order.deliveryAddress,
+        });
+      }
+
       recordAuditEvent({ timestamp: new Date().toISOString(), userId, event: 'ORDER_ACCEPTED', meta: { orderId } });
 
       res.status(200).json({ success: true, message: 'Order accepted', data: order });

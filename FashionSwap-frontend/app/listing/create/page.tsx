@@ -67,8 +67,8 @@ export default function CreateListing() {
       if (res && res.url) {
         setImages((prev) => [...prev, res.url]);
       }
-    } catch (err: any) {
-      pushToast({ title: 'Upload failed', description: err.message || 'Unable to upload image.', tone: 'error' });
+    } catch (err: unknown) {
+      pushToast({ title: 'Upload failed', description: err instanceof Error ? err.message : 'Unable to upload image.', tone: 'error' });
     } finally {
       setIsUploadingImage(false);
       e.target.value = '';
@@ -128,10 +128,12 @@ export default function CreateListing() {
       if (id) {
         router.push(`/listing/${id}`);
       }
-    } catch (e: any) {
-      const data = e?.data;
+    } catch (e: unknown) {
+      const data = e && typeof e === 'object' && 'data' in e
+        ? (e as { data?: { errors?: Record<string, string> } }).data
+        : undefined;
       if (data?.errors && typeof data.errors === 'object') setFieldErrors(data.errors);
-      pushToast({ title: 'Create failed', description: e?.message || 'Unable to create listing.', tone: 'error' });
+      pushToast({ title: 'Create failed', description: e instanceof Error ? e.message : 'Unable to create listing.', tone: 'error' });
     } finally {
       setLoading(false);
     }
@@ -139,35 +141,40 @@ export default function CreateListing() {
 
   return (
     <Protected>
-      <div className="w-full px-6 py-10 md:px-8">
-        <div className="mb-8 w-full">
-          <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full bg-terracotta/12 text-terracotta-dark mb-3">
-            Create
+      <div className="w-full px-4 py-6 sm:px-6 md:px-8">
+        <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <span className="mb-3 inline-flex items-center rounded-full bg-terracotta/12 px-3 py-1 text-xs font-semibold text-terracotta-dark">
+              Create
+            </span>
+            <h1 className="font-display text-3xl font-bold leading-tight text-charcoal md:text-4xl">List an item</h1>
+            <p className="mt-2 text-sm leading-relaxed text-ink">
+              Fill in the details, the more information you provide, the faster it sells.
+            </p>
+          </div>
+          <span className="w-fit rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-ink shadow-sm">
+            {imageCountText}
           </span>
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-charcoal" style={{ letterSpacing: '-0.02em' }}>List an item</h1>
-          <p className="mt-2 text-sm text-ink leading-relaxed">
-            Fill in the details — the more information you provide, the faster it sells.
-          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="w-full rounded-[20px] bg-white border border-border/60 p-6 md:p-10 shadow-sm">
-          <div className="grid gap-12 lg:grid-cols-2">
+        <form onSubmit={handleSubmit} className="w-full rounded-[22px] border border-border/70 bg-white shadow-[0_18px_50px_rgba(53,39,30,0.08)]">
+          <div className="grid gap-8 p-5 md:p-7 lg:grid-cols-[1.02fr_0.98fr]">
             
             {/* LEFT COLUMN */}
-            <div className="space-y-10">
+            <div className="space-y-7">
               {/* Photos Section */}
-              <section className="space-y-5">
+              <section className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="font-display text-xl font-bold text-charcoal" style={{ letterSpacing: '-0.01em' }}>Photos</h2>
                     <p className="mt-1 text-sm text-ink">Add up to 8 photos so buyers can inspect your item.</p>
                   </div>
-                  <span className="rounded-[12px] bg-parchment-dark px-3 py-1 text-xs font-medium text-ink uppercase tracking-wider">{imageCountText}</span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {images.map((src, index) => (
                     <div key={src + index} className="group relative aspect-square overflow-hidden rounded-[14px] border border-border bg-sand-light">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={src} alt={`Preview ${index + 1}`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                       <button
                         type="button"
@@ -180,7 +187,7 @@ export default function CreateListing() {
                   ))}
 
                   {images.length < 8 && (
-                    <div className="flex flex-col justify-center gap-3 rounded-[14px] border border-dashed border-border bg-parchment-dark/50 p-4 transition-colors hover:border-terracotta/50 aspect-square">
+                    <div className="flex aspect-square flex-col justify-center gap-3 rounded-[14px] border border-dashed border-border bg-parchment-dark/50 p-4 transition-colors hover:border-terracotta/50">
                       <div className="flex items-center justify-center gap-2 text-ink">
                         <ImagePlus className="h-4 w-4 text-terracotta" />
                       </div>
@@ -203,7 +210,7 @@ export default function CreateListing() {
               </section>
 
               {/* Title & Description Section */}
-              <section className="space-y-5 pt-10 border-t border-border/40">
+              <section className="space-y-4 border-t border-border/50 pt-6">
                 <h2 className="font-display text-xl font-bold text-charcoal" style={{ letterSpacing: '-0.01em' }}>Listing overview</h2>
                 <div className="space-y-4">
                   <div>
@@ -212,7 +219,7 @@ export default function CreateListing() {
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       placeholder="e.g. Handwoven Dhaka kurti — rust & navy"
-                      className="w-full rounded-[14px] border border-border bg-white px-4 py-3 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                      className="w-full rounded-[12px] border border-border bg-white px-4 py-3 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta"
                     />
                     {fieldErrors.title && <p className="mt-2 text-sm text-red-600">{fieldErrors.title}</p>}
                   </div>
@@ -222,8 +229,8 @@ export default function CreateListing() {
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="Describe measurements, material, condition, and any details buyers should know."
-                      rows={6}
-                      className="w-full rounded-[14px] border border-border bg-white px-4 py-3 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                      rows={5}
+                      className="w-full rounded-[12px] border border-border bg-white px-4 py-3 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta"
                     />
                     <div className="flex items-center justify-between mt-2">
                       <p className="text-xs text-ink flex items-center gap-1"><Info size={12}/> Be specific to sell faster</p>
@@ -236,10 +243,10 @@ export default function CreateListing() {
             </div>
 
             {/* RIGHT COLUMN */}
-            <div className="space-y-10">
+            <div className="space-y-7">
               {/* Category & Condition */}
-              <div className="grid gap-10 sm:grid-cols-2">
-                <section className="space-y-4">
+              <div className="grid gap-6 sm:grid-cols-2">
+                <section className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h2 className="font-display text-xl font-bold text-charcoal" style={{ letterSpacing: '-0.01em' }}>Category</h2>
                     {fieldErrors.category && <p className="text-sm text-red-600">{fieldErrors.category}</p>}
@@ -250,7 +257,7 @@ export default function CreateListing() {
                         key={cat}
                         type="button"
                         onClick={() => setCategory(cat)}
-                        className={`rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-200 ${
+                        className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
                           category === cat
                             ? 'bg-terracotta text-white'
                             : 'bg-parchment border border-border text-charcoal hover:border-terracotta/40'
@@ -262,7 +269,7 @@ export default function CreateListing() {
                   </div>
                 </section>
 
-                <section className="space-y-4">
+                <section className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h2 className="font-display text-xl font-bold text-charcoal" style={{ letterSpacing: '-0.01em' }}>Condition</h2>
                     {fieldErrors.condition && <p className="text-sm text-red-600">{fieldErrors.condition}</p>}
@@ -275,7 +282,7 @@ export default function CreateListing() {
                         onClick={() => setCondition(item.id)}
                         className={`rounded-[12px] border px-4 py-3 text-left transition-all duration-200 ${
                           condition === item.id
-                            ? 'border-terracotta bg-terracotta/5'
+                            ? 'border-terracotta bg-terracotta/6 shadow-[0_8px_18px_rgba(196,98,45,0.10)]'
                             : 'border-border bg-white hover:border-terracotta/40 hover:bg-parchment'
                         }`}
                       >
@@ -288,34 +295,34 @@ export default function CreateListing() {
               </div>
 
               {/* Item Specifics */}
-              <section className="space-y-5 pt-10 border-t border-border/40">
+              <section className="space-y-4 border-t border-border/50 pt-6">
                 <h2 className="font-display text-xl font-bold text-charcoal" style={{ letterSpacing: '-0.01em' }}>Item specifics</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-charcoal">Brand</label>
-                    <input value={brand} onChange={(e) => setBrand(e.target.value)} className="w-full rounded-[14px] border border-border bg-white px-4 py-3 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta" />
+                    <input value={brand} onChange={(e) => setBrand(e.target.value)} className="w-full rounded-[12px] border border-border bg-white px-4 py-3 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta" />
                     {fieldErrors.brand && <p className="mt-2 text-sm text-red-600">{fieldErrors.brand}</p>}
                   </div>
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-charcoal">Size</label>
-                    <input value={size} onChange={(e) => setSize(e.target.value)} className="w-full rounded-[14px] border border-border bg-white px-4 py-3 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta" />
+                    <input value={size} onChange={(e) => setSize(e.target.value)} className="w-full rounded-[12px] border border-border bg-white px-4 py-3 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta" />
                     {fieldErrors.size && <p className="mt-2 text-sm text-red-600">{fieldErrors.size}</p>}
                   </div>
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-charcoal">Color</label>
-                    <input value={color} onChange={(e) => setColor(e.target.value)} className="w-full rounded-[14px] border border-border bg-white px-4 py-3 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta" />
+                    <input value={color} onChange={(e) => setColor(e.target.value)} className="w-full rounded-[12px] border border-border bg-white px-4 py-3 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta" />
                     {fieldErrors.color && <p className="mt-2 text-sm text-red-600">{fieldErrors.color}</p>}
                   </div>
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-charcoal">Material</label>
-                    <input value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full rounded-[14px] border border-border bg-white px-4 py-3 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta" />
+                    <input value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full rounded-[12px] border border-border bg-white px-4 py-3 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta" />
                     {fieldErrors.material && <p className="mt-2 text-sm text-red-600">{fieldErrors.material}</p>}
                   </div>
                 </div>
               </section>
 
               {/* Pricing & Location */}
-              <section className="space-y-5 pt-10 border-t border-border/40">
+              <section className="space-y-4 border-t border-border/50 pt-6">
                 <h2 className="font-display text-xl font-bold text-charcoal" style={{ letterSpacing: '-0.01em' }}>Pricing & location</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
@@ -327,7 +334,7 @@ export default function CreateListing() {
                         value={price}
                         onChange={(e) => setPrice(e.target.value ? Number(e.target.value) : '')}
                         placeholder="0"
-                        className="w-full rounded-[14px] border border-border bg-white px-4 py-3 pl-12 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                        className="w-full rounded-[12px] border border-border bg-white px-4 py-3 pl-12 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta"
                       />
                     </div>
                     {fieldErrors.askingPrice && <p className="mt-2 text-sm text-red-600">{fieldErrors.askingPrice}</p>}
@@ -337,7 +344,7 @@ export default function CreateListing() {
                     <select
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
-                      className="w-full rounded-[14px] border border-border bg-white px-4 py-3 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                      className="w-full rounded-[12px] border border-border bg-white px-4 py-3 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta"
                     >
                       <option value="">Select city</option>
                       {['Kathmandu', 'Lalitpur', 'Bhaktapur', 'Pokhara', 'Chitwan'].map((city) => (
@@ -352,11 +359,11 @@ export default function CreateListing() {
           </div>
 
           {/* Submit buttons */}
-          <div className="mt-12 flex flex-col gap-3 pt-6 border-t border-border/40 sm:flex-row sm:items-center sm:justify-end">
-            <button type="button" onClick={() => router.back()} className="w-full sm:w-auto px-6 py-3.5 rounded-[14px] bg-white border border-border text-charcoal text-[15px] font-medium hover:bg-parchment-dark transition-colors">
+          <div className="flex flex-col gap-3 border-t border-border/70 bg-parchment/30 px-5 py-4 sm:flex-row sm:items-center sm:justify-end md:px-7">
+            <button type="button" onClick={() => router.back()} className="w-full rounded-[12px] border border-border bg-white px-6 py-3 text-[15px] font-medium text-charcoal transition-colors hover:bg-parchment-dark sm:w-auto">
               Cancel
             </button>
-            <button type="submit" disabled={loading} className="w-full sm:w-auto px-8 py-3.5 rounded-[14px] bg-terracotta text-white text-[15px] font-medium hover:bg-terracotta-dark transition-colors disabled:opacity-70">
+            <button type="submit" disabled={loading} className="w-full rounded-[12px] bg-terracotta px-8 py-3 text-[15px] font-semibold text-white transition-colors hover:bg-terracotta-dark disabled:opacity-70 sm:w-auto">
               {loading ? 'Publishing...' : 'Publish listing'}
             </button>
           </div>

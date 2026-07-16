@@ -203,7 +203,7 @@ export default function Home() {
             Have something to sell?
           </h2>
           <p className="text-ink mb-8 leading-relaxed">
-            List your pre-loved items in minutes. No seller fees, no commissions — keep everything you earn.
+            List your pre-loved items in minutes. No seller fees, no commissions, keep everything you earn.
           </p>
           <Link
             href="/listing/create"

@@ -157,6 +157,10 @@ export function declineOrder(orderId: string) {
   return fetchJSON(`/api/orders/${orderId}/decline`, { method: 'PUT' });
 }
 
+export function cancelOrder(orderId: string) {
+  return fetchJSON(`/api/orders/${orderId}/cancel`, { method: 'PUT' });
+}
+
 export function getMyListings() {
   return fetchJSON('/api/listings/user/my-listings');
 }

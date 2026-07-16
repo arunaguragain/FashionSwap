@@ -106,6 +106,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                           <User size={15} className="text-ink" /> My Profile
                         </Link>
                         <Link
+                          href="/my-listings"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-charcoal-soft hover:bg-parchment-dark transition-colors"
+                        >
+                          <Package size={15} className="text-ink" /> My Listings
+                        </Link>
+                        <Link
                           href="/settings"
                           onClick={() => setUserMenuOpen(false)}
                           className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-charcoal-soft hover:bg-parchment-dark transition-colors"
@@ -251,17 +258,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div className="md:col-span-2">
               <Logo size="sm" variant="light" />
               <p className="mt-3 text-sm leading-relaxed text-parchment/60 max-w-sm">
-                Nepal's conscious fashion marketplace — buy and sell pre-loved clothes, bags, and shoes directly with each other.
+                Nepal's conscious fashion marketplace, buy and sell pre-loved clothes, bags, and shoes directly with each other.
               </p>
             </div>
             <div>
               <h4 className="text-sm font-semibold text-parchment mb-3">Explore</h4>
               <ul className="space-y-2 text-sm">
-                {["Browse All", "Clothes", "Bags", "Shoes", "New Arrivals"].map((item) => (
-                  <li key={item}>
-                    <Link href="/listings" className="hover:text-parchment transition-colors">{item}</Link>
-                  </li>
-                ))}
+                <li><Link href="/listings" className="hover:text-parchment transition-colors">Browse All</Link></li>
+                <li><Link href="/listings?cat=Clothes" className="hover:text-parchment transition-colors">Clothes</Link></li>
+                <li><Link href="/listings?cat=Bags" className="hover:text-parchment transition-colors">Bags</Link></li>
+                <li><Link href="/listings?cat=Shoes" className="hover:text-parchment transition-colors">Shoes</Link></li>
+                <li><Link href="/listings?sort=newest" className="hover:text-parchment transition-colors">New Arrivals</Link></li>
               </ul>
             </div>
             <div>
@@ -277,8 +284,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="mt-10 pt-6 border-t border-parchment/10 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-parchment/40">
             <span>© 2025 FashionSwap. Made in Nepal.</span>
             <div className="flex gap-4">
-              <span className="hover:text-parchment/70 cursor-pointer transition-colors">Privacy</span>
-              <span className="hover:text-parchment/70 cursor-pointer transition-colors">Terms</span>
+              <Link href="/privacy" className="hover:text-parchment/70 transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-parchment/70 transition-colors">Terms</Link>
             </div>
           </div>
         </div>
