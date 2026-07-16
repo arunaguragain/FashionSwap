@@ -2,7 +2,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { getUsers } from "@/lib/api/admin/user";
-import { getListings, getOrders } from "@/lib/api";
+import { getAdminListings } from "@/lib/api/admin/listings";
+import { getAdminOrders } from "@/lib/api/admin/orders";
 import { Gift, Users, Store, ShoppingBag } from "lucide-react";
 
 const AdminAnalyticsPage = () => {
@@ -22,7 +23,7 @@ const AdminAnalyticsPage = () => {
     async function fetchData() {
       setLoading(true);
       try {
-        const [userResRaw, listingsRes, ordersRes] = await Promise.all([getUsers(), getListings(), getOrders()]);
+        const [userResRaw, listingsRes, ordersRes] = await Promise.all([getUsers(), getAdminListings(undefined, 1, 100), getAdminOrders(undefined, 1, 100)]);
         const userRes: any = userResRaw;
         const usersPayload = userRes as any;
         const listingsPayload = listingsRes as any;

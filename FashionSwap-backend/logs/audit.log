@@ -138,3 +138,7 @@
 {"timestamp":"2026-07-16T16:23:42.178Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LISTING_UPDATED","meta":{"listingId":"6a58fedc7fd104a5cd0de63e"}}
 {"timestamp":"2026-07-16T16:37:52.646Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LOGIN_SUCCESS","ip":"127.0.0.1"}
 {"timestamp":"2026-07-16T16:55:25.408Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LOGIN_SUCCESS","ip":"127.0.0.1"}
+{"timestamp":"2026-07-16T17:13:20.551Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LOGIN_SUCCESS","ip":"127.0.0.1"}
+{"timestamp":"2026-07-16T17:19:24.551Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LOGIN_FAILED","ip":"127.0.0.1","meta":{"email":"guragainaruna2060@gmail.com","reason":"invalid_password"}}
+{"timestamp":"2026-07-16T17:21:52.400Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LOGIN_SUCCESS","ip":"127.0.0.1"}
+{"timestamp":"2026-07-16T17:34:55.622Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LOGIN_SUCCESS","ip":"127.0.0.1"}

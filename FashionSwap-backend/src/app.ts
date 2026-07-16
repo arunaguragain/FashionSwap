@@ -13,6 +13,8 @@ import orderRoutes from './routes/order.route';
 import transactionRoutes from './routes/transaction.route';
 import profileRoutes from './routes/profile.route';
 import reviewRoutes from './routes/review.route';
+import adminListingRoutes from './routes/admin/listing.route';
+import adminOrderRoutes from './routes/admin/order.route';
 import { configureHelmet, verifyCspHeaders } from './middlewares/helmet.middleware';
 import { csrfTokenMiddleware, validateCSRFToken } from './middlewares/csrf.middleware';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler.middleware';
@@ -57,8 +59,11 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/profiles', profileRoutes);
 
+
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin/users', adminUserRoutes);
+app.use('/api/admin/listings', adminListingRoutes);
+app.use('/api/admin/orders', adminOrderRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

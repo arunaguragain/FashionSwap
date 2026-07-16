@@ -2,7 +2,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Users, Package, TrendingUp } from "lucide-react";
 import { getUsers } from "@/lib/api/admin/user";
-import { getListings, getOrders } from "@/lib/api";
+import { getAdminListings } from "@/lib/api/admin/listings";
+import { getAdminOrders } from "@/lib/api/admin/orders";
 
 export default function AdminDashboard() {
   const [apiError, setApiError] = useState(false);
@@ -22,7 +23,7 @@ export default function AdminDashboard() {
 
     async function fetchStats() {
       try {
-        const [usersRes, listingsRes, ordersRes] = await Promise.all([getUsers(), getListings(), getOrders()]);
+        const [usersRes, listingsRes, ordersRes] = await Promise.all([getUsers(), getAdminListings(undefined, 1, 100), getAdminOrders(undefined, 1, 100)]);
         const usersPayload = usersRes as any;
         const listingsPayload = listingsRes as any;
         const ordersPayload = ordersRes as any;
