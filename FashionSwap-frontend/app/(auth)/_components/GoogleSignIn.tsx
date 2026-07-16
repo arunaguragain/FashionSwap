@@ -241,23 +241,11 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
   }, [router]);
 
   const handleClick = () => {
-    // Prefer programmatic prompt if available, otherwise click the rendered hidden button
-    try {
-      // @ts-ignore
-      if (window.google && window.google.accounts && typeof window.google.accounts.id.prompt === 'function') {
-        // prompt() will show the One Tap / GSI prompt if available
-        // It returns immediately; no need to toast on failure.
-        // @ts-ignore
-        window.google.accounts.id.prompt();
-        return;
-      }
-    } catch (e) {
-      // ignore
-    }
-
+    // Avoid calling `prompt()` (FedCM / One‑Tap status check) to prevent 403s
+    // Always click the rendered hidden button as a fallback.
     const btn = document.getElementById("googleBtnHidden")?.querySelector("button, div[role=button]") as HTMLElement | null;
     if (btn) {
-      try { btn.click(); } catch (e) { btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })); }
+      try { btn.click(); } catch (e) { try { btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })); } catch (_) {} }
     }
     // If still not available, do not show a toast — the component will show an inline status message instead.
   };

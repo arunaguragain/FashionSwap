@@ -2,12 +2,13 @@ import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
 import { Request, Response, NextFunction } from 'express';
 
 const isTestEnvironment = process.env.NODE_ENV === 'test' || Boolean(process.env.JEST_WORKER_ID);
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 const skipRateLimit = (req: Request) => isTestEnvironment || req.path === '/health' || req.path === '/api/health';
 
 export const generalLimiter: RateLimitRequestHandler = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: isDevelopment ? 60 * 60 * 1000 : 15 * 60 * 1000, // 1 hour in dev, 15 minutes in prod
+  max: isDevelopment ? 10000 : 100, // Very high limit in dev
   message: { success: false, message: 'Too many requests from this IP, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -15,8 +16,8 @@ export const generalLimiter: RateLimitRequestHandler = rateLimit({
 });
 
 export const authLimiter: RateLimitRequestHandler = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
+  windowMs: isDevelopment ? 60 * 60 * 1000 : 15 * 60 * 1000,
+  max: isDevelopment ? 1000 : 5, // Very high limit in dev
   message: { success: false, message: 'Too many login/register attempts, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -25,16 +26,16 @@ export const authLimiter: RateLimitRequestHandler = rateLimit({
 });
 
 export const passwordResetLimiter: RateLimitRequestHandler = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 3,
+  windowMs: isDevelopment ? 60 * 60 * 1000 : 60 * 60 * 1000,
+  max: isDevelopment ? 1000 : 3, // Very high limit in dev
   message: { success: false, message: 'Too many password reset attempts, please try again in an hour' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 export const otpLimiter: RateLimitRequestHandler = rateLimit({
-  windowMs: 10 * 60 * 1000,
-  max: 5,
+  windowMs: isDevelopment ? 60 * 60 * 1000 : 10 * 60 * 1000,
+  max: isDevelopment ? 1000 : 5, // Very high limit in dev
   message: { success: false, message: 'Too many OTP attempts, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,

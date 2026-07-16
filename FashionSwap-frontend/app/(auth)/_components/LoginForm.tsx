@@ -82,8 +82,11 @@ export default function LoginForm({
 
       try { pushToast({ title: res.message || 'Login successful', tone: 'success' }); } catch(e) {}
       
-      // Update global auth state immediately
-      await checkAuth();
+      // Update global auth state immediately with response data
+      if (res.data) {
+        // checkAuth will be forced after navigation
+        await checkAuth(true);
+      }
 
       if (onSubmit) onSubmit(data);
       
@@ -109,21 +112,21 @@ export default function LoginForm({
   const handleReactivate = async () => {
     setReactivating(true);
     try {
+      const email = getValues('email');
       const pw = getValues('password') || '';
-      if (!pw) {
-        setError('Please enter your password to reactivate');
+      if (!email || !pw) {
+        setError('Please enter your email and password to reactivate');
         setReactivating(false);
         return;
       }
-      const res = await reactivateAccount(pw);
+      const res = await reactivateAccount(email, pw);
       if (!res || !res.success) {
         setError(res?.message || 'Reactivation failed');
         setReactivating(false);
         return;
       }
-      try { pushToast({ title: res.message || 'Account reactivated', tone: 'success' }); } catch(e) {}
-      await checkAuth(true);
-      router.push('/profile');
+      try { pushToast({ title: res.message || 'Account reactivated. Please log in.', tone: 'success' }); } catch(e) {}
+      setError('');
     } catch (e: any) {
       setError(e?.message || 'Reactivation failed');
     } finally {

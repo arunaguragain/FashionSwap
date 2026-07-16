@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import {
   acceptOrder,
@@ -32,6 +32,7 @@ export default function OrdersPage() {
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const { pushToast } = useToast();
+  const ordersInitializedRef = useRef(false);
 
   const loadOrders = async () => {
     setLoading(true);
@@ -48,6 +49,10 @@ export default function OrdersPage() {
   };
 
   useEffect(() => {
+    // Guard against Strict Mode double invocation
+    if (ordersInitializedRef.current) return;
+    ordersInitializedRef.current = true;
+
     void loadOrders();
   }, []);
 

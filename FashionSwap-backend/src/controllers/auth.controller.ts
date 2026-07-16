@@ -149,6 +149,13 @@ export class AuthController {
         maxAge: 15 * 24 * 60 * 60 * 1000,
       });
 
+      res.cookie('auth_token', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 15 * 60 * 1000, // 15 minutes like the token expiry
+      });
+
       res.status(200).json({
         success: true,
         message: 'Google login successful',
@@ -282,6 +289,13 @@ export class AuthController {
         maxAge: 15 * 24 * 60 * 60 * 1000,
       });
 
+      res.cookie('auth_token', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 15 * 60 * 1000, // 15 minutes like the token expiry
+      });
+
       user.lastLogin = new Date();
       await user.save();
       recordAuditEvent({ timestamp: new Date().toISOString(), userId: user._id.toString(), event: 'LOGIN_SUCCESS', ip: req.ip });
@@ -351,6 +365,13 @@ export class AuthController {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         maxAge: 15 * 24 * 60 * 60 * 1000,
+      });
+
+      res.cookie('auth_token', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 15 * 60 * 1000, // 15 minutes like the token expiry
       });
 
       user.lastLogin = new Date();

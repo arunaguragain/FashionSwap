@@ -49,12 +49,25 @@ export const login = async (loginData: LoginData, customHeaders?: Record<string,
 
 export const whoAmI = async () => {
   try {
-    const response = await axios.get(API.AUTH.WHOAMI);
-    return response.data;
+    // Use fetch through Next.js API proxy instead of axios to avoid CORS issues
+    const response = await fetch('/api/auth/whoami', {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const msg = data?.message || response.statusText || "Whoami failed";
+      throw new Error(msg);
+    }
+
+    return data;
   } catch (error: Error | any) {
-    const resp = error.response?.data;
-    let msg = error.message || "Whoami failed";
-    if (resp && resp.message) msg = typeof resp.message === 'string' ? resp.message : JSON.stringify(resp.message);
+    const msg = error.message || "Whoami failed";
     throw new Error(msg);
   }
 }

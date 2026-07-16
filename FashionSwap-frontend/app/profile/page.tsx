@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Protected from '../../components/common/Protected';
 import { useAuth } from '@/context/AuthContext';
-import { getMyListings, getOrders, getFavorites } from '@/lib/api';
+import { getMyListings, getOrders, getFavorites, deleteListing, markListingAsSold } from '@/lib/api';
 import { whoAmI, updateProfile } from '@/lib/api/auth';
 import { useToast } from '@/app/(platform)/_components/ToastProvider';
 import { ShoppingBag, Package, TrendingUp, Plus, ArrowUpRight, Mail, Shield, Lightbulb, Download, Edit2, X, Phone, MapPin, AlignLeft, Camera, Heart } from 'lucide-react';
@@ -13,6 +14,7 @@ import autoTable from 'jspdf-autotable';
 import ListingCard from '@/components/ui/ListingCard';
 
 export default function ProfilePage() {
+  const router = useRouter();
   const { user, checkAuth } = useAuth();
   const { pushToast } = useToast();
   const [fullUser, setFullUser] = useState<any>(null);
@@ -33,9 +35,19 @@ export default function ProfilePage() {
   const [favorites, setFavorites] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; listingId: string | null }>({
+    isOpen: false,
+    listingId: null
+  });
+  const profileInitializedRef = useRef(false);
+  const dataInitializedRef = useRef(false);
 
   // Fetch full user profile separately so it doesn't block listings
   useEffect(() => {
+    // Guard against Strict Mode double invocation
+    if (profileInitializedRef.current) return;
+    profileInitializedRef.current = true;
+
     whoAmI()
       .then(res => {
         // whoAmI resolved
@@ -65,9 +77,13 @@ export default function ProfilePage() {
         }
       })
       .finally(() => setProfileLoading(false));
-  }, []);
+  }, [user]);
 
   useEffect(() => {
+    // Guard against Strict Mode double invocation
+    if (dataInitializedRef.current) return;
+    dataInitializedRef.current = true;
+
     (async () => {
       try {
         const [listingsRes, ordersRes, favRes] = await Promise.all([getMyListings(), getOrders(), getFavorites()]);
@@ -224,6 +240,36 @@ export default function ProfilePage() {
     }
   };
 
+  const confirmDelete = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    setDeleteConfirmation({ isOpen: true, listingId: id });
+  };
+
+  const executeDelete = async () => {
+    const id = deleteConfirmation.listingId;
+    if (!id) return;
+    try {
+      await deleteListing(id);
+      setMyListings(prev => prev.filter(l => (l.id || l._id) !== id));
+      pushToast({ title: 'Listing deleted', tone: 'success' });
+    } catch (err: any) {
+      pushToast({ title: 'Failed to delete listing', description: err.message, tone: 'error' });
+    } finally {
+      setDeleteConfirmation({ isOpen: false, listingId: null });
+    }
+  };
+
+  const handleMarkAsSold = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    try {
+      const res = await markListingAsSold(id);
+      setMyListings(prev => prev.map(l => (l.id || l._id) === id ? { ...l, status: 'sold' } : l));
+      pushToast({ title: 'Listing marked as sold', tone: 'success' });
+    } catch (err: any) {
+      pushToast({ title: 'Failed to mark as sold', description: err.message, tone: 'error' });
+    }
+  };
+
   return (
     <Protected>
       <div className="w-full px-6 py-10 md:px-8">
@@ -310,29 +356,90 @@ export default function ProfilePage() {
                 </Link>
               </div>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {myListings.map((listing) => (
-                  <Link
-                    key={listing.id || listing._id}
-                    href={`/listing/${listing.id || listing._id}`}
-                    className="group listing-card rounded-[14px] border border-border/60 bg-parchment p-4"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="font-medium text-charcoal group-hover:text-terracotta transition-colors">
-                          {listing.title || listing.name || 'Untitled listing'}
-                        </p>
-                        <p className="mt-1 text-sm text-ink">
-                          {listing.price ? `Rs. ${listing.price}` : 'Price not set'}
-                        </p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {myListings.map((listing) => {
+                  const id = listing.id || listing._id;
+                  const displayImage = listing.image || (listing.images && listing.images[0]) || "";
+                  const displayPrice = listing.askingPrice || listing.price || 0;
+                  const status = (listing.status || 'active').toLowerCase();
+                  
+                  return (
+                    <Link
+                      key={id}
+                      href={`/listing/${id}`}
+                      className="group flex flex-col sm:flex-row gap-4 listing-card rounded-[16px] border border-border/60 bg-white p-4 hover:shadow-md transition-shadow"
+                    >
+                      {/* Image Thumbnail */}
+                      <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-[12px] bg-sand-light relative">
+                        {displayImage ? (
+                          <img src={displayImage} alt={listing.title} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-ink/30">
+                            <ShoppingBag className="h-8 w-8" />
+                          </div>
+                        )}
+                        {status === 'sold' && (
+                          <div className="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
+                            <span className="text-[10px] font-bold text-white bg-charcoal px-2 py-0.5 rounded-sm uppercase tracking-wider">Sold</span>
+                          </div>
+                        )}
                       </div>
-                      <ArrowUpRight className="h-4 w-4 text-ink opacity-0 transition-all group-hover:opacity-100 group-hover:text-terracotta" />
-                    </div>
-                    <span className="mt-2 inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-sage/12 text-sage-dark uppercase tracking-wider">
-                      {listing.status || 'active'}
-                    </span>
-                  </Link>
-                ))}
+
+                      {/* Listing Details */}
+                      <div className="flex flex-1 flex-col justify-between">
+                        <div>
+                          <div className="flex items-start justify-between gap-2">
+                            <h3 className="font-semibold text-charcoal group-hover:text-terracotta transition-colors line-clamp-1">
+                              {listing.title || listing.name || 'Untitled listing'}
+                            </h3>
+                            <ArrowUpRight className="h-4 w-4 flex-shrink-0 text-ink opacity-0 transition-all group-hover:opacity-100 group-hover:text-terracotta" />
+                          </div>
+                          
+                          <p className="mt-1 font-display font-bold text-charcoal">
+                            {displayPrice ? `Rs. ${displayPrice.toLocaleString()}` : 'Price not set'}
+                          </p>
+                          
+                          <div className="mt-2 flex items-center gap-2 flex-wrap">
+                            <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider ${
+                              status === 'sold' ? 'bg-ink/10 text-ink' : 'bg-sage/15 text-sage-dark'
+                            }`}>
+                              {status}
+                            </span>
+                            {listing.category && (
+                              <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full bg-parchment-dark text-ink">
+                                {listing.category}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="mt-4 flex items-center gap-2 pt-3 border-t border-border/50">
+                          {status !== 'sold' && (
+                            <button
+                              onClick={(e) => handleMarkAsSold(e, id)}
+                              className="text-xs font-medium text-sage hover:text-sage-dark px-2 py-1 rounded-md hover:bg-sage/10 transition-colors"
+                            >
+                              Mark as Sold
+                            </button>
+                          )}
+                          <button
+                            onClick={(e) => { e.preventDefault(); router.push(`/listing/${id}/edit`); }}
+                            className="text-xs font-medium text-charcoal-soft hover:text-charcoal px-2 py-1 rounded-md hover:bg-parchment-dark transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={(e) => confirmDelete(e, id)}
+                            className="text-xs font-medium text-terracotta hover:text-red-700 ml-auto px-2 py-1 rounded-md hover:bg-red-50 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </section>
@@ -602,6 +709,35 @@ export default function ProfilePage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmation.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[24px] w-full max-w-sm shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+              <svg className="h-6 w-6 text-terracotta" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className="font-display font-bold text-xl text-charcoal mb-2">Delete Listing?</h3>
+            <p className="text-sm text-ink mb-6">Are you sure you want to delete this listing? This action cannot be undone.</p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={executeDelete}
+                className="w-full px-5 py-2.5 text-sm font-medium text-white bg-terracotta rounded-[12px] hover:bg-red-700 transition-colors"
+              >
+                Yes, Delete
+              </button>
+              <button
+                onClick={() => setDeleteConfirmation({ isOpen: false, listingId: null })}
+                className="w-full px-5 py-2.5 text-sm font-medium text-charcoal bg-parchment rounded-[12px] hover:bg-parchment-dark transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

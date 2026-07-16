@@ -17,6 +17,7 @@ export const API = {
         SEARCH: "/api/listings/search/query",
         GET: (id: string) => `/api/listings/${id}`,
         CREATE: "/api/listings",
+        UPLOAD_IMAGE: "/api/listings/upload",
         UPDATE: (id: string) => `/api/listings/${id}`,
         DELETE: (id: string) => `/api/listings/${id}`,
         MY: "/api/listings/user/my-listings",

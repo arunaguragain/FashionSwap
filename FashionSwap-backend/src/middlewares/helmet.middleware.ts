@@ -28,6 +28,7 @@ export const configureHelmet = () => {
     frameguard: {
       action: 'deny',
     },
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
   });
 };
 

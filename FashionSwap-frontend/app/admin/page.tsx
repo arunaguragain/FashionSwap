@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Users, Package, TrendingUp } from "lucide-react";
 import { getUsers } from "@/lib/api/admin/user";
 import { getListings, getOrders } from "@/lib/api";
@@ -13,8 +13,13 @@ export default function AdminDashboard() {
     growth: 0,
     recent: [] as any[],
   });
+  const statsInitializedRef = useRef(false);
 
   useEffect(() => {
+    // Guard against Strict Mode double invocation
+    if (statsInitializedRef.current) return;
+    statsInitializedRef.current = true;
+
     async function fetchStats() {
       try {
         const [usersRes, listingsRes, ordersRes] = await Promise.all([getUsers(), getListings(), getOrders()]);

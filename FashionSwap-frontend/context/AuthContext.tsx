@@ -1,5 +1,5 @@
 "use client"
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect, useRef, useCallback } from "react";
 import { clearAuthCookies } from "@/lib/cookie";
 import { useRouter, usePathname } from "next/navigation";
 import { whoAmI } from '@/lib/api/auth';
@@ -15,6 +15,7 @@ interface AuthContextProps {
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
+const AUTH_PAGE_PATHS = ['/login', '/register', '/forgot-password', '/reset-password'];
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -22,12 +23,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
     const pathname = usePathname();
-    const authPagePaths = ['/login', '/register', '/forgot-password', '/reset-password'];
-    const isAuthPage = pathname ? authPagePaths.some((path) => pathname.startsWith(path)) || pathname.startsWith('/mfa') : false;
+    const pathnameRef = useRef(pathname);
 
-    const checkAuth = async (force = false) => {
+    // Keep ref in sync with pathname
+    useEffect(() => {
+        pathnameRef.current = pathname;
+    }, [pathname]);
+
+    const checkAuth = useCallback(async (force = false) => {
+        // Use ref to get current pathname without stale closure
+        const currentPathnameValue = pathnameRef.current;
+        const currentIsAuthPage = currentPathnameValue ? AUTH_PAGE_PATHS.some((path) => currentPathnameValue.startsWith(path)) || currentPathnameValue.startsWith('/mfa') : false;
+        
         // If not forcing, skip fetch on auth pages to avoid noisy failed requests
-        if (isAuthPage && !force) {
+        if (currentIsAuthPage && !force) {
             setLoading(false);
             return;
         }
@@ -42,11 +51,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         checkAuth();
-    }, []);
+    }, [checkAuth]);
 
     const logout = async () => {
         try {

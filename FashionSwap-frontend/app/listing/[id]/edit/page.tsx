@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
-import { createListing, uploadListingImage } from '../../../lib/api';
+import React, { useMemo, useState, useEffect } from 'react';
+import { getListing, updateListing, uploadListingImage } from '../../../../lib/api';
 import { useToast } from '@/app/(platform)/_components/ToastProvider';
-import { useRouter } from 'next/navigation';
-import Protected from '../../../components/common/Protected';
-import { Camera, X as XIcon, ImagePlus, Info } from 'lucide-react';
+import { useRouter, useParams } from 'next/navigation';
+import Protected from '../../../../components/common/Protected';
+import { Camera, X as XIcon, ImagePlus, Info, ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
 
 const categories = ['Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Shoes', 'Bags', 'Accessories'];
 const conditions = [
@@ -15,7 +16,8 @@ const conditions = [
   { id: 'Fair', label: 'Fair', desc: 'Visible wear' },
 ];
 
-export default function CreateListing() {
+export default function EditListing() {
+  const { id } = useParams() as { id: string };
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Tops');
@@ -28,10 +30,35 @@ export default function CreateListing() {
   const [location, setLocation] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const { pushToast } = useToast();
   const router = useRouter();
+
+  useEffect(() => {
+    getListing(id)
+      .then((res) => {
+        const data = res?.data || res;
+        if (data) {
+          setTitle(data.title || '');
+          setDescription(data.description || '');
+          setCategory(data.category || 'Tops');
+          setBrand(data.brand || '');
+          setSize(data.size || '');
+          setColor(data.color || '');
+          setCondition(data.condition || 'Good');
+          setMaterial(data.material || '');
+          setPrice(data.askingPrice || data.price || '');
+          setLocation(data.location || '');
+          setImages(Array.isArray(data.images) ? data.images : []);
+        }
+      })
+      .catch(() => {
+        pushToast({ title: 'Error', description: 'Failed to load listing', tone: 'error' });
+      })
+      .finally(() => setPageLoading(false));
+  }, [id]);
 
   const imageCountText = useMemo(() => `${images.length}/8 photos`, [images.length]);
 
@@ -58,10 +85,10 @@ export default function CreateListing() {
       pushToast({ title: 'Photo limit reached', description: 'You can add up to 8 images.', tone: 'error' });
       return;
     }
-    
+
     setIsUploadingImage(true);
     setFieldErrors((prev) => ({ ...prev, images: '' }));
-    
+
     try {
       const res = await uploadListingImage(file);
       if (res && res.url) {
@@ -76,83 +103,86 @@ export default function CreateListing() {
   };
 
   const handleRemoveImage = (index: number) => {
-    setImages((prev) => prev.filter((_, idx) => idx !== index));
+    setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errors = validate();
+    setFieldErrors(errors);
     if (Object.keys(errors).length) {
-      setFieldErrors(errors);
-      pushToast({ title: 'Please fix the highlighted fields', tone: 'error' });
+      pushToast({ title: 'Validation error', description: 'Please fix the highlighted fields.', tone: 'error' });
       return;
     }
 
     setLoading(true);
-    setFieldErrors({});
-
     try {
       const payload = {
-        title,
-        description,
+        title: title.trim(),
+        description: description.trim(),
         category,
-        brand,
-        size,
-        color,
+        brand: brand.trim(),
+        size: size.trim(),
+        color: color.trim(),
         condition,
-        material,
+        material: material.trim(),
         askingPrice: Number(price),
         negotiable: true,
         images,
-        location,
+        location: location.trim(),
         pickupAvailable: true,
         shippingAvailable: false,
       };
 
-      const res = await createListing(payload);
-      pushToast({ title: 'Listing created', tone: 'success' });
-      
-      setTitle('');
-      setDescription('');
-      setCategory('Tops');
-      setBrand('');
-      setSize('');
-      setColor('');
-      setCondition('Good');
-      setMaterial('');
-      setPrice('');
-      setLocation('');
-      setImages([]);
-      
-      const id = res?.data?._id || res?.data?.id || res?.id || res?._id;
-      if (id) {
-        router.push(`/listing/${id}`);
-      }
+      await updateListing(id, payload);
+      pushToast({ title: 'Listing updated', tone: 'success' });
+      router.push(`/listing/${id}`);
     } catch (e: any) {
       const data = e?.data;
       if (data?.errors && typeof data.errors === 'object') setFieldErrors(data.errors);
-      pushToast({ title: 'Create failed', description: e?.message || 'Unable to create listing.', tone: 'error' });
+      pushToast({ title: 'Update failed', description: e?.message || 'Unable to update listing.', tone: 'error' });
     } finally {
       setLoading(false);
     }
   };
 
+  if (pageLoading) {
+    return (
+      <Protected>
+        <div className="w-full px-6 py-10 md:px-8">
+          <div className="space-y-6">
+            <div className="h-10 w-48 bg-sand-light rounded-xl animate-pulse" />
+            <div className="h-6 w-96 bg-sand-light rounded animate-pulse" />
+            <div className="h-[400px] bg-sand-light rounded-[20px] animate-pulse" />
+          </div>
+        </div>
+      </Protected>
+    );
+  }
+
   return (
     <Protected>
       <div className="w-full px-6 py-10 md:px-8">
+        <Link
+          href={`/listing/${id}`}
+          className="inline-flex items-center gap-1.5 text-sm text-ink hover:text-charcoal mb-6 transition-colors"
+        >
+          <ChevronLeft size={16} /> Back to listing
+        </Link>
+
         <div className="mb-8 w-full">
           <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full bg-terracotta/12 text-terracotta-dark mb-3">
-            Create
+            Edit
           </span>
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-charcoal" style={{ letterSpacing: '-0.02em' }}>List an item</h1>
+          <h1 className="font-display text-3xl md:text-4xl font-bold text-charcoal" style={{ letterSpacing: '-0.02em' }}>Edit listing</h1>
           <p className="mt-2 text-sm text-ink leading-relaxed">
-            Fill in the details — the more information you provide, the faster it sells.
+            Update your listing details below.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="w-full rounded-[20px] bg-white border border-border/60 p-6 md:p-10 shadow-sm">
           <div className="grid gap-12 lg:grid-cols-2">
-            
+
             {/* LEFT COLUMN */}
             <div className="space-y-10">
               {/* Photos Section */}
@@ -357,7 +387,7 @@ export default function CreateListing() {
               Cancel
             </button>
             <button type="submit" disabled={loading} className="w-full sm:w-auto px-8 py-3.5 rounded-[14px] bg-terracotta text-white text-[15px] font-medium hover:bg-terracotta-dark transition-colors disabled:opacity-70">
-              {loading ? 'Publishing...' : 'Publish listing'}
+              {loading ? 'Saving...' : 'Save changes'}
             </button>
           </div>
         </form>

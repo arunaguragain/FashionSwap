@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ImageGallery from '../../../components/marketplace/ImageGallery';
@@ -10,19 +10,26 @@ import { getListing } from '../../../lib/api';
 import { useToast } from '@/app/(platform)/_components/ToastProvider';
 import { MapPin, ShieldCheck, Sparkles, ChevronLeft, MessageCircle } from 'lucide-react';
 
-export default function ListingDetail({ params }: { params: { id: string } }) {
+export default function ListingDetail({ params }: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = React.use(params);
+  const id = unwrappedParams.id;
   const router = useRouter();
   const [listing, setListing] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { pushToast } = useToast();
+  const loadingInitializedRef = useRef(false);
 
   useEffect(() => {
+    // Guard against Strict Mode double invocation
+    if (loadingInitializedRef.current) return;
+    loadingInitializedRef.current = true;
+
     const load = async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await getListing(params.id);
+        const res = await getListing(id);
         const payload = (res as any)?.data ?? res ?? null;
         setListing(payload);
       } catch (e: any) {
@@ -32,11 +39,11 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
       }
     };
     load();
-  }, [params.id]);
+  }, [id]);
 
   const handleOffer = () => {
     if (!listing) return;
-    router.push(`/make-offer?listingId=${params.id}`);
+    router.push(`/make-offer?listingId=${id}`);
   };
 
   const listingDetails = useMemo(() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import axios from "@/lib/api/axios";
@@ -12,8 +12,13 @@ export default function Page() {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const fetchInitializedRef = useRef(false);
 
     useEffect(() => {
+        // Guard against Strict Mode double invocation
+        if (fetchInitializedRef.current) return;
+        fetchInitializedRef.current = true;
+
         let mounted = true;
         const fetchUser = async () => {
             setLoading(true);

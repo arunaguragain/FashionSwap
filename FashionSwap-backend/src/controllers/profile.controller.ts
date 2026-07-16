@@ -135,15 +135,14 @@ export class ProfileController {
 
   async reactivateAccount(req: Request, res: Response): Promise<void> {
     try {
-      const userId = getRequestUserId(req);
-      const { password } = req.body;
+      const { email, password } = req.body;
 
-      if (!password) {
-        res.status(400).json({ success: false, message: 'Password is required to reactivate account' });
+      if (!email || !password) {
+        res.status(400).json({ success: false, message: 'Email and password are required to reactivate account' });
         return;
       }
 
-      const user = await User.findById(userId);
+      const user = await User.findOne({ email });
       if (!user) {
         res.status(404).json({ success: false, message: 'User not found' });
         return;
@@ -161,7 +160,7 @@ export class ProfileController {
       await user.save();
 
       // Restore listings previously marked seller_inactive back to available
-      await Listing.updateMany({ sellerId: userId, status: 'seller_inactive' }, { status: 'available' });
+      await Listing.updateMany({ sellerId: user._id, status: 'seller_inactive' }, { status: 'available' });
 
       res.status(200).json({ success: true, message: 'Account reactivated successfully' });
     } catch (error) {

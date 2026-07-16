@@ -28,19 +28,9 @@ export async function proxy(req: NextRequest) {
             return NextResponse.redirect(new URL('/', req.url));
         }
         // User routes - all authenticated users
-        if (isUserRoute && user.role !== 'admin' && user.role !== 'buyer' && user.role !== 'seller') {
+        if (isUserRoute && user.role !== 'admin' && user.role !== 'buyer' && user.role !== 'seller' && user.role !== 'user') {
             return NextResponse.redirect(new URL('/', req.url));
         }
-    }
-
-    if (isPublicRoute && token && user) {
-        // Redirect authenticated users to their respective dashboards
-        if (user.role === 'admin') {
-            return NextResponse.redirect(new URL('/admin/dashboard', req.url));
-        } else if (user.role === 'buyer' || user.role === 'seller') {
-            return NextResponse.redirect(new URL('/profile', req.url));
-        }
-        return NextResponse.redirect(new URL('/', req.url));
     }
 
     return NextResponse.next();
@@ -51,9 +41,5 @@ export const config = {
         '/admin/:path*',
         '/user/:path*',
         '/saved',
-        '/admin_login',
-        '/login',
-        '/register',
-        '/forget-password'
     ]
 }

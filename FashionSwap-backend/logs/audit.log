@@ -120,3 +120,19 @@
 {"timestamp":"2026-07-16T13:39:59.173Z","userId":"6a5882c64560928b286859f5","event":"MFA_ENABLED","ip":"127.0.0.1"}
 {"timestamp":"2026-07-16T13:42:51.465Z","userId":"6a5882c64560928b286859f5","event":"MFA_VERIFY_SUCCESS","ip":"127.0.0.1"}
 {"timestamp":"2026-07-16T13:43:26.633Z","userId":"6a589eaaade3bb60f6e78240","event":"LOGIN_FAILED","ip":"127.0.0.1","meta":{"email":"guragainaruna2060@gmail.com","reason":"invalid_password"}}
+{"timestamp":"2026-07-16T14:12:24.367Z","userId":"6a5882c64560928b286859f5","event":"MFA_VERIFY_SUCCESS","ip":"127.0.0.1"}
+{"timestamp":"2026-07-16T14:16:40.097Z","userId":"6a589eaaade3bb60f6e78240","event":"LOGIN_SUCCESS","ip":"127.0.0.1"}
+{"timestamp":"2026-07-16T14:19:17.320Z","userId":"6a589eaaade3bb60f6e78240","event":"LOGIN_SUCCESS","ip":"127.0.0.1"}
+{"timestamp":"2026-07-16T14:25:01.742Z","userId":"6a589eaaade3bb60f6e78240","event":"LOGIN_SUCCESS","ip":"127.0.0.1"}
+{"timestamp":"2026-07-16T15:17:04.463Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LOGIN_SUCCESS","ip":"127.0.0.1"}
+{"timestamp":"2026-07-16T15:48:47.430Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LOGIN_SUCCESS","ip":"127.0.0.1"}
+{"timestamp":"2026-07-16T15:55:08.761Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LISTING_CREATED","meta":{"listingId":"6a58fedc7fd104a5cd0de63e","title":"Floria TENCEL™ Dress"}}
+{"timestamp":"2026-07-16T16:01:07.846Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LISTING_CREATED","meta":{"listingId":"6a590043d6e703df036d1250","title":"idk idk"}}
+{"timestamp":"2026-07-16T16:06:24.278Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LOGIN_SUCCESS","ip":"127.0.0.1"}
+{"timestamp":"2026-07-16T16:07:35.333Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LISTING_CREATED","meta":{"listingId":"6a5901c7d6e703df036d1251","title":"hbrseigv siufubgvri"}}
+{"timestamp":"2026-07-16T16:12:46.268Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LISTING_CREATED","meta":{"listingId":"6a5902fe8b4306ac40df7573","title":"vswrdvswrdvswrd vswrdvswrdvswrd vswrd"}}
+{"timestamp":"2026-07-16T16:15:02.582Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LISTING_DELETED","meta":{"listingId":"6a5902fe8b4306ac40df7573"}}
+{"timestamp":"2026-07-16T16:18:58.147Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LISTING_CREATED","meta":{"listingId":"6a5904728b4306ac40df7574","title":"Tivisha Cap Sleeve Top"}}
+{"timestamp":"2026-07-16T16:22:28.404Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LOGIN_SUCCESS","ip":"127.0.0.1"}
+{"timestamp":"2026-07-16T16:23:03.348Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LISTING_CREATED","meta":{"listingId":"6a5905678b4306ac40df7575","title":"bajdbs jbesbvdrjes"}}
+{"timestamp":"2026-07-16T16:23:42.178Z","userId":"6a58f5be4b2d9e38b26b713a","event":"LISTING_UPDATED","meta":{"listingId":"6a58fedc7fd104a5cd0de63e"}}

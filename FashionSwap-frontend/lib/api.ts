@@ -95,6 +95,48 @@ export function createListing(payload: any) {
   });
 }
 
+export function updateListing(id: string, payload: any) {
+  return fetchJSON(`/api/listings/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+export function deleteListing(id: string) {
+  return fetchJSON(`/api/listings/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export function markListingAsSold(id: string) {
+  return fetchJSON(`/api/listings/${id}/sold`, {
+    method: 'PUT',
+  });
+}
+
+export async function uploadListingImage(file: File) {
+  const formData = new FormData();
+  formData.append('image', file);
+  
+  const csrfToken = getCookie('x-csrf-token');
+  const headers: Record<string, string> = {};
+  if (csrfToken) headers['x-csrf-token'] = csrfToken;
+  
+  const res = await fetch('/api/listings/upload', {
+    method: 'POST',
+    body: formData,
+    headers,
+    credentials: 'include'
+  });
+  
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || 'Upload failed');
+  }
+  return data;
+}
+
 export function createOrder(payload: any) {
   return fetchJSON('/api/orders', {
     method: 'POST',
@@ -183,9 +225,9 @@ export function deactivateAccount(password: string) {
   });
 }
 
-export function reactivateAccount(password: string) {
+export function reactivateAccount(email: string, password: string) {
   return fetchJSON('/api/profiles/me/reactivate', {
     method: 'PATCH',
-    body: JSON.stringify({ password }),
+    body: JSON.stringify({ email, password }),
   });
 }

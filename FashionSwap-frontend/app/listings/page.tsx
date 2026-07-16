@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, Suspense, useEffect } from "react";
+import React, { useState, useMemo, Suspense, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal, X } from "lucide-react";
@@ -44,8 +44,13 @@ function BrowseContent() {
   const [sort, setSort] = useState("newest");
   const [filterOpen, setFilterOpen] = useState(false);
   const [allListings, setAllListings] = useState<MarketplaceListing[]>([]);
+  const listingsInitializedRef = useRef(false);
 
   useEffect(() => {
+    // Guard against Strict Mode double invocation
+    if (listingsInitializedRef.current) return;
+    listingsInitializedRef.current = true;
+
     getListings("", { limit: 100 }).then((response: unknown) => {
       const res = response as { data?: MarketplaceListing[] } | MarketplaceListing[];
       const data = Array.isArray(res) ? res : Array.isArray(res.data) ? res.data : [];

@@ -96,7 +96,8 @@ export class ListingController {
 
   async createListing(req: Request, res: Response): Promise<void> {
     try {
-      const { userId } = (req as any).user;
+      const user = (req as any).user;
+      const userId = String(user._id || user.id);
       const {
         title,
         description,
@@ -155,7 +156,8 @@ export class ListingController {
 
   async updateListing(req: Request, res: Response): Promise<void> {
     try {
-      const { userId } = (req as any).user;
+      const user = (req as any).user;
+      const userId = String(user._id || user.id);
       const { listingId } = req.params;
       const {
         title, description, category, brand, size, color, condition,
@@ -202,7 +204,8 @@ export class ListingController {
 
   async deleteListing(req: Request, res: Response): Promise<void> {
     try {
-      const { userId } = (req as any).user;
+      const user = (req as any).user;
+      const userId = String(user._id || user.id);
       const { listingId } = req.params;
 
       const listing = await Listing.findById(listingId);
@@ -227,7 +230,8 @@ export class ListingController {
 
   async markAsSold(req: Request, res: Response): Promise<void> {
     try {
-      const { userId } = (req as any).user;
+      const user = (req as any).user;
+      const userId = String(user._id || user.id);
       const { listingId } = req.params;
 
       const listing = await Listing.findById(listingId);
@@ -252,7 +256,8 @@ export class ListingController {
 
   async getMyListings(req: Request, res: Response): Promise<void> {
     try {
-      const { userId } = (req as any).user;
+      const user = (req as any).user;
+      const userId = String(user._id || user.id);
       const { status = 'available' } = req.query;
 
       const filter: any = { sellerId: userId };

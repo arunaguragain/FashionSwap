@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, ChevronRight, MapPin } from 'lucide-react';
 import Button from '@/components/common/Button';
@@ -29,9 +29,13 @@ export default function MakeOfferClient({ listingId }: MakeOfferClientProps) {
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('Dharahara, Kathmandu');
   const [error, setError] = useState<string | null>(null);
+  const listingLoadedRef = useRef(false);
 
   useEffect(() => {
     if (!listingId) return;
+    // Guard against Strict Mode double invocation
+    if (listingLoadedRef.current) return;
+    listingLoadedRef.current = true;
 
     const loadListing = async () => {
       setLoading(true);

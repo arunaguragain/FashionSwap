@@ -21,8 +21,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user, logout, loading } = useAuth();
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/forgot-password" || pathname === "/reset-password" || pathname.startsWith("/mfa");
-
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href.split("?")[0]);
 
@@ -36,10 +34,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  if (isAuthPage) {
-    return <main className="flex-1 min-h-screen bg-parchment">{children}</main>;
-  }
 
   const userName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : (user?.name || user?.fullName || "User");
   const userInitial = userName.charAt(0).toUpperCase();

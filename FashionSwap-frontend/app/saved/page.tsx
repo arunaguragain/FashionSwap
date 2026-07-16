@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Protected from '../../components/common/Protected';
 import { Heart, ArrowRight, Sparkles } from 'lucide-react';
@@ -10,8 +10,13 @@ import ListingCard from '@/components/ui/ListingCard';
 export default function SavedPage() {
   const [favorites, setFavorites] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const favoritesInitializedRef = useRef(false);
 
   useEffect(() => {
+    // Guard against Strict Mode double invocation
+    if (favoritesInitializedRef.current) return;
+    favoritesInitializedRef.current = true;
+
     getFavorites()
       .then(res => {
         setFavorites(Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : []);

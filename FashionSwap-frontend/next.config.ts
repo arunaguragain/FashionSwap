@@ -27,6 +27,33 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '5050',
+      },
+      {
+        protocol: 'http',
+        hostname: '192.168.137.1',
+        port: '5050',
+      },
+      {
+        protocol: 'http',
+        hostname: '192.168.137.247',
+        port: '5050',
+      },
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
+      }
+    ],
+  },
 };
 
 // Proxy API requests to backend during development to avoid CORS and cookie issues.
