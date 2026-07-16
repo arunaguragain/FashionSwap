@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Protected from '../../components/common/Protected';
 import { BellRing, ShieldCheck, Trash2, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { disableMfa } from '@/lib/api';
+import { disableMfa, deactivateAccount } from '@/lib/api';
 import { useToast } from '@/app/(platform)/_components/ToastProvider';
 import { useRouter } from 'next/navigation';
 
@@ -14,7 +14,7 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const { user, setUser, checkAuth } = useAuth();
+  const { user, setUser, checkAuth, logout } = useAuth();
   const router = useRouter();
   const { pushToast } = useToast();
 
@@ -48,6 +48,20 @@ export default function SettingsPage() {
     window.setTimeout(() => setSaved(false), 1800);
   };
 
+  const handleDeactivate = async () => {
+    if (!mfaPassword) return pushToast({ title: 'Password required', description: 'Please enter your password to deactivate your account.', tone: 'info' });
+    setMfaDisabling(true);
+    try {
+      await deactivateAccount(mfaPassword);
+      pushToast({ title: 'Account deactivated', description: 'Your account has been deactivated.', tone: 'success' });
+      await logout();
+    } catch (e: unknown) {
+      pushToast({ title: 'Failed to deactivate', description: e instanceof Error ? e.message : 'Incorrect password', tone: 'error' });
+    } finally {
+      setMfaDisabling(false);
+    }
+  };
+
   const handleDisableMFA = async () => {
     if (!mfaPassword) return pushToast({ title: 'Password required', description: 'Please enter your password to disable MFA.', tone: 'info' });
     setMfaDisabling(true);
@@ -61,13 +75,12 @@ export default function SettingsPage() {
          setUser({ ...user, mfaEnabled: false });
          // optionally, update cookie:
          if (typeof window !== 'undefined') {
-             const cookieUserStr = window.localStorage.getItem('fashionSwap-user'); // or cookie equivalent
-             // Note: usually checking auth again is best, assuming checkAuth fetches from /whoami or similar
+             // Refresh the authenticated user so the current MFA state is reflected everywhere.
              await checkAuth();
          }
       }
-    } catch (e: any) {
-      pushToast({ title: 'Failed to disable MFA', description: e?.message || 'Incorrect password', tone: 'error' });
+    } catch (e: unknown) {
+      pushToast({ title: 'Failed to disable MFA', description: e instanceof Error ? e.message : 'Incorrect password', tone: 'error' });
     } finally {
       setMfaDisabling(false);
     }
@@ -75,61 +88,68 @@ export default function SettingsPage() {
 
   return (
     <Protected>
-      <div className="w-full px-6 py-10 md:px-8">
-        <div className="grid gap-12 lg:grid-cols-12">
-          
-          {/* Left Column: Page Info */}
-          <div className="lg:col-span-4 xl:col-span-3">
-            <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full bg-terracotta/12 text-terracotta-dark mb-4">
-              Preferences
-            </span>
-            <h1 className="font-display text-3xl md:text-4xl font-bold text-charcoal" style={{ letterSpacing: '-0.02em' }}>
-              Account settings
-            </h1>
-            <p className="mt-4 text-[15px] text-ink leading-relaxed">
-              Fine-tune how FashionSwap communicates with you and how your profile appears to other users.
-            </p>
-          </div>
+      <div className="w-full px-4 py-6 sm:px-6 md:px-8 md:py-8">
+        <div className="w-full overflow-hidden rounded-[24px] border border-border/80 bg-white shadow-[0_18px_48px_rgba(53,39,30,0.08)]">
+          <div className="grid items-start gap-0 xl:grid-cols-[340px_minmax(0,1fr)]">
+            <aside className="border-b border-border/70 bg-parchment/70 p-6 sm:p-8 xl:border-b-0 xl:border-r">
+              <span className="inline-flex items-center rounded-full border border-terracotta/15 bg-terracotta/10 px-3 py-1 text-xs font-semibold tracking-wide text-terracotta-dark">
+                Account preferences
+              </span>
+              <h1 className="mt-5 font-display text-3xl font-bold leading-tight text-charcoal sm:text-4xl">
+                Settings
+              </h1>
+              <p className="mt-3 text-sm leading-6 text-ink">
+                Manage notifications, profile visibility, account security, and sensitive account actions from one place.
+              </p>
 
-          {/* Right Column: Settings Form */}
-          <div className="lg:col-span-8 xl:col-span-7 xl:col-start-5">
-            <div className="space-y-6 rounded-[20px] bg-white border border-border/60 p-6 md:p-10 shadow-sm">
+              <div className="mt-6 grid gap-2 text-sm text-charcoal-soft sm:grid-cols-3 xl:grid-cols-1">
+                <p className="flex items-center gap-3 rounded-lg bg-white/70 px-3 py-2"><span className="h-2 w-2 rounded-full bg-terracotta" />Notifications</p>
+                <p className="flex items-center gap-3 rounded-lg bg-white/70 px-3 py-2"><span className="h-2 w-2 rounded-full bg-sage" />Profile & privacy</p>
+                <p className="flex items-center gap-3 rounded-lg bg-white/70 px-3 py-2"><span className="h-2 w-2 rounded-full bg-charcoal" />Security</p>
+              </div>
+            </aside>
+
+            <section>
+              <div className="border-b border-border/70 px-6 py-5 sm:px-8">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-terracotta">Your preferences</p>
+                <h2 className="mt-1.5 font-display text-2xl font-bold text-charcoal">Account controls</h2>
+              </div>
+
+              <div className="space-y-4 p-5 sm:p-6">
               
-              <label className="flex items-center justify-between rounded-[16px] border border-border bg-parchment p-6 cursor-pointer hover:border-terracotta/40 transition-colors">
+              <label className="group flex cursor-pointer items-center justify-between gap-5 rounded-[16px] border border-border/80 bg-parchment/50 p-4 transition-all hover:border-terracotta/50 hover:bg-terracotta/[0.035] sm:p-5">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-terracotta/10 text-terracotta">
-                    <BellRing className="h-6 w-6" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-terracotta/10 text-terracotta transition-transform group-hover:scale-105">
+                    <BellRing className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="font-semibold text-charcoal text-[17px]">Email notifications</p>
-                    <p className="mt-1 text-sm text-ink leading-relaxed max-w-md">
+                    <p className="text-[16px] font-semibold text-charcoal">Email notifications</p>
+                    <p className="mt-1 max-w-md text-sm leading-relaxed text-ink">
                       Receive updates about offers, orders, and new messages directly to your inbox.
                     </p>
                   </div>
                 </div>
-                <input 
-                  type="checkbox" 
-                  checked={notifications} 
-                  onChange={() => setNotifications((value) => !value)} 
-                  className="h-5 w-5 rounded border-border accent-terracotta" 
-                />
+                <span className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${notifications ? 'bg-terracotta' : 'bg-border'}`}>
+                  <input type="checkbox" checked={notifications} onChange={() => setNotifications((value) => !value)} className="sr-only" />
+                  <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${notifications ? 'translate-x-6' : 'translate-x-1'}`} />
+                </span>
               </label>
 
-              <label className="block rounded-[16px] border border-border bg-parchment p-6 cursor-pointer hover:border-terracotta/40 transition-colors">
+              <div className="rounded-[16px] border border-border/80 bg-parchment/50 p-4 transition-colors hover:border-sage/50 sm:p-5">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-sage/10 text-sage">
-                    <ShieldCheck className="h-6 w-6" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sage/10 text-sage">
+                    <ShieldCheck className="h-5 w-5" />
                   </div>
                   <div className="w-full">
-                    <p className="font-semibold text-charcoal text-[17px]">Profile visibility</p>
-                    <p className="mt-1 text-sm text-ink leading-relaxed max-w-md">
+                    <p className="text-[16px] font-semibold text-charcoal">Profile visibility</p>
+                    <p className="mt-1 max-w-md text-sm leading-relaxed text-ink">
                       Choose whether buyers can see your full profile information.
                     </p>
-                    <div className="mt-5 max-w-sm">
+                    <div className="mt-4 max-w-md">
                       <select 
                         value={privacy} 
                         onChange={(event) => setPrivacy(event.target.value)} 
-                        className="w-full rounded-[12px] border border-border bg-white px-4 py-3.5 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                        className="w-full rounded-xl border border-border bg-white px-4 py-3 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta"
                       >
                         <option value="show">Show profile to buyers</option>
                         <option value="limited">Show only basic details</option>
@@ -138,18 +158,21 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
-              </label>
+              </div>
 
               {/* MFA Settings */}
-              <div className="rounded-[16px] border border-border bg-parchment p-6">
+              <div className="rounded-[16px] border border-border/80 bg-parchment/50 p-4 sm:p-5">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-charcoal/10 text-charcoal">
-                    <KeyRound className="h-6 w-6" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-charcoal/10 text-charcoal">
+                    <KeyRound className="h-5 w-5" />
                   </div>
                   <div className="w-full">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
-                        <p className="font-semibold text-charcoal text-[17px]">Two-Factor Authentication: {user?.mfaEnabled ? 'On' : 'Off'}</p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-[16px] font-semibold text-charcoal">Two-factor authentication</p>
+                          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${user?.mfaEnabled ? 'bg-sage/15 text-sage-dark' : 'bg-border/70 text-ink'}`}>{user?.mfaEnabled ? 'Protected' : 'Not enabled'}</span>
+                        </div>
                         <p className="mt-1 text-sm text-ink leading-relaxed max-w-md">
                           Add an extra layer of security to your account.
                         </p>
@@ -159,14 +182,14 @@ export default function SettingsPage() {
                         user?.mfaEnabled ? (
                           <button 
                             onClick={() => setShowDisableMfa(true)}
-                            className="shrink-0 bg-white border border-border text-charcoal px-6 py-2.5 rounded-[12px] text-sm font-medium hover:bg-parchment-dark transition-colors"
+                            className="shrink-0 rounded-xl border border-border bg-white px-6 py-2.5 text-sm font-medium text-charcoal transition-colors hover:bg-parchment-dark"
                           >
                             Disable
                           </button>
                         ) : (
                           <button 
                             onClick={() => router.push('/mfa/setup')}
-                            className="shrink-0 bg-terracotta text-white px-6 py-2.5 rounded-[12px] text-sm font-medium hover:bg-terracotta-dark transition-colors"
+                            className="shrink-0 rounded-xl bg-terracotta px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-terracotta-dark"
                           >
                             Enable
                           </button>
@@ -175,7 +198,7 @@ export default function SettingsPage() {
                     </div>
 
                     {showDisableMfa && (
-                      <div className="mt-5 p-5 bg-white border border-red-100 rounded-[14px] shadow-sm animate-in fade-in slide-in-from-top-2">
+                      <div className="mt-4 rounded-xl border border-red-100 bg-white p-4 shadow-sm animate-in fade-in slide-in-from-top-2">
                         <p className="text-sm font-medium text-charcoal mb-3">Verify your password to disable MFA</p>
                         <div className="flex flex-col sm:flex-row gap-3">
                           <div className="relative flex-1">
@@ -184,7 +207,7 @@ export default function SettingsPage() {
                               value={mfaPassword}
                               onChange={(e) => setMfaPassword(e.target.value)}
                               placeholder="Enter your current password"
-                              className="w-full rounded-[10px] border border-border bg-white px-4 py-2.5 text-sm text-charcoal outline-none focus:border-terracotta"
+                              className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-sm text-charcoal outline-none focus:border-terracotta"
                               autoFocus
                             />
                             <button
@@ -198,14 +221,14 @@ export default function SettingsPage() {
                           <div className="flex gap-2">
                             <button 
                               onClick={() => { setShowDisableMfa(false); setMfaPassword(''); }}
-                              className="px-4 py-2.5 border border-border text-charcoal text-sm font-medium rounded-[10px] hover:bg-parchment transition-colors"
+                              className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-charcoal transition-colors hover:bg-parchment"
                               disabled={mfaDisabling}
                             >
                               Cancel
                             </button>
                             <button 
                               onClick={handleDisableMFA}
-                              className="px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-[10px] hover:bg-red-700 transition-colors"
+                              className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700"
                               disabled={mfaDisabling}
                             >
                               {mfaDisabling ? 'Disabling...' : 'Confirm Disable'}
@@ -218,10 +241,12 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-border/40">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border/60 pt-5">
+                <p className="text-sm text-ink">Changes are saved only when you confirm.</p>
+                <div className="flex flex-wrap items-center gap-3">
                 <button 
                   onClick={handleSave} 
-                  className="bg-terracotta text-white px-8 py-3.5 rounded-[14px] text-[15px] font-medium hover:bg-terracotta-dark transition-colors"
+                  className="rounded-xl bg-terracotta px-6 py-3 text-[15px] font-semibold text-white shadow-[0_8px_18px_rgba(196,98,45,0.2)] transition-colors hover:bg-terracotta-dark"
                 >
                   Save settings
                 </button>
@@ -230,43 +255,72 @@ export default function SettingsPage() {
                     Saved successfully
                   </span>
                 )}
+                </div>
               </div>
 
-              <div className="mt-10 rounded-[16px] border border-red-200 bg-red-50 p-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="rounded-[16px] border border-red-200/80 bg-red-50/70 p-4 sm:p-5">
+                <div className="flex flex-col gap-4">
                   <div>
-                    <p className="font-semibold text-red-700 text-[17px]">Delete account</p>
+                    <p className="text-[16px] font-semibold text-red-700">Deactivate account</p>
                     <p className="mt-1 text-sm text-red-600/80">
-                      This action is irreversible and requires confirmation.
+                      Deactivating your account will hide your profile and active listings. You will not be able to log in until you reactivate it.
                     </p>
                   </div>
                   {!confirmDelete ? (
-                    <button 
-                      className="inline-flex items-center gap-2 border border-red-200 text-red-600 bg-white px-5 py-3 rounded-[12px] text-[15px] font-medium hover:bg-red-50 transition-colors" 
-                      onClick={() => setConfirmDelete(true)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Delete account
-                    </button>
+                    <div className="flex sm:justify-start mt-2">
+                      <button 
+                        className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-5 py-3 text-[15px] font-medium text-red-600 transition-colors hover:bg-red-50" 
+                        onClick={() => setConfirmDelete(true)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Deactivate account
+                      </button>
+                    </div>
                   ) : (
-                    <div className="flex flex-wrap gap-2">
-                      <button 
-                        className="border border-border text-charcoal bg-white px-5 py-3 rounded-[12px] text-[15px] font-medium hover:bg-parchment-dark transition-colors" 
-                        onClick={() => setConfirmDelete(false)}
-                      >
-                        Cancel
-                      </button>
-                      <button 
-                        className="bg-red-600 text-white px-5 py-3 rounded-[12px] text-[15px] font-medium hover:bg-red-700 transition-colors"
-                      >
-                        Confirm delete
-                      </button>
+                    <div className="mt-3 rounded-xl border border-red-200 bg-white p-4 shadow-sm animate-in fade-in slide-in-from-top-2">
+                      <p className="text-sm font-medium text-red-700 mb-3">Verify your password to confirm deactivation</p>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <div className="relative flex-1">
+                          <input 
+                            type={showMfaPassword ? "text" : "password"}
+                            value={mfaPassword}
+                            onChange={(e) => setMfaPassword(e.target.value)}
+                            placeholder="Enter your current password"
+                            className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-sm text-charcoal outline-none focus:border-terracotta"
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowMfaPassword(!showMfaPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink hover:text-charcoal"
+                          >
+                            {showMfaPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                          </button>
+                        </div>
+                        <div className="flex gap-2">
+                          <button 
+                            className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-charcoal transition-colors hover:bg-parchment" 
+                            onClick={() => { setConfirmDelete(false); setMfaPassword(''); }}
+                            disabled={mfaDisabling}
+                          >
+                            Cancel
+                          </button>
+                          <button 
+                            className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700"
+                            onClick={handleDeactivate}
+                            disabled={mfaDisabling}
+                          >
+                            {mfaDisabling ? 'Deactivating...' : 'Confirm deactivate'}
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
 
-            </div>
+              </div>
+            </section>
           </div>
         </div>
       </div>

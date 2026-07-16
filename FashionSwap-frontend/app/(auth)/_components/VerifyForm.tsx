@@ -1,21 +1,41 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import OTPInput from '@/components/auth/OTPInput';
-import Button from '@/components/common/Button';
-import { verifyOtp } from '@/lib/api';
+import Button from '@/components/ui/Button';
+import { handleVerifyMfa } from '@/lib/actions/auth-actions';
 import { useToast } from '@/app/(platform)/_components/ToastProvider';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 export default function VerifyForm() {
   const [loading, setLoading] = useState(false);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
   const { pushToast } = useToast();
   const router = useRouter();
+  const { checkAuth } = useAuth();
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const token = window.localStorage.getItem('mfaSessionToken');
+    setSessionToken(token);
+  }, []);
 
   const handleComplete = async (code: string) => {
+    if (!sessionToken) {
+      pushToast({ title: 'Session error', description: 'Missing MFA session token. Please login again.', tone: 'error' });
+      router.push('/login');
+      return;
+    }
+
     setLoading(true);
     try {
-      await verifyOtp(code);
+      const res = await handleVerifyMfa(sessionToken, code);
+      if (!res.success) {
+        throw new Error(res.message || 'MFA verification failed');
+      }
+      window.localStorage.removeItem('mfaSessionToken');
+      await checkAuth(true);
       pushToast({ title: 'Verified', description: 'MFA verified', tone: 'success' });
       router.push('/profile');
     } catch (e: any) {

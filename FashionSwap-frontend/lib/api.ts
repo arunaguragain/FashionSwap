@@ -140,8 +140,11 @@ export function register(name: string, email: string, password: string) {
   return fetchJSON('/api/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password }) });
 }
 
-export function verifyOtp(code: string) {
-  return fetchJSON('/api/auth/mfa/verify', { method: 'POST', body: JSON.stringify({ code }) });
+export function verifyOtp(code: string, sessionToken?: string) {
+  return fetchJSON('/api/auth/mfa/verify-login', {
+    method: 'POST',
+    body: JSON.stringify({ code, sessionToken }),
+  });
 }
 
 export function setupMfa() {
@@ -171,4 +174,18 @@ export function toggleFavorite(listingId: string) {
 
 export function getFavorites() {
   return fetchJSON('/api/profiles/favorites');
+}
+
+export function deactivateAccount(password: string) {
+  return fetchJSON('/api/profiles/me/deactivate', {
+    method: 'PATCH',
+    body: JSON.stringify({ password }),
+  });
+}
+
+export function reactivateAccount(password: string) {
+  return fetchJSON('/api/profiles/me/reactivate', {
+    method: 'PATCH',
+    body: JSON.stringify({ password }),
+  });
 }

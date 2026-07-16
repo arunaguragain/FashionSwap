@@ -5,35 +5,62 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import ListingCard from "@/components/ui/ListingCard";
+import type { Listing } from "@/components/ui/ListingCard";
 import Badge from "@/components/ui/Badge";
 import { getListings } from "@/lib/api";
 
-const CONDITIONS = ["New", "Like New", "Good", "Fair"];
-const CATEGORIES = ["clothes", "bags", "shoes", "accessories", "jewellery"];
+const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
+const CATEGORIES = [
+  { label: "Clothes", values: ["Tops", "Bottoms", "Dresses", "Outerwear", "Clothes"] },
+  { label: "Bags", values: ["Bags"] },
+  { label: "Shoes", values: ["Shoes"] },
+  { label: "Accessories", values: ["Accessories"] },
+  { label: "Jewellery", values: ["Jewellery"] },
+];
+
+type MarketplaceListing = Listing & {
+  description?: string;
+  brand?: string;
+  createdAt?: string;
+};
+
+const categoryFromSearchParam = (category: string | null) =>
+  category
+    ? CATEGORIES.find(({ label, values }) => values.some(value => value.toLowerCase() === category.toLowerCase()) || label.toLowerCase() === category.toLowerCase())?.label || category
+    : null;
 
 function BrowseContent() {
   const searchParams = useSearchParams();
-  const [query, setQuery] = useState(searchParams?.get("q") || "");
+  const [query, setQuery] = useState(() => searchParams?.get("q") || "");
   const [selectedCats, setSelectedCats] = useState<string[]>(
-    searchParams?.get("cat") ? [searchParams.get("cat")!] : []
+    () => {
+      const category = categoryFromSearchParam(searchParams?.get("cat") || null);
+      return category ? [category] : [];
+    }
   );
   const [selectedConds, setSelectedConds] = useState<string[]>([]);
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
   const [sort, setSort] = useState("newest");
   const [filterOpen, setFilterOpen] = useState(false);
-  const [allListings, setAllListings] = useState<any[]>([]);
+  const [allListings, setAllListings] = useState<MarketplaceListing[]>([]);
 
   useEffect(() => {
-    getListings().then(res => {
-      const data = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+    getListings("", { limit: 100 }).then((response: unknown) => {
+      const res = response as { data?: MarketplaceListing[] } | MarketplaceListing[];
+      const data = Array.isArray(res) ? res : Array.isArray(res.data) ? res.data : [];
       setAllListings(data);
     }).catch(() => setAllListings([]));
   }, []);
 
   useEffect(() => {
-    setQuery(searchParams?.get("q") || "");
-    setSelectedCats(searchParams?.get("cat") ? [searchParams.get("cat")!] : []);
+    const syncFilters = window.setTimeout(() => {
+      setQuery(searchParams?.get("q") || "");
+      const category = categoryFromSearchParam(searchParams?.get("cat") || null);
+      setSelectedCats(category ? [category] : []);
+    }, 0);
+
+    return () => window.clearTimeout(syncFilters);
   }, [searchParams]);
 
   const toggleFilter = <T extends string>(arr: T[], val: T, setter: (a: T[]) => void) => {
@@ -42,45 +69,49 @@ function BrowseContent() {
 
   const filtered = useMemo(() => {
     let list = [...allListings];
-    const getTitle = (l: any) => l.title || l.name || '';
-    const getPrice = (l: any) => l.price || l.askingPrice || 0;
-    const getCat = (l: any) => l.category || '';
-    const getCond = (l: any) => l.condition || 'Good';
-    if (query) list = list.filter((l) => getTitle(l).toLowerCase().includes(query.toLowerCase()));
-    if (selectedCats.length) list = list.filter((l) => selectedCats.includes(getCat(l)));
-    if (selectedConds.length) list = list.filter((l) => selectedConds.includes(getCond(l)));
-    if (priceMin) list = list.filter((l) => getPrice(l) >= parseInt(priceMin));
-    if (priceMax) list = list.filter((l) => getPrice(l) <= parseInt(priceMax));
+    const getPrice = (l: MarketplaceListing) => Number(l.price ?? l.askingPrice ?? 0);
+    const getCategory = (l: MarketplaceListing) => String(l.category || "").toLowerCase();
+    const getCondition = (l: MarketplaceListing) => String(l.condition || "Good").toLowerCase();
+    const normalizedQuery = query.trim().toLowerCase();
+
+    if (normalizedQuery) {
+      list = list.filter((listing) =>
+        [listing.title, listing.name, listing.description, listing.brand, listing.category, listing.sellerName]
+          .some((value) => String(value || "").toLowerCase().includes(normalizedQuery))
+      );
+    }
+    if (selectedCats.length) {
+      list = list.filter((listing) => selectedCats.some((label) =>
+        CATEGORIES.find((category) => category.label === label)?.values
+          .some((value) => value.toLowerCase() === getCategory(listing))
+      ));
+    }
+    if (selectedConds.length) list = list.filter((listing) => selectedConds.some((condition) => condition.toLowerCase() === getCondition(listing)));
+    if (priceMin) list = list.filter((l) => getPrice(l) >= Number(priceMin));
+    if (priceMax) list = list.filter((l) => getPrice(l) <= Number(priceMax));
     if (sort === "price-asc") list.sort((a, b) => getPrice(a) - getPrice(b));
     if (sort === "price-desc") list.sort((a, b) => getPrice(b) - getPrice(a));
+    if (sort === "newest") list.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
     return list;
   }, [query, selectedCats, selectedConds, priceMin, priceMax, sort, allListings]);
 
   const activeFilterCount = selectedCats.length + selectedConds.length + (priceMin ? 1 : 0) + (priceMax ? 1 : 0);
 
-  const FilterPanel = () => (
+  const renderFilterPanel = () => (
     <div className="space-y-6">
       {/* Category */}
       <div>
         <h4 className="text-sm font-semibold text-charcoal mb-3">Category</h4>
         <div className="space-y-2">
-          {CATEGORIES.map((cat) => (
-            <label key={cat} className="flex items-center gap-2.5 cursor-pointer group">
-              <div
-                onClick={() => toggleFilter(selectedCats, cat, setSelectedCats)}
-                className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors cursor-pointer ${
-                  selectedCats.includes(cat)
-                    ? "bg-terracotta border-terracotta"
-                    : "border-border group-hover:border-terracotta/50"
-                }`}
-              >
-                {selectedCats.includes(cat) && (
-                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                    <path d="M1 4L3.5 6.5L9 1.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
-                )}
-              </div>
-              <span className="text-[14px] text-charcoal capitalize">{cat}</span>
+          {CATEGORIES.map(({ label }) => (
+            <label key={label} className="flex items-center gap-2.5 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={selectedCats.includes(label)}
+                onChange={() => toggleFilter(selectedCats, label, setSelectedCats)}
+                className="h-4 w-4 rounded-[4px] border-border text-terracotta focus:ring-terracotta"
+              />
+              <span className="text-[14px] text-charcoal">{label}</span>
             </label>
           ))}
         </div>
@@ -92,20 +123,12 @@ function BrowseContent() {
         <div className="space-y-2">
           {CONDITIONS.map((cond) => (
             <label key={cond} className="flex items-center gap-2.5 cursor-pointer group">
-              <div
-                onClick={() => toggleFilter(selectedConds, cond, setSelectedConds)}
-                className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors cursor-pointer ${
-                  selectedConds.includes(cond)
-                    ? "bg-terracotta border-terracotta"
-                    : "border-border group-hover:border-terracotta/50"
-                }`}
-              >
-                {selectedConds.includes(cond) && (
-                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                    <path d="M1 4L3.5 6.5L9 1.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
-                )}
-              </div>
+              <input
+                type="checkbox"
+                checked={selectedConds.includes(cond)}
+                onChange={() => toggleFilter(selectedConds, cond, setSelectedConds)}
+                className="h-4 w-4 rounded-[4px] border-border text-terracotta focus:ring-terracotta"
+              />
               <span className="text-[14px] text-charcoal">{cond}</span>
             </label>
           ))}
@@ -146,9 +169,10 @@ function BrowseContent() {
   );
 
   return (
-    <div className="w-full px-4 sm:px-6 md:px-8 py-8">
-      {/* Search bar */}
-      <div className="flex gap-3 mb-6">
+    <div className="w-full px-4 py-8 sm:px-6 md:px-8">
+      {/* This toolbar remains visible while browsing the listing grid. */}
+      <div className="sticky top-16 z-40 -mx-4 mb-6 border-b border-border/70 bg-parchment/95 px-4 py-4 backdrop-blur-sm sm:-mx-6 sm:px-6 md:-mx-8 md:px-8">
+        <div className="flex gap-3">
         <div className="flex-1 relative">
           <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink" />
           <input
@@ -184,6 +208,7 @@ function BrowseContent() {
           <option value="price-asc">Price: low to high</option>
           <option value="price-desc">Price: high to low</option>
         </select>
+        </div>
       </div>
 
       {/* Active filters */}
@@ -207,9 +232,9 @@ function BrowseContent() {
       <div className="flex gap-6">
         {/* Desktop filter sidebar */}
         <div className="hidden lg:block w-56 shrink-0">
-          <div className="sticky top-24 bg-white rounded-[20px] border border-border p-5">
+          <div className="sticky top-36 w-56 bg-white rounded-[20px] border border-border p-5">
             <h3 className="font-semibold text-charcoal mb-5 text-[15px]">Filter</h3>
-            <FilterPanel />
+            {renderFilterPanel()}
           </div>
         </div>
 
@@ -224,7 +249,7 @@ function BrowseContent() {
                   <X size={18} />
                 </button>
               </div>
-              <FilterPanel />
+              {renderFilterPanel()}
             </div>
           )}
 

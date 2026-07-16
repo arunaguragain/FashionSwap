@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/no-unescaped-entities */
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,7 +21,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user, logout, loading } = useAuth();
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/forgot-password" || pathname === "/reset-password" || pathname.startsWith("/mfa-");
+  const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/forgot-password" || pathname === "/reset-password" || pathname.startsWith("/mfa");
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href.split("?")[0]);
@@ -250,7 +251,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <main className="flex-1">{children}</main>
 
-      {/* Footer */}
       <footer className="bg-charcoal text-parchment/70 mt-16">
         <div className="w-full px-6 py-12 md:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">

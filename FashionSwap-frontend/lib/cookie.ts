@@ -23,11 +23,7 @@ export const setUserData = async (userData: any) => {
         firstName: userData?.firstName,
         lastName: userData?.lastName,
         role: userData?.role,
-        // email: userData?.email,
-        // phone: userData?.phone,
-        // location: userData?.location,
-        // bio: userData?.bio,
-        // avatar: userData?.avatar
+        mfaEnabled: userData?.mfaEnabled ?? false,
     };
     cookieStore.set({ 
         name: "user_data", 

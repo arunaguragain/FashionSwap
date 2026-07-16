@@ -1,6 +1,33 @@
 import axios from 'axios';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5050';
+// Read the env var but sanitize it so malformed values like ":5050" don't
+// produce invalid URLs in the browser (which was causing requests to go to
+// ":5050/..." and fail with ERR_CONNECTION_REFUSED).
+let rawBase = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+rawBase = String(rawBase || '').trim();
+let BASE_URL = 'http://localhost:5050';
+try {
+    if (!rawBase) {
+        BASE_URL = 'http://localhost:5050';
+    } else if (rawBase.startsWith(':')) {
+        // allow ":5050" -> assume localhost
+        BASE_URL = `http://localhost${rawBase}`;
+    } else if (!/^https?:\/\//i.test(rawBase)) {
+        // missing protocol, assume http
+        BASE_URL = `http://${rawBase}`;
+    } else {
+        BASE_URL = rawBase;
+    }
+} catch (e) {
+    // fallback to localhost
+    BASE_URL = 'http://localhost:5050';
+}
+
+if (typeof window !== 'undefined') {
+    // help debugging in the browser console when requests fail
+    // eslint-disable-next-line no-console
+    console.debug('[api] using BASE_URL ->', BASE_URL);
+}
 
 const getCookie = (name: string): string | null => {
     if (typeof document === 'undefined') return null;

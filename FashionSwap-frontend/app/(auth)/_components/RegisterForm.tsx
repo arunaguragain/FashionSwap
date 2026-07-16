@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -37,6 +37,11 @@ export default function RegisterForm({ userType, onSubmit, loginLink }: Props) {
   } catch (e) {
     pushToast = (notification: any) => console.log('toast', notification);
   }
+
+  useEffect(() => {
+    // Ensure CSRF token is set before user submits the form
+    fetch('/api/csrf').catch(() => {});
+  }, []);
 
   const [passwordValue, setPasswordValue] = useState("");
 

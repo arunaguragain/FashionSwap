@@ -235,6 +235,11 @@ export class AuthController {
         return;
       }
 
+      if (user.isActive === false) {
+        res.status(403).json({ success: false, message: 'This account is deactivated. Please contact support or follow the reactivation process.' });
+        return;
+      }
+
       if (user.accountLockedUntil && new Date(user.accountLockedUntil) > new Date()) {
         res.status(429).json({ success: false, message: 'Account locked due to too many failed attempts' });
         return;
@@ -293,6 +298,7 @@ export class AuthController {
             firstName: user.firstName,
             lastName: user.lastName,
             role: user.role,
+            mfaEnabled: user.mfaEnabled,
           },
         },
       });
@@ -362,6 +368,7 @@ export class AuthController {
             firstName: user.firstName,
             lastName: user.lastName,
             role: user.role,
+            mfaEnabled: user.mfaEnabled,
           },
         },
       });

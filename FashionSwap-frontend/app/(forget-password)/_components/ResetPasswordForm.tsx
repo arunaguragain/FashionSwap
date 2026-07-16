@@ -13,9 +13,10 @@ import Link from "next/link";
 
 interface Props {
   email?: string;
+  token?: string;
 }
 
-export default function ResetPasswordForm({ email }: Props) {
+export default function ResetPasswordForm({ email, token }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const effectiveEmail = email || searchParams?.get("email") || "";

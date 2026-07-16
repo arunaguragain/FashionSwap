@@ -2,9 +2,9 @@ import { LoginData, RegisterData } from "@/app/(auth)/schema";
 import axios from "./axios";
 import { API } from "./endpoints";
 
-export const register = async (registerData: RegisterData) => {
+export const register = async (registerData: RegisterData, customHeaders?: Record<string, string>) => {
   try {
-    const response = await axios.post(API.AUTH.REGISTER, registerData);
+    const response = await axios.post(API.AUTH.REGISTER, registerData, { headers: customHeaders });
     return response.data;
   } catch (error: Error | any) {
     const resp = error.response?.data;
@@ -32,9 +32,9 @@ export const verifyEmail = async (email: string, otp: string) => {
   }
 }
 
-export const login = async (loginData: LoginData) => {
+export const login = async (loginData: LoginData, customHeaders?: Record<string, string>) => {
   try {
-    const response = await axios.post(API.AUTH.LOGIN, loginData);
+    const response = await axios.post(API.AUTH.LOGIN, loginData, { headers: customHeaders });
     return response.data;
   } catch (error: Error | any) {
     const resp = error.response?.data;

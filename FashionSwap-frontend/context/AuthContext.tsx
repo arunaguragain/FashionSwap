@@ -1,7 +1,8 @@
 "use client"
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { clearAuthCookies, getAuthToken, getUserData } from "@/lib/cookie";
-import { useRouter } from "next/navigation";
+import { clearAuthCookies } from "@/lib/cookie";
+import { useRouter, usePathname } from "next/navigation";
+import { whoAmI } from '@/lib/api/auth';
 
 interface AuthContextProps {
     isAuthenticated: boolean;
@@ -10,7 +11,7 @@ interface AuthContextProps {
     setUser: (user: any) => void;
     logout: () => Promise<void>;
     loading: boolean;
-    checkAuth: () => Promise<void>;
+    checkAuth: (force?: boolean) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -20,12 +21,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const checkAuth = async () => {
+    const pathname = usePathname();
+    const authPagePaths = ['/login', '/register', '/forgot-password', '/reset-password'];
+    const isAuthPage = pathname ? authPagePaths.some((path) => pathname.startsWith(path)) || pathname.startsWith('/mfa') : false;
+
+    const checkAuth = async (force = false) => {
+        // If not forcing, skip fetch on auth pages to avoid noisy failed requests
+        if (isAuthPage && !force) {
+            setLoading(false);
+            return;
+        }
+
         try {
-            const token = await getAuthToken();
-            const user = await getUserData();
-            setUser(user);
-            setIsAuthenticated(!!token);
+            const { data } = await whoAmI();
+            setUser(data);
+            setIsAuthenticated(true);
         } catch (err) {
             setIsAuthenticated(false);
             setUser(null);

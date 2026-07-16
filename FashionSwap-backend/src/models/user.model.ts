@@ -38,6 +38,8 @@ export interface IUser extends Document {
   sellerProfile?: ISellerProfile;
   buyerProfile?: IBuyerProfile;
   isVerified: boolean;
+  isActive: boolean;
+  deactivatedAt?: Date;
   verificationOTP?: string;
   verificationOTPExpiry?: Date;
   passwordResetOTP?: string;
@@ -180,6 +182,14 @@ const userSchema = new Schema<IUser>(
     isVerified: {
       type: Boolean,
       default: false,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    deactivatedAt: {
+      type: Date,
+      default: null,
     },
     verificationOTP: {
       type: String,

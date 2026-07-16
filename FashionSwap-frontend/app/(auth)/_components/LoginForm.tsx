@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,7 @@ import { loginSchema, LoginData } from "../schema";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import GoogleSignIn from "./GoogleSignIn";
 import { handleLogin } from "@/lib/actions/auth-actions";
+import { reactivateAccount } from '@/lib/api';
 import { useToast } from "@/app/(platform)/_components/ToastProvider";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
@@ -36,23 +37,26 @@ export default function LoginForm({
   const [error, setError] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  let pushToast: any = () => {};
-  try {
-    pushToast = useToast;
-  } catch (e) {
-    pushToast = (t: any) => console.log('toast', t);
-  }
+  const { pushToast } = useToast();
+
+  useEffect(() => {
+    // Ensure CSRF token is set before user submits the form
+    fetch('/api/csrf').catch(() => {});
+  }, []);
 
   const {
     register,
     handleSubmit,
     trigger,
+    getValues,
     formState: { errors, isSubmitting, touchedFields, isSubmitted }
   } = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
     mode: "onTouched",
     defaultValues: { email: "", password: "" }
   });
+
+  const [reactivating, setReactivating] = useState(false);
 
   const onSubmitForm = async (data: LoginData) => {
     setError("");
@@ -63,9 +67,19 @@ export default function LoginForm({
     try {
       const res = await handleLogin({ ...data, captchaToken });
       if (!res.success) {
-        try { useToast({ title: res.message || 'Login failed', tone: 'error' }); } catch(e) {}
+        try { pushToast({ title: res.message || 'Login failed', tone: 'error' }); } catch(e) {}
         throw new Error(res.message || "Login failed");
       }
+
+      if (res.data?.mfaRequired) {
+        try { pushToast({ title: 'MFA required', description: 'Enter the code from your authenticator app.', tone: 'info' }); } catch(e) {}
+        if (typeof window !== 'undefined' && res.data.sessionToken) {
+          window.localStorage.setItem('mfaSessionToken', res.data.sessionToken);
+        }
+        router.push('/mfa/verify');
+        return;
+      }
+
       try { pushToast({ title: res.message || 'Login successful', tone: 'success' }); } catch(e) {}
       
       // Update global auth state immediately
@@ -89,6 +103,31 @@ export default function LoginForm({
     } catch (err: any) {
       setError(err?.message || "Login failed");
       try { pushToast({ title: err?.message || 'Login failed', tone: 'error' }); } catch(e) {}
+    }
+  };
+
+  const handleReactivate = async () => {
+    setReactivating(true);
+    try {
+      const pw = getValues('password') || '';
+      if (!pw) {
+        setError('Please enter your password to reactivate');
+        setReactivating(false);
+        return;
+      }
+      const res = await reactivateAccount(pw);
+      if (!res || !res.success) {
+        setError(res?.message || 'Reactivation failed');
+        setReactivating(false);
+        return;
+      }
+      try { pushToast({ title: res.message || 'Account reactivated', tone: 'success' }); } catch(e) {}
+      await checkAuth(true);
+      router.push('/profile');
+    } catch (e: any) {
+      setError(e?.message || 'Reactivation failed');
+    } finally {
+      setReactivating(false);
     }
   };
 
@@ -142,6 +181,15 @@ export default function LoginForm({
       <Button type="submit" fullWidth size="lg" disabled={isSubmitting || pending || !captchaToken}>
         {(isSubmitting || pending) ? "Signing in..." : "Sign in"}
       </Button>
+
+      {/* Show reactivate option when account is deactivated */}
+      {error && error.toLowerCase().includes('deactivated') && (
+        <div className="mt-2">
+          <Button type="button" fullWidth size="md" onClick={handleReactivate} disabled={reactivating} className="!bg-amber-600">
+            {reactivating ? 'Reactivating...' : 'Reactivate account'}
+          </Button>
+        </div>
+      )}
 
       {userType !== "Admin" && (
         <div className="my-4 flex items-center gap-4">

@@ -17,7 +17,7 @@ export interface IListing extends Document {
   sellerId: mongoose.Types.ObjectId;
   sellerName: string;
   sellerRating?: number;
-  status: 'available' | 'sold' | 'removed';
+  status: 'available' | 'sold' | 'removed' | 'seller_inactive';
   views: number;
   location: string;
   pickupAvailable: boolean;
@@ -108,7 +108,7 @@ const listingSchema = new Schema<IListing>(
     },
     status: {
       type: String,
-      enum: ['available', 'sold', 'removed'],
+      enum: ['available', 'sold', 'removed', 'seller_inactive'],
       default: 'available',
     },
     views: {

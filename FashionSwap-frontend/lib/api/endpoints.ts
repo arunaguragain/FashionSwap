@@ -10,6 +10,7 @@ export const API = {
         RESET_PASSWORD_OTP: "/api/auth/password-reset/confirm",
         GOOGLE: "/api/auth/google",
         EXISTS: "/api/auth/exists",
+        MFA_VERIFY_LOGIN: "/api/auth/mfa/verify-login",
     },
     LISTINGS: {
         LIST: "/api/listings",

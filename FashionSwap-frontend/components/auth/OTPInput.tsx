@@ -7,9 +7,10 @@ interface OTPInputProps {
   length?: number;
   onComplete: (otp: string) => void;
   className?: string;
+  inputClassName?: string;
 }
 
-export default function OTPInput({ length = 6, onComplete, className }: OTPInputProps) {
+export default function OTPInput({ length = 6, onComplete, className, inputClassName }: OTPInputProps) {
   const [otp, setOtp] = useState<string[]>(Array(length).fill(''));
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
@@ -44,7 +45,7 @@ export default function OTPInput({ length = 6, onComplete, className }: OTPInput
           value={otp[idx]}
           onChange={(e) => handleChange(idx, e.target.value)}
           onKeyDown={(e) => handleKeyDown(idx, e)}
-          className={cn('h-14 w-12 rounded-2xl border border-outline/30 bg-surface-container-lowest text-center text-lg font-semibold text-on-surface shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 sm:w-14', otp[idx] ? 'border-primary/35 bg-primary/5' : '')}
+          className={cn('h-14 w-12 rounded-2xl border border-outline/30 bg-surface-container-lowest text-center text-lg font-semibold text-on-surface shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 sm:w-14', otp[idx] ? 'border-primary/35 bg-primary/5' : '', inputClassName)}
         />
       ))}
     </div>

@@ -90,6 +90,86 @@ export class ProfileController {
     }
   }
 
+  async deactivateAccount(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = getRequestUserId(req);
+      const { password } = req.body;
+
+      if (!password) {
+        res.status(400).json({ success: false, message: 'Password is required to deactivate account' });
+        return;
+      }
+
+      const user = await User.findById(userId);
+      if (!user) {
+        res.status(404).json({ success: false, message: 'User not found' });
+        return;
+      }
+
+      const isPasswordValid = await user.comparePassword(password);
+      if (!isPasswordValid) {
+        res.status(401).json({ success: false, message: 'Invalid password' });
+        return;
+      }
+
+      user.isActive = false;
+      user.deactivatedAt = new Date();
+      await user.save();
+
+      // Set listings to seller_inactive
+      await Listing.updateMany({ sellerId: userId, status: 'available' }, { status: 'seller_inactive' });
+
+      // Clear refresh token to log them out
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+      });
+
+      res.status(200).json({ success: true, message: 'Account deactivated successfully' });
+    } catch (error) {
+      console.error('Error deactivating account:', error);
+      res.status(500).json({ success: false, message: 'Error deactivating account' });
+    }
+  }
+
+  async reactivateAccount(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = getRequestUserId(req);
+      const { password } = req.body;
+
+      if (!password) {
+        res.status(400).json({ success: false, message: 'Password is required to reactivate account' });
+        return;
+      }
+
+      const user = await User.findById(userId);
+      if (!user) {
+        res.status(404).json({ success: false, message: 'User not found' });
+        return;
+      }
+
+      // Verify password before reactivating
+      const isPasswordValid = await user.comparePassword(password);
+      if (!isPasswordValid) {
+        res.status(401).json({ success: false, message: 'Invalid password' });
+        return;
+      }
+
+      user.isActive = true;
+      user.deactivatedAt = undefined;
+      await user.save();
+
+      // Restore listings previously marked seller_inactive back to available
+      await Listing.updateMany({ sellerId: userId, status: 'seller_inactive' }, { status: 'available' });
+
+      res.status(200).json({ success: true, message: 'Account reactivated successfully' });
+    } catch (error) {
+      console.error('Error reactivating account:', error);
+      res.status(500).json({ success: false, message: 'Error reactivating account' });
+    }
+  }
+
   /**
    * GET /api/profiles/me/export
    * Returns all of the authenticated user's own data as JSON.

@@ -32,17 +32,22 @@ export const validateCSRFToken = (req: Request, res: Response, next: NextFunctio
   }
 
   const authHeader = req.get('authorization');
-  const isAuthRoute = req.path === '/api/auth' || req.path.startsWith('/api/auth/');
+  const isLoginOrRegister = req.path === '/api/auth/login' || req.path === '/api/auth/register';
+  const isOtherAuthRoute = (req.path === '/api/auth' || req.path.startsWith('/api/auth/')) && !isLoginOrRegister;
   const hasAuthCookie = !!req.cookies?.auth_token;
 
-  // Skip CSRF for auth routes, Bearer token auth, or cookie-based auth
+  // Skip CSRF for auth routes (EXCEPT login/register), Bearer token auth, or cookie-based auth
   // (httpOnly + sameSite cookie already prevents cross-site request forgery)
-  if (isAuthRoute || authHeader?.startsWith('Bearer ') || hasAuthCookie) {
+  if (isOtherAuthRoute || authHeader?.startsWith('Bearer ') || hasAuthCookie) {
     return next();
   }
 
   const cookieToken = req.cookies?.[CSRF_COOKIE_NAME];
   const headerToken = req.get(CSRF_HEADER_NAME);
+
+  console.log(`[CSRF Validation] Path: ${req.path}`);
+  console.log(`[CSRF Validation] Cookie Token: ${cookieToken ? 'Present' : 'Missing'}, Header Token: ${headerToken ? 'Present' : 'Missing'}`);
+  console.log(`[CSRF Validation] Match: ${cookieToken === headerToken ? 'YES' : 'NO'}`);
 
   if (!cookieToken || !headerToken || cookieToken !== headerToken) {
     return res.status(403).json({
