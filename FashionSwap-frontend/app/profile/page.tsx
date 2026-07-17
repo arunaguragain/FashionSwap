@@ -147,7 +147,7 @@ export default function ProfilePage() {
       const tableData = myListings.map(item => [
         item.title || item.name || 'Untitled',
         item.category || 'N/A',
-        item.price ? `Rs. ${item.price}` : 'N/A',
+        item.askingPrice ? `Rs. ${item.askingPrice}` : 'N/A',
         item.status || 'Active'
       ]);
 

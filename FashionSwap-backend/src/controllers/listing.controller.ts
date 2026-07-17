@@ -258,10 +258,16 @@ export class ListingController {
     try {
       const user = (req as any).user;
       const userId = String(user._id || user.id);
-      const { status = 'available' } = req.query;
+      const { status } = req.query;
 
       const filter: any = { sellerId: userId };
-      if (status) filter.status = String(status);
+      
+      if (status && status !== 'all') {
+        filter.status = String(status);
+      } else {
+        // If status='all' or no status is provided, fetch all listings except removed ones
+        filter.status = { $ne: 'removed' };
+      }
 
       const listings = await Listing.find(filter).sort({ createdAt: -1 }).lean();
 

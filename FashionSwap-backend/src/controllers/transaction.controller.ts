@@ -47,6 +47,19 @@ export class TransactionController {
 
       await transaction.save();
 
+      if (transaction.status === 'completed') {
+        const Order = require('../models/order.model').default;
+        const User = require('../models/user.model').default;
+        const order = await Order.findById(transaction.orderId);
+        if (order) {
+            order.status = 'completed';
+            order.completedAt = new Date();
+            await order.save();
+            await User.updateOne({ _id: order.sellerId }, { $inc: { 'sellerProfile.itemsSold': 1 } });
+            await User.updateOne({ _id: order.buyerId }, { $inc: { 'buyerProfile.itemsPurchased': 1 } });
+        }
+      }
+
       res.status(200).json({ success: true, message: 'Delivery confirmed', data: transaction });
     } catch (error) {
       res.status(500).json({ success: false, message: 'Error confirming delivery' });
@@ -81,6 +94,19 @@ export class TransactionController {
       }
 
       await transaction.save();
+
+      if (transaction.status === 'completed') {
+        const Order = require('../models/order.model').default;
+        const User = require('../models/user.model').default;
+        const order = await Order.findById(transaction.orderId);
+        if (order) {
+            order.status = 'completed';
+            order.completedAt = new Date();
+            await order.save();
+            await User.updateOne({ _id: order.sellerId }, { $inc: { 'sellerProfile.itemsSold': 1 } });
+            await User.updateOne({ _id: order.buyerId }, { $inc: { 'buyerProfile.itemsPurchased': 1 } });
+        }
+      }
 
       res.status(200).json({ success: true, message: 'Handover confirmed', data: transaction });
     } catch (error) {

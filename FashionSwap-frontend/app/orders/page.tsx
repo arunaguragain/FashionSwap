@@ -14,7 +14,7 @@ import {
 import SkeletonOrder from '../../components/common/SkeletonOrder';
 import Protected from '../../components/common/Protected';
 import { useToast } from '@/app/(platform)/_components/ToastProvider';
-import { CheckCircle2, Clock3, Package, ArrowRight, Sparkles, Ban } from 'lucide-react';
+import { CheckCircle2, Clock3, Package, ArrowRight, Sparkles, Ban, Mail, Phone, MapPin, Truck, User } from 'lucide-react';
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
 
@@ -160,30 +160,39 @@ export default function OrdersPage() {
     }
 
     if (status === 'accepted') {
+      const hasBuyerConfirmed = order.transaction?.buyerConfirmed;
+      const hasSellerConfirmed = order.transaction?.sellerConfirmed;
+
       return (
-        <div className="flex flex-wrap gap-2">
-          {isBuyer && (
+        <div className="flex flex-wrap gap-2 mt-4">
+          {isBuyer && !hasBuyerConfirmed && (
             <button
               type="button"
               onClick={() => handleTransactionAction(order, 'delivery')}
               disabled={actionLoading === (order._id || order.id)}
               className="inline-flex items-center gap-2 bg-terracotta text-white px-5 py-2.5 rounded-[14px] text-sm font-medium hover:bg-terracotta-dark transition-colors disabled:opacity-70"
             >
-              {actionLoading === (order._id || order.id) ? 'Working…' : 'Confirm delivery'}
+              {actionLoading === (order._id || order.id) ? 'Working…' : 'Mark as Received'}
             </button>
           )}
-          {isSeller && (
+          {isBuyer && hasBuyerConfirmed && (
+            <span className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-full bg-sage/12 text-sage-dark border border-sage/20"><CheckCircle2 className="h-4 w-4" /> Received</span>
+          )}
+          {isSeller && !hasSellerConfirmed && (
             <button
               type="button"
               onClick={() => handleTransactionAction(order, 'handover')}
               disabled={actionLoading === (order._id || order.id)}
-              className="inline-flex items-center gap-2 border border-border bg-white px-5 py-2.5 rounded-[14px] text-sm font-medium text-charcoal-soft hover:bg-parchment-dark transition-colors disabled:opacity-70"
+              className="inline-flex items-center gap-2 bg-terracotta text-white px-5 py-2.5 rounded-[14px] text-sm font-medium hover:bg-terracotta-dark transition-colors disabled:opacity-70"
             >
-              {actionLoading === (order._id || order.id) ? 'Working…' : 'Confirm handover'}
+              {actionLoading === (order._id || order.id) ? 'Working…' : 'Mark as Delivered'}
             </button>
           )}
+          {isSeller && hasSellerConfirmed && (
+             <span className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-full bg-sage/12 text-sage-dark border border-sage/20"><CheckCircle2 className="h-4 w-4" /> Delivered</span>
+          )}
           {!isBuyer && !isSeller && (
-            <span className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-full bg-sand text-ink">Waiting for next step</span>
+            <span className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-full bg-sand text-ink border border-sand-dark">Waiting for next step</span>
           )}
         </div>
       );
@@ -320,19 +329,93 @@ export default function OrdersPage() {
                          <p className="font-display text-xl font-bold text-charcoal">Rs. {o.price?.toLocaleString() || 0}</p>
                        </div>
                      </div>
-   
-                     <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 mb-6 mt-auto pt-4 border-t border-border/40">
-                       <p className="text-sm text-charcoal flex items-center gap-2">
-                         <span className="text-ink font-medium w-16">{role === 'Seller' ? 'Buyer' : 'Seller'}:</span>
-                         <span className="font-medium">{role === 'Seller' ? buyerName : sellerName}</span>
-                       </p>
-                       <p className="text-sm text-charcoal flex items-center gap-2">
-                         <span className="text-ink font-medium w-16">Delivery:</span>
-                         <span className="font-medium capitalize">{o.deliveryMethod?.replace(/_/g, ' ') || 'N/A'}</span>
-                       </p>
-                     </div>
-   
-                     {renderActions(o)}
+                      <div className="grid sm:grid-cols-2 gap-4 mb-6 mt-auto pt-4 border-t border-border/40">
+                        {/* Contact Info Block */}
+                        <div className="bg-sand/30 rounded-xl p-4 flex flex-col gap-3">
+                          <h4 className="text-xs font-bold text-ink uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                            <User className="w-3.5 h-3.5" />
+                            {role === 'Seller' ? 'Buyer Details' : 'Seller Details'}
+                          </h4>
+                          
+                          <div className="flex items-start gap-2.5">
+                            <div className="w-7 h-7 rounded-full bg-parchment flex items-center justify-center shrink-0">
+                               <User className="w-4 h-4 text-charcoal-soft" />
+                            </div>
+                            <div>
+                               <p className="text-xs text-ink mb-0.5">Name</p>
+                               <p className="text-sm font-medium text-charcoal">{role === 'Seller' ? buyerName : sellerName}</p>
+                            </div>
+                          </div>
+                          
+                          {(role === 'Seller' ? o.buyerId?.email : o.sellerId?.email) && (
+                            <div className="flex items-start gap-2.5">
+                              <div className="w-7 h-7 rounded-full bg-parchment flex items-center justify-center shrink-0">
+                                 <Mail className="w-4 h-4 text-charcoal-soft" />
+                              </div>
+                              <div>
+                                 <p className="text-xs text-ink mb-0.5">Email</p>
+                                 <p className="text-sm font-medium text-charcoal">{role === 'Seller' ? o.buyerId?.email : o.sellerId?.email}</p>
+                              </div>
+                            </div>
+                          )}
+
+                          {(role === 'Seller' ? o.buyerId?.phone : o.sellerId?.phone) && (
+                            <div className="flex items-start gap-2.5">
+                              <div className="w-7 h-7 rounded-full bg-parchment flex items-center justify-center shrink-0">
+                                 <Phone className="w-4 h-4 text-charcoal-soft" />
+                              </div>
+                              <div>
+                                 <p className="text-xs text-ink mb-0.5">Phone</p>
+                                 <p className="text-sm font-medium text-charcoal">{role === 'Seller' ? o.buyerId?.phone : o.sellerId?.phone}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Delivery Info Block */}
+                        <div className="bg-sand/30 rounded-xl p-4 flex flex-col gap-3">
+                          <h4 className="text-xs font-bold text-ink uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                            <Truck className="w-3.5 h-3.5" />
+                            Delivery Details
+                          </h4>
+
+                          <div className="flex items-start gap-2.5">
+                            <div className="w-7 h-7 rounded-full bg-parchment flex items-center justify-center shrink-0">
+                               <Package className="w-4 h-4 text-charcoal-soft" />
+                            </div>
+                            <div>
+                               <p className="text-xs text-ink mb-0.5">Method</p>
+                               <p className="text-sm font-medium text-charcoal capitalize">{o.deliveryMethod?.replace(/_/g, ' ') || 'N/A'}</p>
+                            </div>
+                          </div>
+
+                          {o.deliveryMethod === 'meet_at_location' && o.meetingLocation && (
+                            <div className="flex items-start gap-2.5">
+                              <div className="w-7 h-7 rounded-full bg-parchment flex items-center justify-center shrink-0">
+                                 <MapPin className="w-4 h-4 text-charcoal-soft" />
+                              </div>
+                              <div>
+                                 <p className="text-xs text-ink mb-0.5">Meeting Location</p>
+                                 <p className="text-sm font-medium text-charcoal leading-snug break-words">{o.meetingLocation}</p>
+                              </div>
+                            </div>
+                          )}
+
+                          {o.deliveryMethod === 'cash_on_delivery' && o.deliveryAddress && (
+                            <div className="flex items-start gap-2.5">
+                              <div className="w-7 h-7 rounded-full bg-parchment flex items-center justify-center shrink-0">
+                                 <MapPin className="w-4 h-4 text-charcoal-soft" />
+                              </div>
+                              <div>
+                                 <p className="text-xs text-ink mb-0.5">Delivery Address</p>
+                                 <p className="text-sm font-medium text-charcoal leading-snug break-words">{o.deliveryAddress}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+    
+                      {renderActions(o)}
                    </div>
                  </div>
                );

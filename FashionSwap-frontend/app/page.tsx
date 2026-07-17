@@ -42,7 +42,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-charcoal/90 via-charcoal/60 to-transparent" />
         </div>
 
-        <div className="relative w-full px-6 py-24 md:px-8 md:py-36">
+        <div className="relative w-full px-6 py-14 md:px-8 md:py-20">
           <div className="max-w-xl">
             <Badge variant="terracotta" className="mb-6">
               <Leaf size={12} />
@@ -97,8 +97,8 @@ export default function Home() {
       </section>
 
       {/* Categories */}
-      <section className="w-full px-6 py-16 md:px-8">
-        <div className="flex items-end justify-between mb-8">
+      <section className="w-full px-6 py-10 pb-0 md:px-8">
+        <div className="flex items-end justify-between mb-6">
           <div>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-charcoal" style={{ letterSpacing: "-0.02em" }}>
               Shop by category
@@ -110,23 +110,22 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {CATEGORIES.map((cat) => (
             <Link
               key={cat.id}
               href={`/listings?cat=${cat.id}`}
               className="group relative overflow-hidden rounded-[20px] bg-sand-light cursor-pointer"
-              style={{ aspectRatio: "4/5" }}
+              style={{ aspectRatio: "3/2" }}
             >
               <img
                 src={cat.image}
                 alt={cat.label}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-5">
-                <div className="font-display text-2xl font-bold text-parchment" style={{ letterSpacing: "-0.02em" }}>{cat.label}</div>
-                <div className="text-parchment/60 text-sm mt-0.5">{cat.count}</div>
+              <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-charcoal/10 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-4">
+                <div className="font-display text-xl font-bold text-parchment" style={{ letterSpacing: "-0.02em" }}>{cat.label}</div>
               </div>
             </Link>
           ))}
@@ -134,8 +133,8 @@ export default function Home() {
       </section>
 
       {/* Featured Listings */}
-      <section className="w-full px-6 pb-16 md:px-8">
-        <div className="flex items-end justify-between mb-8">
+      <section className="w-full px-6 py-10 md:px-8">
+        <div className="flex items-end justify-between mb-6">
           <div>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-charcoal" style={{ letterSpacing: "-0.02em" }}>
               Just listed
@@ -147,10 +146,10 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {listings.map((listing) => (
             <Link key={listing._id || listing.id} href={`/listing/${listing._id || listing.id}`}>
-              <ListingCard listing={listing} />
+              <ListingCard listing={listing} size="sm" />
             </Link>
           ))}
         </div>

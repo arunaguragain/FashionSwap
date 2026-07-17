@@ -9,11 +9,13 @@ import Button from "@/components/ui/Button";
 import { getListing, getListings, toggleFavorite } from "@/lib/api";
 import ListingCard from "@/components/ui/ListingCard";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/app/(platform)/_components/ToastProvider";
 
 export default function ListingDetail() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
   const { user } = useAuth();
+  const { pushToast } = useToast();
   const [listing, setListing] = useState<any>(null);
   const [related, setRelated] = useState<any[]>([]);
   const [imgIdx, setImgIdx] = useState(0);
@@ -34,7 +36,11 @@ export default function ListingDetail() {
   const handleBuyNow = async () => {
     const { fullName, phone, street, city, zipCode } = deliveryDetails;
     if (!fullName.trim() || !phone.trim() || !street.trim() || !city.trim()) {
-      alert("Please fill in all required delivery details (Name, Phone, Street, City).");
+      pushToast({
+        title: "Missing Information",
+        description: "Please fill in all required delivery details (Name, Phone, Street, City).",
+        tone: "error"
+      });
       return;
     }
 
@@ -51,10 +57,18 @@ export default function ListingDetail() {
       });
 
       setIsCheckoutModalOpen(false);
-      alert("Order placed successfully!");
+      pushToast({
+        title: "Success!",
+        description: "Order placed successfully!",
+        tone: "success"
+      });
       router.push("/orders");
     } catch (err: any) {
-      alert(err.message || "Failed to place order.");
+      pushToast({
+        title: "Error",
+        description: err.message || "Failed to place order.",
+        tone: "error"
+      });
     } finally {
       setIsSubmittingOrder(false);
     }
@@ -312,7 +326,7 @@ export default function ListingDetail() {
                   type="text"
                   value={deliveryDetails.fullName}
                   onChange={(e) => setDeliveryDetails(prev => ({ ...prev, fullName: e.target.value }))}
-                  placeholder="John Doe"
+                  placeholder="Ram Bahadur"
                   className="w-full rounded-[14px] border border-border px-3 py-2 text-sm text-charcoal"
                 />
               </div>
@@ -322,7 +336,7 @@ export default function ListingDetail() {
                   type="tel"
                   value={deliveryDetails.phone}
                   onChange={(e) => setDeliveryDetails(prev => ({ ...prev, phone: e.target.value }))}
-                  placeholder="+1234567890"
+                  placeholder="+977 98XXXXXXXX"
                   className="w-full rounded-[14px] border border-border px-3 py-2 text-sm text-charcoal"
                 />
               </div>
@@ -332,7 +346,7 @@ export default function ListingDetail() {
                   type="text"
                   value={deliveryDetails.street}
                   onChange={(e) => setDeliveryDetails(prev => ({ ...prev, street: e.target.value }))}
-                  placeholder="123 Main St, Apt 4B"
+                  placeholder="Thamel, Jyatha"
                   className="w-full rounded-[14px] border border-border px-3 py-2 text-sm text-charcoal"
                 />
               </div>
@@ -343,7 +357,7 @@ export default function ListingDetail() {
                     type="text"
                     value={deliveryDetails.city}
                     onChange={(e) => setDeliveryDetails(prev => ({ ...prev, city: e.target.value }))}
-                    placeholder="New York"
+                    placeholder="Kathmandu"
                     className="w-full rounded-[14px] border border-border px-3 py-2 text-sm text-charcoal"
                   />
                 </div>
@@ -353,7 +367,7 @@ export default function ListingDetail() {
                     type="text"
                     value={deliveryDetails.zipCode}
                     onChange={(e) => setDeliveryDetails(prev => ({ ...prev, zipCode: e.target.value }))}
-                    placeholder="10001"
+                    placeholder="44600"
                     className="w-full rounded-[14px] border border-border px-3 py-2 text-sm text-charcoal"
                   />
                 </div>

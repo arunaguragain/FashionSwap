@@ -45,6 +45,9 @@ export class OrderController {
 
       await order.save();
 
+      listing.status = 'pending';
+      await listing.save();
+
       const transaction = new Transaction({
         orderId: order._id,
         buyerId: userId,
@@ -53,8 +56,10 @@ export class OrderController {
 
       await transaction.save();
 
-      // Fetch seller email
+      // Fetch seller email and send notification
       const seller = await User.findById(listing.sellerId);
+      console.log('📦 Order created for listing:', listing.title);
+      console.log('👤 Seller info:', { email: seller?.email, id: listing.sellerId });
       if (seller?.email) {
         await sendOrderPlacedEmail(seller.email, {
           listingTitle: listing.title,
@@ -62,6 +67,8 @@ export class OrderController {
           deliveryMethod,
           deliveryAddress,
         });
+      } else {
+        console.log('⚠️ Seller email not found');
       }
 
       res.status(201).json({ success: true, message: 'Order created', data: order });
@@ -87,11 +94,23 @@ export class OrderController {
 
       const orders = await Order.find(filter)
         .populate('listingId', 'title images askingPrice')
-        .populate('buyerId', 'firstName lastName avatar')
-        .populate('sellerId', 'firstName lastName avatar')
-        .sort({ createdAt: -1 });
+        .populate('buyerId', 'firstName lastName avatar email phone')
+        .populate('sellerId', 'firstName lastName avatar email phone')
+        .sort({ createdAt: -1 })
+        .lean();
 
-      res.status(200).json({ success: true, data: orders });
+      const orderIds = orders.map((o) => o._id);
+      const transactions = await Transaction.find({ orderId: { $in: orderIds } }).lean();
+
+      const ordersWithTransactions = orders.map((order) => {
+        const transaction = transactions.find((t) => String(t.orderId) === String(order._id));
+        return {
+          ...order,
+          transaction: transaction || null,
+        };
+      });
+
+      res.status(200).json({ success: true, data: ordersWithTransactions });
     } catch (error) {
       res.status(500).json({ success: false, message: 'Error fetching orders' });
     }
@@ -146,10 +165,17 @@ export class OrderController {
 
       order.status = 'cancelled';
       await order.save();
+
+      const listing = await Listing.findById(order.listingId);
+      if (listing) {
+        listing.status = 'available';
+        await listing.save();
+      }
       recordAuditEvent({ timestamp: new Date().toISOString(), userId, event: 'ORDER_CANCELLED', meta: { orderId } });
 
       res.status(200).json({ success: true, message: 'Order cancelled', data: order });
     } catch (error) {
+      console.error(error);
       res.status(500).json({ success: false, message: 'Error cancelling order' });
     }
   }
@@ -178,15 +204,29 @@ export class OrderController {
       order.status = 'accepted';
       order.acceptedAt = new Date();
       await order.save();
-      
+
+      const listingId = (order.listingId as any)?._id || order.listingId;
+      const listing = await Listing.findById(listingId);
+      if (listing) {
+        console.log('🏷️ Updating listing status from', listing.status, 'to sold');
+        listing.status = 'sold';
+        await listing.save();
+        console.log('✅ Listing marked as sold:', listing.title);
+      }
+
       const buyer = await User.findById(order.buyerId);
+      const listingTitle = (listing?.title || (order.listingId as any)?.title || 'your listing');
+      console.log('✅ Order accepted for listing:', listingTitle);
+      console.log('👤 Buyer info:', { email: buyer?.email, id: order.buyerId });
       if (buyer?.email) {
         await sendOrderApprovedEmail(buyer.email, {
-          listingTitle: (order.listingId as any).title,
+          listingTitle,
           price: order.price,
           deliveryMethod: order.deliveryMethod,
           deliveryAddress: order.deliveryAddress,
         });
+      } else {
+        console.log('⚠️ Buyer email not found');
       }
 
       recordAuditEvent({ timestamp: new Date().toISOString(), userId, event: 'ORDER_ACCEPTED', meta: { orderId } });
@@ -220,6 +260,12 @@ export class OrderController {
 
       order.status = 'declined';
       await order.save();
+
+      const listing = await Listing.findById(order.listingId);
+      if (listing) {
+        listing.status = 'available';
+        await listing.save();
+      }
       recordAuditEvent({ timestamp: new Date().toISOString(), userId, event: 'ORDER_DECLINED', meta: { orderId } });
 
       res.status(200).json({ success: true, message: 'Order declined', data: order });

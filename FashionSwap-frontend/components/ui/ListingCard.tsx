@@ -62,7 +62,7 @@ export default function ListingCard({ listing, size = "md" }: ListingCardProps) 
 
   return (
     <div className="listing-card bg-white rounded-[20px] overflow-hidden cursor-pointer group">
-      <div className="img-zoom relative" style={{ aspectRatio: "3/4" }}>
+      <div className="img-zoom relative" style={{ aspectRatio: size === "sm" ? "4/4" : "3/4" }}>
         <img
           src={displayImage}
           alt={displayTitle}

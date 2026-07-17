@@ -9,9 +9,7 @@ import { useToast } from '@/app/(platform)/_components/ToastProvider';
 import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
-  const [notifications, setNotifications] = useState(true);
-  const [privacy, setPrivacy] = useState('show');
-  const [saved, setSaved] = useState(false);
+
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const { user, setUser, checkAuth, logout } = useAuth();
@@ -23,30 +21,7 @@ export default function SettingsPage() {
   const [mfaDisabling, setMfaDisabling] = useState(false);
   const [showMfaPassword, setShowMfaPassword] = useState(false);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const stored = window.localStorage.getItem('fashionSwap-settings');
-      if (!stored) return;
-      const parsed = JSON.parse(stored);
-      if (typeof parsed.notifications === 'boolean') {
-        setNotifications(parsed.notifications);
-      }
-      if (typeof parsed.privacy === 'string') {
-        setPrivacy(parsed.privacy);
-      }
-    } catch (error) {
-      console.error('Unable to load saved settings', error);
-    }
-  }, []);
 
-  const handleSave = () => {
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('fashionSwap-settings', JSON.stringify({ notifications, privacy }));
-    }
-    setSaved(true);
-    window.setTimeout(() => setSaved(false), 1800);
-  };
 
   const handleDeactivate = async () => {
     if (!mfaPassword) return pushToast({ title: 'Password required', description: 'Please enter your password to deactivate your account.', tone: 'info' });
@@ -99,12 +74,10 @@ export default function SettingsPage() {
                 Settings
               </h1>
               <p className="mt-3 text-sm leading-6 text-ink">
-                Manage notifications, profile visibility, account security, and sensitive account actions from one place.
+                Manage account security and sensitive account actions from one place.
               </p>
 
               <div className="mt-6 grid gap-2 text-sm text-charcoal-soft sm:grid-cols-3 xl:grid-cols-1">
-                <p className="flex items-center gap-3 rounded-lg bg-white/70 px-3 py-2"><span className="h-2 w-2 rounded-full bg-terracotta" />Notifications</p>
-                <p className="flex items-center gap-3 rounded-lg bg-white/70 px-3 py-2"><span className="h-2 w-2 rounded-full bg-sage" />Profile & privacy</p>
                 <p className="flex items-center gap-3 rounded-lg bg-white/70 px-3 py-2"><span className="h-2 w-2 rounded-full bg-charcoal" />Security</p>
               </div>
             </aside>
@@ -117,48 +90,7 @@ export default function SettingsPage() {
 
               <div className="space-y-4 p-5 sm:p-6">
               
-              <label className="group flex cursor-pointer items-center justify-between gap-5 rounded-[16px] border border-border/80 bg-parchment/50 p-4 transition-all hover:border-terracotta/50 hover:bg-terracotta/[0.035] sm:p-5">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-terracotta/10 text-terracotta transition-transform group-hover:scale-105">
-                    <BellRing className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-[16px] font-semibold text-charcoal">Email notifications</p>
-                    <p className="mt-1 max-w-md text-sm leading-relaxed text-ink">
-                      Receive updates about offers, orders, and new messages directly to your inbox.
-                    </p>
-                  </div>
-                </div>
-                <span className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${notifications ? 'bg-terracotta' : 'bg-border'}`}>
-                  <input type="checkbox" checked={notifications} onChange={() => setNotifications((value) => !value)} className="sr-only" />
-                  <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${notifications ? 'translate-x-6' : 'translate-x-1'}`} />
-                </span>
-              </label>
 
-              <div className="rounded-[16px] border border-border/80 bg-parchment/50 p-4 transition-colors hover:border-sage/50 sm:p-5">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sage/10 text-sage">
-                    <ShieldCheck className="h-5 w-5" />
-                  </div>
-                  <div className="w-full">
-                    <p className="text-[16px] font-semibold text-charcoal">Profile visibility</p>
-                    <p className="mt-1 max-w-md text-sm leading-relaxed text-ink">
-                      Choose whether buyers can see your full profile information.
-                    </p>
-                    <div className="mt-4 max-w-md">
-                      <select 
-                        value={privacy} 
-                        onChange={(event) => setPrivacy(event.target.value)} 
-                        className="w-full rounded-xl border border-border bg-white px-4 py-3 text-[15px] text-charcoal outline-none transition-all duration-200 focus:border-terracotta focus:ring-1 focus:ring-terracotta"
-                      >
-                        <option value="show">Show profile to buyers</option>
-                        <option value="limited">Show only basic details</option>
-                        <option value="hide">Hide profile from buyers</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               {/* MFA Settings */}
               <div className="rounded-[16px] border border-border/80 bg-parchment/50 p-4 sm:p-5">
@@ -241,22 +173,6 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border/60 pt-5">
-                <p className="text-sm text-ink">Changes are saved only when you confirm.</p>
-                <div className="flex flex-wrap items-center gap-3">
-                <button 
-                  onClick={handleSave} 
-                  className="rounded-xl bg-terracotta px-6 py-3 text-[15px] font-semibold text-white shadow-[0_8px_18px_rgba(196,98,45,0.2)] transition-colors hover:bg-terracotta-dark"
-                >
-                  Save settings
-                </button>
-                {saved && (
-                  <span className="text-sm font-medium text-sage-dark bg-sage/12 px-4 py-2 rounded-full animate-in fade-in zoom-in duration-300">
-                    Saved successfully
-                  </span>
-                )}
-                </div>
-              </div>
 
               <div className="rounded-[16px] border border-red-200/80 bg-red-50/70 p-4 sm:p-5">
                 <div className="flex flex-col gap-4">

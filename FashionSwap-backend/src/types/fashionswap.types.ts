@@ -2,7 +2,7 @@
 
 export type FashionCategory = 'Tops' | 'Bottoms' | 'Dresses' | 'Outerwear' | 'Shoes' | 'Bags' | 'Accessories';
 export type ItemCondition = 'New' | 'Like New' | 'Good' | 'Fair' | 'Poor';
-export type ListingStatus = 'available' | 'sold' | 'removed';
+export type ListingStatus = 'available' | 'pending' | 'sold' | 'removed' | 'seller_inactive';
 export type OrderStatus = 'created' | 'accepted' | 'declined' | 'completed' | 'cancelled';
 export type TransactionStatus = 'pending' | 'completed' | 'disputed';
 export type UserRole = 'buyer' | 'seller' | 'admin';

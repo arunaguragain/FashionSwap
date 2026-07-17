@@ -91,19 +91,16 @@ export const CATEGORIES = [
   {
     id: "clothes",
     label: "Clothes",
-    count: "2.4k items",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=500&fit=crop&auto=format",
+    image: "https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?w=400&h=500&fit=crop&auto=format",
   },
   {
     id: "bags",
     label: "Bags",
-    count: "840 items",
-    image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&h=500&fit=crop&auto=format",
+    image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=500&fit=crop&auto=format",
   },
   {
     id: "shoes",
     label: "Shoes",
-    count: "1.1k items",
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=500&fit=crop&auto=format",
+    image: "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=400&h=500&fit=crop&auto=format",
   },
 ];
