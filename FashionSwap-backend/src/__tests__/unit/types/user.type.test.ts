@@ -5,7 +5,7 @@ describe('UserSchema', () => {
     const parsed = UserSchema.safeParse({
       name: 'Aruna',
       email: 'aruna@gmail.com',
-      password: 'Password1!',
+      password: 'Password1!234',
     });
 
     expect(parsed.success).toBe(true);
@@ -18,7 +18,7 @@ describe('UserSchema', () => {
     const parsed = UserSchema.safeParse({
       name: 'Arun',
       email: 'arun@gmail.com',
-      password: 'Password1!',
+      password: 'Password1!234',
       phoneNumber: '1234567890',
       profilePicture: 'pic.png',
       role: 'user',

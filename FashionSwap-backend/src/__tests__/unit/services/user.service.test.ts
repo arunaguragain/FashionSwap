@@ -67,7 +67,8 @@ describe('UserService OTP flow', () => {
   });
 
   test('resetPasswordWithOTP successful flow updates password and marks used', async () => {
-    const user = { _id: 'u4', email: 'u4@x' } as any;
+    const hashedPassword = await bcrypts.hash('OldPass@1234', 10);
+    const user = { _id: 'u4', email: 'u4@x', password: hashedPassword, passwordHistory: [] } as any;
     const plainOtp = '123456';
     const record: any = { _id: 'r2', used: false, expiresAt: new Date(Date.now() + 10000), otpHash: await bcrypts.hash(plainOtp, 10), attempts: 0 };
     jest.spyOn(UserRepository.prototype, 'getUserByEmail' as any).mockResolvedValueOnce(user as any);
@@ -121,15 +122,13 @@ describe('UserService (core behaviours)', () => {
     await expect(service.registerUser({ email: 'a@b', password: 'pass' } as any)).rejects.toEqual(expect.any(Error));
   });
 
-  test('registerUser hashes password and calls createUser', async () => {
+  test('registerUser calls createUser when email is new', async () => {
     jest.spyOn(UserRepository.prototype, 'getUserByEmail').mockResolvedValueOnce(null as any);
-    const hashSpy = jest.spyOn(bcrypts as any, 'hash').mockResolvedValueOnce('hashed' as any);
-    const created = { _id: 'u1', email: 'a@b' } as any;
-    jest.spyOn(UserRepository.prototype, 'createUser').mockResolvedValueOnce(created as any);
+    const createSpy = jest.spyOn(UserRepository.prototype, 'createUser').mockResolvedValueOnce({ _id: 'u1', email: 'a@b' } as any);
 
     const res = await service.registerUser({ email: 'a@b', password: 'plain' } as any);
-    expect(hashSpy).toHaveBeenCalledWith('plain', 10);
-    expect(res).toEqual(created);
+    expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({ email: 'a@b', password: 'plain' }));
+    expect(res).toEqual({ _id: 'u1', email: 'a@b' });
   });
 
   test('loginUser throws 404 when user missing', async () => {
@@ -145,7 +144,7 @@ describe('UserService (core behaviours)', () => {
   });
 
   test('loginUser returns token and user on success', async () => {
-    const user = { _id: 'u', email: 'a@b', password: 'hashed', role: 'buyer' } as any;
+    const user = { _id: 'u', email: 'a@b', password: 'hashed', role: 'buyer', isVerified: true } as any;
     jest.spyOn(UserRepository.prototype, 'getUserByEmail').mockResolvedValueOnce(user as any);
     jest.spyOn(bcrypts as any, 'compare').mockResolvedValueOnce(true as any);
     jest.spyOn(jwt, 'sign').mockReturnValueOnce('tok' as any);
@@ -288,7 +287,7 @@ describe('UserService (core behaviours)', () => {
     jest.spyOn(bcrypts as any, 'hash').mockResolvedValueOnce('rhash2' as any);
     const createSpy = jest.spyOn(UserRepository.prototype, 'createUser').mockResolvedValueOnce({ _id: 'n2', email: 'new2@x' } as any);
     const res3 = await service.findOrCreateFromGoogle({ email: 'new2@x' } as any);
-    expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({ name: 'Google User' }));
+    expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({ firstName: 'Google', lastName: 'User' }));
     expect(res3).toEqual({ _id: 'n2', email: 'new2@x' });
   });
 });

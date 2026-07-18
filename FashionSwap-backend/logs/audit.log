@@ -223,3 +223,12 @@
 {"timestamp":"2026-07-18T16:05:51.506Z","userId":"6a5882c64560928b286859f5","event":"MFA_ENABLED","ip":"127.0.0.1"}
 {"timestamp":"2026-07-18T16:08:39.255Z","userId":"6a5882c64560928b286859f5","event":"MFA_VERIFY_FAILED","ip":"127.0.0.1"}
 {"timestamp":"2026-07-18T16:08:58.358Z","userId":"6a5882c64560928b286859f5","event":"MFA_VERIFY_SUCCESS","ip":"127.0.0.1"}
+{"timestamp":"2026-07-18T16:54:28.465Z","event":"ADMIN_USER_CREATED","meta":{"email":"ok@x"}}
+{"timestamp":"2026-07-18T16:54:28.518Z","event":"ADMIN_USER_UPDATED"}
+{"timestamp":"2026-07-18T16:54:28.534Z","event":"ADMIN_USER_DELETED"}
+{"timestamp":"2026-07-18T17:00:04.857Z","event":"ADMIN_USER_CREATED","meta":{"email":"ok@x"}}
+{"timestamp":"2026-07-18T17:00:04.897Z","event":"ADMIN_USER_UPDATED"}
+{"timestamp":"2026-07-18T17:00:04.910Z","event":"ADMIN_USER_DELETED"}
+{"timestamp":"2026-07-18T17:02:25.673Z","event":"ADMIN_USER_CREATED","meta":{"email":"ok@x"}}
+{"timestamp":"2026-07-18T17:02:25.704Z","event":"ADMIN_USER_UPDATED"}
+{"timestamp":"2026-07-18T17:02:25.723Z","event":"ADMIN_USER_DELETED"}

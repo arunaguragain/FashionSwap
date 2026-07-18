@@ -15,8 +15,7 @@ describe('Authentication Integration Tests', () => {
       email,
       password: 'TestPassword@1234',
       confirmPassword: 'TestPassword@1234',
-      firstName: 'Test',
-      lastName: 'User',
+      name: 'Test User',
       location: 'Test City',
       ...overrides,
     };
@@ -48,8 +47,7 @@ describe('Authentication Integration Tests', () => {
         email,
         password: 'TestPassword@1234',
         confirmPassword: 'TestPassword@1234',
-        firstName: 'Duplicate',
-        lastName: 'User',
+        name: 'Duplicate User',
         location: 'Test City',
       };
 
