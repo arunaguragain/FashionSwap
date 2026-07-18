@@ -12,10 +12,18 @@ interface Props {
   autoLogin?: boolean;
 }
 
+type ToastPayload = { title?: string; description?: string; tone?: string };
+type UserPayload = Record<string, unknown> & { role?: string };
+type AuthResponsePayload = {
+  success?: boolean;
+  token?: string;
+  message?: string;
+  data?: UserPayload | { user?: UserPayload };
+};
+
 export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
   const router = useRouter();
   const { setIsAuthenticated, setUser } = useAuth();
-  type ToastPayload = { title?: string; description?: string; tone?: string };
   let pushToast: (t: ToastPayload) => void | null = () => {};
 
   try {
@@ -102,7 +110,7 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
 
                 try {
                   if (contentType.includes("application/json")) {
-                    data = await r.json();
+                    data = (await r.json()) as AuthResponsePayload;
                   } else {
                     const txt = await r.text().catch(() => null);
                     // Non-JSON successful response: show it and stop
@@ -117,7 +125,8 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
 
                 if (data?.success) {
                   // Normalize user object from server
-                  const user = data.data?.user ?? data.data;
+                  const userPayload = data.data && typeof data.data === 'object' && 'user' in data.data ? data.data.user : data.data;
+                  const user = userPayload as UserPayload | undefined;
 
                   // Registration flow: if component was rendered on the register page
                   // (autoLogin === false) we should NOT auto-login the user even
@@ -130,7 +139,7 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
                   }
 
                   // Login flow: persist token and user, then set auth state
-                  if (data.token) {
+                  if (typeof data.token === 'string' && data.token) {
                     try { localStorage.setItem("auth_token", data.token); } catch(e){}
                   }
                   if (user) {
@@ -139,7 +148,7 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
                   }
 
                   try {
-                    if (typeof document !== 'undefined' && data.token) {
+                    if (typeof document !== 'undefined' && typeof data.token === 'string' && data.token) {
                       const maxAge = 60 * 60 * 24 * 30; // 30 days
                       document.cookie = `auth_token=${encodeURIComponent(data.token)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
                     }
@@ -188,7 +197,10 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
                     } catch (_) {}
                   }
                 } else {
-                  try { pushToast({ title: data?.message || 'Google sign-in failed', tone: 'error' }); } catch (e) { }
+                  try {
+                    const errorMessage = typeof data?.message === 'string' ? data.message : 'Google sign-in failed';
+                    pushToast({ title: errorMessage, tone: 'error' });
+                  } catch (e) { }
                 }
               } catch (err) {
                 console.error("Google sign-in request failed", err);
