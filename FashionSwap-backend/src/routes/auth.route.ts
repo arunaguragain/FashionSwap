@@ -6,6 +6,7 @@ import { validateSchema } from '../middlewares/validation.middleware';
 import { RegisterDTO, LoginDTO, MFASetupDTO, PasswordResetDTO } from '../dtos/auth.dto';
 import { authLimiter, passwordResetLimiter, otpLimiter, createAccountLockoutMiddleware } from '../middlewares/rateLimit.middleware';
 import { verifyCaptcha } from '../middlewares/captcha.middleware';
+import { uploads } from '../middlewares/upload.middleware';
 
 const router = Router();
 const authController = new AuthController();
@@ -86,7 +87,7 @@ router.post(
 
 router.post('/google', (req, res) => authController.googleSignIn(req, res, () => {}));
 router.get('/exists', (req, res) => authController.exists(req, res));
-router.put('/:id', authenticateJWT, (req, res) => authController.updateProfile(req, res));
+router.put('/:id', authenticateJWT, uploads.single('image'), (req, res) => authController.updateProfile(req, res));
 router.get('/whoami', authenticateJWT, (req, res) => authController.whoami(req, res));
 router.get('/:id', authenticateJWT, (req, res) => authController.getUserById(req, res));
 

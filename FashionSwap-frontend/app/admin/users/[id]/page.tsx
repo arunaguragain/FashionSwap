@@ -12,35 +12,15 @@ export default function Page() {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const fetchInitializedRef = useRef(false);
-
     useEffect(() => {
-        // Guard against Strict Mode double invocation
-        if (fetchInitializedRef.current) return;
-        fetchInitializedRef.current = true;
 
         let mounted = true;
         const fetchUser = async () => {
             setLoading(true);
             setError(null);
             try {
-                const base = (axios.defaults && (axios.defaults as any).baseURL) ? (axios.defaults as any).baseURL : '';
-                const url = `${base}/api/admin/users/${id}`;
-                const headers: Record<string, string> = {};
-                try {
-                    const m = document.cookie.match(/(?:^|; )auth_token=([^;]+)/);
-                    const token = m ? decodeURIComponent(m[1]) : null;
-                    if (token) headers['Authorization'] = `Bearer ${token}`;
-                } catch (e) {
-                    // ignore
-                }
-                const res = await fetch(url, { headers });
-                if (!res.ok) {
-                    const txt = await res.text().catch(() => null);
-                    throw new Error(txt || `Failed to fetch user (${res.status})`);
-                }
-                const json = await res.json();
-                if (mounted) setUser(json.data ?? json);
+                const res = await axios.get(`/api/admin/users/${id}`);
+                if (mounted) setUser(res.data?.data ?? res.data);
             } catch (err: any) {
                 if (mounted) setError(err?.message || 'Unable to load user');
             } finally {
@@ -61,7 +41,7 @@ export default function Page() {
 
                 <div className="flex items-center gap-3">
                     <Link href={`/admin/users/${id}/edit`} className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Edit</Link>
-                    <Link href="/admin/users" className="rounded-full border border-sky-600 px-4 py-2 text-sm font-medium text-sky-700 hover:bg-sky-50">Back to list</Link>
+                    <Link href="/admin/users" className="rounded-full border border-terracotta px-4 py-2 text-sm font-medium text-terracotta hover:bg-terracotta/5">Back to list</Link>
                 </div>
             </div>
 
@@ -94,7 +74,14 @@ export default function Page() {
                             <div className="rounded-xl border border-gray-100 p-6">
                                 <div className="w-full overflow-hidden rounded-2xl">
                                     <img
-                                        src={user.profilePicture ? `${(axios.defaults as any).baseURL}/item_photos/${user.profilePicture}` : '/images/user.png'}
+                                        src={(() => {
+                                            const photo = (user.profilePicture || user.image || user.photo || user.avatar || "").toString();
+                                            if (!photo) return '/images/user.png';
+                                            const lower = photo.toLowerCase();
+                                            if (lower === "default-profile.png" || lower.includes("default") || lower === "user.png") return '/images/user.png';
+                                            if (photo.startsWith('http') || photo.startsWith('data:') || photo.startsWith('/')) return photo;
+                                            return `${(axios.defaults as any).baseURL}/item_photos/${photo}`;
+                                        })()}
                                         alt="user photo"
                                         className="w-full h-72 object-cover rounded-2xl"
                                     />

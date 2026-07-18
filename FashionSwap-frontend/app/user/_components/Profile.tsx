@@ -8,7 +8,7 @@ interface ProfilePageProps {
   email: string;
   phone: string;
   address: string;
-  role: "Buyer" | "Seller" | "Admin";
+  role: "User" | "Admin";
   memberSince: string;
   impactPoints: number;
   sellerRating?: number;

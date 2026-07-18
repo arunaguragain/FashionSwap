@@ -22,22 +22,20 @@ export default function EditPage() {
     const fetchUser = async () => {
       setLoading(true);
       try {
-        const base = (axios.defaults && (axios.defaults as any).baseURL) ? (axios.defaults as any).baseURL : '';
-        const url = `${base}/api/admin/users/${id}`;
-        const headers: Record<string, string> = {};
-        try {
-          const m = document.cookie.match(/(?:^|; )auth_token=([^;]+)/);
-          const token = m ? decodeURIComponent(m[1]) : null;
-          if (token) headers['Authorization'] = `Bearer ${token}`;
-        } catch (e) {}
-        const res = await fetch(url, { headers });
-        if (!res.ok) throw new Error('Failed to load');
-        const json = await res.json();
-        const u = json.data ?? json;
+        const res = await axios.get(`/api/admin/users/${id}`);
+        const u = res.data?.data ?? res.data;
         if (mounted) setForm({ name: u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim(), email: u.email || '', role: u.role || 'user' });
-        if (mounted && u.profilePicture) {
-          const p = `${(axios.defaults as any).baseURL}/item_photos/${u.profilePicture}`;
-          setPreview(p);
+        const photo = (u.profilePicture || u.image || u.photo || u.avatar || "").toString();
+        if (mounted && photo) {
+          const lower = photo.toLowerCase();
+          if (!(lower === "default-profile.png" || lower.includes("default") || lower === "user.png")) {
+            if (photo.startsWith('http') || photo.startsWith('data:') || photo.startsWith('/')) {
+              setPreview(photo);
+            } else {
+              const p = `${(axios.defaults as any).baseURL}/item_photos/${photo}`;
+              setPreview(p);
+            }
+          }
         }
       } catch (err: any) {
         if (mounted) setError(err?.message || 'Unable to load user');
@@ -165,11 +163,9 @@ export default function EditPage() {
                     <select
                       value={form.role}
                       onChange={(e) => setForm((s) => ({ ...s, role: e.target.value }))}
-                      className="appearance-none w-full rounded border border-gray-300 bg-white px-3 py-2 pr-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
                     >
-                      <option value="buyer">Buyer</option>
+                      <option value="user">User</option>
                       <option value="admin">Admin</option>
-                      <option value="seller">Seller</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                       <svg className="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
@@ -180,7 +176,7 @@ export default function EditPage() {
                 </div>
 
                 <div className="flex items-center gap-3 pt-2">
-                  <button type="submit" disabled={saving} className="inline-flex items-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700">{saving ? 'Saving…' : 'Save'}</button>
+                  <button type="submit" disabled={saving} className="inline-flex items-center rounded-lg bg-terracotta px-4 py-2 text-sm font-semibold text-white hover:bg-terracotta-dark transition-colors">{saving ? 'Saving…' : 'Save'}</button>
                   <button type="button" onClick={() => router.back()} className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700">Cancel</button>
                 </div>
               </div>

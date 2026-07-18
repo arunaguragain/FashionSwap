@@ -21,8 +21,8 @@ export const requireRole = (allowedRoles: string[]) => {
 };
 
 export const requireAdmin = requireRole(['admin']);
-export const requireSeller = requireRole(['user', 'seller', 'admin']);
-export const requireBuyer = requireRole(['user', 'buyer', 'admin']);
+export const requireSeller = requireRole(['user', 'admin']);
+export const requireBuyer = requireRole(['user', 'admin']);
 export const requireVerifiedSeller = (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user as any;
@@ -30,11 +30,11 @@ export const requireVerifiedSeller = (req: Request, res: Response, next: NextFun
       throw new HttpError(401, 'Unauthorized: missing user credentials');
     }
 
-    if (user.role !== 'seller' && user.role !== 'admin' && user.role !== 'user') {
-      throw new HttpError(403, 'Forbidden: seller role required');
+    if (user.role !== 'user' && user.role !== 'admin') {
+      throw new HttpError(403, 'Forbidden: valid role required');
     }
 
-    if ((user.role === 'seller' || user.role === 'user') && !user.sellerProfile?.verifiedSeller) {
+    if (user.role === 'user' && !user.sellerProfile?.verifiedSeller) {
       throw new HttpError(403, 'Forbidden: seller must be verified');
     }
 

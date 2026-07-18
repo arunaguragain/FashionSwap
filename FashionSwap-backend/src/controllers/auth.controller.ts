@@ -194,6 +194,9 @@ export class AuthController {
       }
 
       const updateData = req.body;
+      if (req.file) {
+        updateData.profilePicture = req.file.filename;
+      }
       const updatedUser = await userService.updateUser(userId, updateData as any);
 
       res.status(200).json({ success: true, message: 'Profile updated', data: updatedUser });

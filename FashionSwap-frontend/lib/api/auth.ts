@@ -72,14 +72,16 @@ export const whoAmI = async () => {
   }
 }
 
-export const updateProfile = async (userId: string, profileData: Record<string, string>) => {
+export const updateProfile = async (userId: string, profileData: Record<string, string> | FormData, customHeaders?: Record<string, string>) => {
   try {
+    const isFormData = profileData instanceof FormData;
     const response = await axios.put(
       `/api/auth/${userId}`,
       profileData,
       {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": isFormData ? "multipart/form-data" : "application/json",
+          ...customHeaders,
         },
       }
     );

@@ -16,6 +16,6 @@ export const UserSchema = z.object({
     bio: z.string().max(500).optional(),
     location: z.string().optional(),
     profilePicture: z.string().optional(),
-    role: z.enum(['admin', 'buyer', 'seller']).default('buyer'),
+    role: z.enum(['admin', 'user']).default('user'),
 });
 export type UserType = z.infer<typeof UserSchema>;

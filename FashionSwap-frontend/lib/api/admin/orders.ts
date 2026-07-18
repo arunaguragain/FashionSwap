@@ -1,4 +1,4 @@
-import { fetchJSON } from "../endpoints";
+import { fetchJSON } from "../../api";
 
 export function getAdminOrders(query: string = "", page: number = 1, limit: number = 20) {
   let url = `/api/admin/orders?page=${page}&limit=${limit}`;

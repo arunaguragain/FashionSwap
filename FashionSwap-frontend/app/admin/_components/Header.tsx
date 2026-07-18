@@ -79,7 +79,7 @@ export default function AdminHeader() {
 												<Search className="h-4 w-4" />
 											</span>
 											<input
-												className="w-full rounded-full border border-gray-200 bg-white py-2 pl-10 pr-4 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300"
+												className="w-full rounded-full border border-gray-200 bg-white py-2 pl-10 pr-4 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-terracotta/30 focus:border-terracotta/50"
 												placeholder="Search users, listings, orders..."
 												type="search"
 												value={query}
@@ -91,15 +91,7 @@ export default function AdminHeader() {
 				</div>
 
 
-				<div className="flex items-center gap-3">
-					<Link
-						href="/listing/create"
-						className="hidden items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2 min-w-[140px] text-sm font-semibold text-white hover:from-indigo-700 md:inline-flex"
-					>
-						<span className="text-center">Add Listing</span>
-					</Link>
 
-				</div>
 			</div>
 		</header>
 	);

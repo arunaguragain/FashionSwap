@@ -1,14 +1,23 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { getAdminListings } from "@/lib/api/admin/listings";
 import ListingsTable from "./_components/ListingsTable";
 
-export default async function Page() {
-    let listings = [];
-    try {
-        const result = await getAdminListings();
-        listings = result?.data || [];
-    } catch (err) {
-        console.error("Error fetching listings:", err);
-    }
+export default function Page() {
+    const [listings, setListings] = useState([]);
+
+    useEffect(() => {
+        const fetchListings = async () => {
+            try {
+                const result = await getAdminListings();
+                setListings(result?.data || []);
+            } catch (err) {
+                console.error("Error fetching listings:", err);
+            }
+        };
+        fetchListings();
+    }, []);
 
     return (
         <div className="space-y-6">

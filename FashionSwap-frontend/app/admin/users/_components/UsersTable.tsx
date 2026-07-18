@@ -68,19 +68,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
     try {
       const base = (axios.defaults && (axios.defaults as any).baseURL) ? (axios.defaults as any).baseURL : '';
       const url = `${base}/api/admin/users/${id}`;
-      const headers: Record<string, string> = {};
-      try {
-        if (typeof document !== 'undefined' && document.cookie) {
-          const m = document.cookie.match(/(?:^|; )auth_token=([^;]+)/);
-          const token = m ? decodeURIComponent(m[1]) : null;
-          if (token) headers['Authorization'] = `Bearer ${token}`;
-        }
-      } catch (err) {}
-      const res = await fetch(url, { method: 'DELETE', headers });
-      if (!res.ok) {
-        const txt = await res.text().catch(() => null);
-        throw new Error(txt || `Delete failed (${res.status})`);
-      }
+      await axios.delete(`/api/admin/users/${id}`);
       setItems((prev) => prev.filter((it) => (it._id || it.id) !== id));
       pushToast({ title: 'User deleted', description: 'User deleted successfully', tone: 'success' });
     } catch (e: any) {
@@ -109,13 +97,13 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
               placeholder="Search users by name or email..."
               value={query}
               onChange={(e) => { setQuery(e.target.value); setPage(1); }}
-              className="w-72 rounded-md border border-gray-400 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="w-72 rounded-md border border-gray-400 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-terracotta"
             />
 
             <select
               value={roleFilter}
               onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
-              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-terracotta"
             >
               <option value="">All roles</option>
               {roles.map((r) => (
@@ -168,14 +156,14 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
                     <td className="px-4 py-4 text-gray-700 capitalize">{user.role || "user"}</td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
-                        <Link href={user._id || user.id ? `/admin/users/${user._id || user.id}` : '#'} className="inline-flex h-9 w-9 items-center justify-center rounded bg-amber-200 border border-amber-300 text-amber-900 hover:opacity-95 shadow-sm" title="View">
+                        <Link href={user._id || user.id ? `/admin/users/${user._id || user.id}` : '#'} className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors" title="View">
                           <span className="sr-only">View</span>
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z" />
                           </svg>
                         </Link>
-                        <Link href={user._id || user.id ? `/admin/users/${user._id || user.id}/edit` : '#'} className={`inline-flex h-9 w-9 items-center justify-center rounded bg-sky-200 border border-sky-300 text-sky-900 hover:opacity-95 shadow-sm ${deletingId === (user._id || user.id) ? 'opacity-60 pointer-events-none' : ''}`} title="Edit">
+                        <Link href={user._id || user.id ? `/admin/users/${user._id || user.id}/edit` : '#'} className={`inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors ${deletingId === (user._id || user.id) ? 'opacity-60 pointer-events-none' : ''}`} title="Edit">
                           <span className="sr-only">Edit</span>
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 4h6l3 3v6" />
@@ -192,7 +180,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
                             }
                             setPendingDeleteId(id);
                           }}
-                          className={`inline-flex h-9 w-9 items-center justify-center rounded bg-rose-200 border border-rose-300 text-rose-900 hover:opacity-95 shadow-sm ${deletingId === (user._id || user.id) ? 'opacity-60 pointer-events-none' : ''}`}
+                          className={`inline-flex h-9 w-9 items-center justify-center rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors ${deletingId === (user._id || user.id) ? 'opacity-60 pointer-events-none' : ''}`}
                           title="Delete"
                         >
                           <span className="sr-only">Delete</span>
@@ -222,7 +210,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
           <button
             className={page <= 1
               ? "rounded border border-gray-700 bg-gray-700 px-3 py-1 text-sm text-white opacity-80 cursor-not-allowed"
-              : "rounded border border-transparent bg-sky-600 px-3 py-1 text-sm text-white hover:bg-sky-700"
+              : "rounded border border-transparent bg-terracotta px-3 py-1 text-sm text-white hover:bg-terracotta-dark"
             }
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
@@ -246,7 +234,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
                 <button
                   key={pnum}
                   onClick={() => setPage(pnum)}
-                  className={`rounded px-3 py-1 text-sm ${pnum === page ? "bg-sky-600 text-white" : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"}`}
+                  className={`rounded px-3 py-1 text-sm ${pnum === page ? "bg-terracotta text-white" : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"}`}
                 >
                   {pnum}
                 </button>
@@ -257,7 +245,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
           <button
             className={page >= pages
               ? "rounded border border-gray-700 bg-gray-700 px-3 py-1 text-sm text-white opacity-80 cursor-not-allowed"
-              : "rounded border border-transparent bg-sky-600 px-3 py-1 text-sm text-white hover:bg-sky-700"
+              : "rounded border border-transparent bg-terracotta px-3 py-1 text-sm text-white hover:bg-terracotta-dark"
             }
             onClick={() => setPage((p) => Math.min(pages, p + 1))}
             disabled={page >= pages}

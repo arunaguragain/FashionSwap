@@ -16,7 +16,7 @@ export default async function Page() {
                 <div className="flex items-center gap-3">
                     <div id="users-filters-host" className="flex items-center" />
                     <Link
-                        className="inline-flex items-center rounded-lg bg-blue-600 border border-transparent px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 shadow-sm"
+                        className="inline-flex items-center rounded-lg bg-terracotta border border-transparent px-4 py-2 text-sm font-semibold text-white hover:bg-terracotta-dark shadow-sm transition-colors"
                         href="/admin/users/create"
                     >
                         Create User

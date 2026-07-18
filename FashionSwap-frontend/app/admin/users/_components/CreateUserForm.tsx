@@ -15,13 +15,12 @@ export default function CreateUserForm() {
     const { register, handleSubmit, control, reset, formState: { errors, isSubmitting } } = useForm<UserData>({
         resolver: zodResolver(UserSchema),
         defaultValues: {
-            role: "buyer"
+            role: "user"
         }
     });
     const roleOptions = [
         { value: "admin", label: "Admin" },
-        { value: "buyer", label: "Buyer" },
-        { value: "seller", label: "Seller" },
+        { value: "user", label: "User" },
     ];
     const [error, setError] = useState<string | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -240,7 +239,7 @@ export default function CreateUserForm() {
                     <button
                         type="submit"
                         disabled={isSubmitting || pending}
-                        className="h-11 flex-1 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-60"
+                        className="h-11 flex-1 rounded-lg bg-terracotta text-white text-sm font-semibold hover:bg-terracotta-dark disabled:opacity-60"
                     >
                         {isSubmitting || pending ? "Creating account..." : "Create account"}
                     </button>

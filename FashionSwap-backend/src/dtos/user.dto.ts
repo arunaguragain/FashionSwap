@@ -12,7 +12,7 @@ export const CreateUserDTO = UserSchema.pick(
 ).extend(
     {
         confirmPassword: z.string().min(12),
-        role: z.enum(['admin', 'buyer', 'seller']).default('buyer'),
+        role: z.enum(['admin', 'user']).default('user'),
     }
 ).refine(
     (data) => data.password === data.confirmPassword,

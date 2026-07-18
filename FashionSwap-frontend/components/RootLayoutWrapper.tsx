@@ -15,11 +15,13 @@ export default function RootLayoutWrapper({ children }: RootLayoutWrapperProps) 
   const authPagePaths = ['/login', '/register', '/forgot-password', '/reset-password', '/mfa'];
   const isAuthPage = pathname ? authPagePaths.some((path) => pathname.startsWith(path)) : false;
   
-  if (isAuthPage) {
-    // Return auth pages without Layout wrapper
+  // Don't apply Layout wrapper on admin pages (admin has its own layout)
+  const isAdminPage = pathname.startsWith('/admin');
+
+  if (isAuthPage || isAdminPage) {
     return <>{children}</>;
   }
   
-  // Apply Layout to non-auth pages
+  // Apply Layout to non-auth, non-admin pages
   return <Layout>{children}</Layout>;
 }

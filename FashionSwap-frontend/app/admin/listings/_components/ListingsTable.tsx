@@ -83,7 +83,7 @@ export default function ListingsTable({ initialListings }: { initialListings: Li
               placeholder="Search by title, category, seller..."
               value={query}
               onChange={(e) => { setQuery(e.target.value); setPage(1); }}
-              className="w-72 rounded-md border border-gray-400 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="w-72 rounded-md border border-gray-400 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-terracotta"
             />
           </div>
         );

@@ -147,13 +147,13 @@ export default function AdminProfilePage() {
                         className="h-20 w-20 object-cover rounded-full"
                       />
                     ) : (
-                      <div className="h-20 w-20 rounded-full bg-gradient-to-br from-indigo-600 to-sky-400 flex items-center justify-center text-white text-xl font-semibold">{user?.name ? user.name.split(" ").map((n: string) => n[0]).slice(0,2).join("") : "A"}</div>
+                      <div className="h-20 w-20 rounded-full bg-terracotta flex items-center justify-center text-white text-xl font-semibold">{user?.name ? user.name.split(" ").map((n: string) => n[0]).slice(0,2).join("") : "A"}</div>
                     )}
                   </label>
                   <input id="admin-profile-image" name="image" type="file" accept="image/*" onChange={handleEditChange} className="hidden" />
                 </>
               ) : (
-                <div className="h-20 w-20 rounded-full bg-gradient-to-br from-indigo-600 to-sky-400 flex items-center justify-center text-white text-xl font-semibold">
+                <div className="h-20 w-20 rounded-full bg-terracotta flex items-center justify-center text-white text-xl font-semibold">
                   {user?.name ? user.name.split(" ").map((n: string) => n[0]).slice(0,2).join("") : "A"}
                 </div>
               )}
@@ -164,7 +164,7 @@ export default function AdminProfilePage() {
               ) : (
                 <div className="text-xl font-semibold">{user.name}</div>
               )}
-              <div className="text-blue-600 font-medium">Administrator</div>
+              <div className="text-terracotta font-medium">Administrator</div>
             </div>
           </div>
 
@@ -199,14 +199,14 @@ export default function AdminProfilePage() {
                 {errors.phone && <div className="text-xs text-rose-600">{errors.phone.message}</div>}
               </div>
               <div className="flex gap-2 mt-2">
-                <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Save</button>
+                <button type="submit" className="bg-terracotta text-white px-4 py-2 rounded hover:bg-terracotta-dark transition-colors">Save</button>
                 <button type="button" className="bg-gray-200 px-4 py-2 rounded" onClick={() => setEditOpen(false)}>Cancel</button>
               </div>
             </form>
           )}
           {!editOpen && (
             <button
-              className="mt-4 inline-flex items-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
+              className="mt-4 inline-flex items-center rounded-lg bg-terracotta px-4 py-2 text-sm font-semibold text-white hover:bg-terracotta-dark transition-colors"
               onClick={handleEditProfile}
             >
               Edit Profile
@@ -223,9 +223,9 @@ export default function AdminProfilePage() {
 
         <div className="bg-white rounded-lg shadow p-6 min-w-55 flex flex-col gap-2">
           <div className="font-semibold mb-2">Quick Actions</div>
-          <button onClick={() => router.push('/admin/dashboard')} className="bg-purple-600 text-white px-4 py-2 rounded">Go to Home</button>
-          <button onClick={() => router.push('/admin/users')} className="bg-gray-200 px-4 py-2 rounded">Manage Users</button>
-          <button onClick={() => router.push('/admin/users')}  className="bg-gray-200 px-4 py-2 rounded">Manage Users</button>
+          <button onClick={() => router.push('/admin')} className="bg-terracotta text-white px-4 py-2 rounded hover:bg-terracotta-dark transition-colors">Go to Dashboard</button>
+          <button onClick={() => router.push('/admin/users')} className="border border-gray-300 bg-white text-gray-700 px-4 py-2 rounded hover:bg-gray-50 transition-colors">Manage Users</button>
+          <button onClick={() => router.push('/admin/listings')} className="border border-gray-300 bg-white text-gray-700 px-4 py-2 rounded hover:bg-gray-50 transition-colors">Manage Listings</button>
         </div>
       </div>
     </div>

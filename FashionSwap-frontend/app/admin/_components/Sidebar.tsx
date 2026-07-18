@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { handleLogout } from "@/lib/actions/auth-actions";
+import Logo from "@/components/Logo";
 import {
 	LayoutDashboard,
 	Package,
@@ -31,23 +31,16 @@ export default function AdminSidebar() {
 	const onLogout = async () => {
 		const res = await handleLogout();
 		if (res.success) {
-			router.push("/admin_login");
+			router.push("/login");
 			return;
 		}
 	};
 
 	return (
 		<aside className="flex h-screen w-55 flex-col border-r border-gray-200 bg-white">
-			<div className="px-4 py-5">
-				<div className="flex flex-col items-start">
-					<Image
-						src="/images/logo.png"
-						alt="FashionSwap"
-						width={150}
-						height={40}
-						className="h-12 w-full max-w-[150px] object-contain"
-						priority
-					/>
+			<div className="px-4 py-6">
+				<div className="flex flex-col items-start px-2">
+					<Logo size="md" />
 				</div>
 			</div>
 
@@ -62,7 +55,7 @@ export default function AdminSidebar() {
 									href={item.href}
 									className={`flex items-center gap-3 rounded-xl px-2 py-2 text-sm font-medium transition ${
 										isActive
-											? "bg-purple-50 text-purple-700"
+											? "bg-terracotta/10 text-terracotta"
 											: "text-gray-700 hover:bg-gray-50"
 									}`}
 								>

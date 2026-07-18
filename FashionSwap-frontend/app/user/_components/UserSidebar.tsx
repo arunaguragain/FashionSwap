@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 interface UserSidebarProps {
-  userType: "buyer" | "seller" | "admin";
+  userType: "user" | "admin";
 }
 
 const navItems = [

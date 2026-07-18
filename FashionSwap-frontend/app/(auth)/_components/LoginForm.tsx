@@ -93,10 +93,10 @@ export default function LoginForm({
       let redirectPath = "/listings";
       const userRole = res.data?.role?.toLowerCase();
       
-      if (userRole === "buyer" || userRole === "seller") {
+      if (userRole === "user") {
         redirectPath = "/profile";
       } else if (userRole === "admin") {
-        redirectPath = "/admin/dashboard";
+        redirectPath = "/admin";
       }
       
       await router.prefetch(redirectPath);

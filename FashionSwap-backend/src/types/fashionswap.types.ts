@@ -5,7 +5,7 @@ export type ItemCondition = 'New' | 'Like New' | 'Good' | 'Fair' | 'Poor';
 export type ListingStatus = 'available' | 'pending' | 'sold' | 'removed' | 'seller_inactive';
 export type OrderStatus = 'created' | 'accepted' | 'declined' | 'completed' | 'cancelled';
 export type TransactionStatus = 'pending' | 'completed' | 'disputed';
-export type UserRole = 'buyer' | 'seller' | 'admin';
+export type UserRole = 'user' | 'admin';
 export type DeliveryMethod = 'cash_on_delivery' | 'meet_at_location';
 
 export interface SellerStats {

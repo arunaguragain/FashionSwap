@@ -30,7 +30,7 @@ export interface IUser extends Document {
   avatar?: string;
   bio?: string;
   location: string;
-  role: 'user' | 'admin' | 'buyer' | 'seller';
+  role: 'user' | 'admin';
   mfaEnabled: boolean;
   totpSecret?: string;
   failedLoginAttempts: number;

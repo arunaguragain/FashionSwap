@@ -143,8 +143,22 @@ export async function handleWhoAmI() {
 
 export async function handleUpdateProfile(userId: string, profileData: FormData) {
     try {
-        const obj = Object.fromEntries(profileData.entries()) as Record<string, string>;
-        const result = await updateProfile(userId, obj);
+        const cookieStore = await cookies();
+        const token = cookieStore.get('auth_token')?.value;
+        const csrfToken = cookieStore.get('x-csrf-token')?.value;
+        const customHeaders: Record<string, string> = {};
+        if (csrfToken) {
+            customHeaders['x-csrf-token'] = csrfToken;
+        }
+        
+        let cookieString = '';
+        if (token) cookieString += `auth_token=${token}; `;
+        if (csrfToken) cookieString += `x-csrf-token=${csrfToken};`;
+        if (cookieString) {
+            customHeaders['Cookie'] = cookieString;
+        }
+
+        const result = await updateProfile(userId, profileData, customHeaders);
         if (result.success || result._id || result.id) {
             await setUserData(result.data || result);
             revalidatePath("/user/profile");

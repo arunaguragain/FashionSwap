@@ -1,14 +1,23 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { getAdminOrders } from "@/lib/api/admin/orders";
 import OrdersTable from "./_components/OrdersTable";
 
-export default async function Page() {
-    let orders = [];
-    try {
-        const result = await getAdminOrders();
-        orders = result?.data || [];
-    } catch (err) {
-        console.error("Error fetching orders:", err);
-    }
+export default function Page() {
+    const [orders, setOrders] = useState([]);
+
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const result = await getAdminOrders();
+                setOrders(result?.data || []);
+            } catch (err) {
+                console.error("Error fetching orders:", err);
+            }
+        };
+        fetchOrders();
+    }, []);
 
     return (
         <div className="space-y-6">

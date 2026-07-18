@@ -20,7 +20,7 @@ const createAdmin = async () => {
     }
 
     const salt = await bcrypt.genSalt(10);
-    const password = await bcrypt.hash('Admin123!', salt);
+    const password = await bcrypt.hash('Admin@123456!', salt);
 
     const admin = new User({
       email,
@@ -35,7 +35,7 @@ const createAdmin = async () => {
     await admin.save();
     console.log('Admin user created successfully!');
     console.log('Email: admin@fashionswap.com');
-    console.log('Password: Admin123!');
+    console.log('Password: Admin@123456!');
     
     process.exit(0);
   } catch (error) {
