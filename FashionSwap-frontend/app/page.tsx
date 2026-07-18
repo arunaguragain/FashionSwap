@@ -32,7 +32,7 @@ export default function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative bg-charcoal overflow-hidden">
+      <section className="relative min-h-[calc(100svh-4rem)] bg-charcoal overflow-hidden flex items-center">
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1400&h=900&fit=crop&auto=format"

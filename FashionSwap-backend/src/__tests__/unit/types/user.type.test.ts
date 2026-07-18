@@ -5,12 +5,12 @@ describe('UserSchema', () => {
     const parsed = UserSchema.safeParse({
       name: 'Aruna',
       email: 'aruna@gmail.com',
-      password: 'password1',
+      password: 'Password1!',
     });
 
     expect(parsed.success).toBe(true);
     if (parsed.success) {
-      expect(parsed.data.role).toBe('buyer');
+      expect(parsed.data.role).toBe('user');
     }
   });
 
@@ -18,17 +18,17 @@ describe('UserSchema', () => {
     const parsed = UserSchema.safeParse({
       name: 'Arun',
       email: 'arun@gmail.com',
-      password: 'longpassword',
+      password: 'Password1!',
       phoneNumber: '1234567890',
       profilePicture: 'pic.png',
-      role: 'seller',
+      role: 'user',
     });
 
     expect(parsed.success).toBe(true);
     if (parsed.success) {
       expect(parsed.data.phoneNumber).toBe('1234567890');
       expect(parsed.data.profilePicture).toBe('pic.png');
-      expect(parsed.data.role).toBe('seller');
+      expect(parsed.data.role).toBe('user');
     }
   });
 

@@ -22,7 +22,7 @@ describe('authorization middleware', () => {
     await authorizedMiddleware(req, res, next as any);
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: false, message: 'Unauthorized, Header malformed' }));
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: false, message: 'Unauthorized, Token missing or malformed' }));
     expect(next).not.toHaveBeenCalled();
   });
 

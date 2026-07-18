@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-toastify";
 import { useToast } from "@/app/(platform)/_components/ToastProvider";
+import axios from "@/lib/api/axios";
 import { API } from "@/lib/api/endpoints";
 
 interface Props {
@@ -71,136 +72,84 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
           client_id: clientId,
           callback: (response: { credential?: string } | null) => {
             if (!response?.credential) return;
+
             (async () => {
               try {
-                // always send an explicit action so the server can differentiate
-                // between login (existing account only) and register (create new user).
-              const payloadBody: Record<string, string | boolean> = {
-                idToken: response.credential || "",
-                action: autoLogin ? 'login' : 'register',
-              };
+                const payloadBody: Record<string, string | boolean> = {
+                  idToken: response.credential || "",
+                  action: autoLogin ? 'login' : 'register',
+                };
 
-                const r = await fetch(`/api/auth/google`, {
-                  method: "POST",
-                  credentials: "include",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(payloadBody),
-                });
-                try {                 
-                  const headers: Record<string,string> = {};
-                  r.headers.forEach((v,k) => { headers[k]=v });
-                } catch(e) {
-                }
-                let data: Record<string, unknown> | null = null;
-                const contentType = r.headers.get("content-type") || "";
-                if (!r.ok) {
-                  try {
-                    if (contentType.includes("application/json")) {
-                      const errJson = await r.json();
-                      try { pushToast({ title: typeof errJson?.message === 'string' ? errJson.message : 'Request failed', tone: 'error' }); } catch(_) {}
-                    } else {
-                      const txt = await r.text().catch(() => null);
-                      try { pushToast({ title: txt || 'Request failed', tone: 'error' }); } catch(_) {}
-                    }
-                  } catch (e) {
-                    try { pushToast({ title: 'Request failed', tone: 'error' }); } catch(_) {}
-                  }
+                const result = await axios.post(API.AUTH.GOOGLE, payloadBody);
+                const data = result.data as AuthResponsePayload;
+
+                if (!data?.success) {
+                  try { pushToast({ title: data?.message || 'Request failed', tone: 'error' }); } catch (_) {}
                   return;
+                }
+
+                const userPayload = data.data && typeof data.data === 'object' && 'user' in data.data ? data.data.user : data.data;
+                const user = userPayload as UserPayload | undefined;
+
+                if (!autoLogin) {
+                  try { pushToast({ title: 'Account created', description: 'Please login.', tone: 'success' }); } catch (e) {}
+                  const loginPath = userType === 'Admin' ? '/admin_login' : '/login';
+                  try { (router.push as any)(loginPath); } catch (e) { try { window.location.href = loginPath; } catch (_) {} }
+                  return;
+                }
+
+                if (typeof data.token === 'string' && data.token) {
+                  try { localStorage.setItem("auth_token", data.token); } catch (e) {}
+                }
+                if (user) {
+                  try { localStorage.setItem("user_data", JSON.stringify(user)); } catch (e) {}
+                  setUser && setUser(user);
                 }
 
                 try {
-                  if (contentType.includes("application/json")) {
-                    data = (await r.json()) as AuthResponsePayload;
-                  } else {
-                    const txt = await r.text().catch(() => null);
-                    // Non-JSON successful response: show it and stop
-                    try { pushToast({ title: txt || 'Unexpected server response', tone: 'error' }); } catch(_) {}
-                    return;
+                  if (typeof document !== 'undefined' && typeof data.token === 'string' && data.token) {
+                    const maxAge = 60 * 60 * 24 * 30; // 30 days
+                    document.cookie = `auth_token=${encodeURIComponent(data.token)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
                   }
-                } catch(e) {
-                  console.error('invalid json body', e);
-                  try { pushToast({ title: 'Invalid server response', tone: 'error' }); } catch(_) {}
-                  return;
+                  if (typeof document !== 'undefined' && user) {
+                    const ud = encodeURIComponent(JSON.stringify(user));
+                    const maxAge = 60 * 60 * 24 * 30;
+                    document.cookie = `user_data=${ud}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
+                  }
+                } catch (e) {
+                  console.error('Could not set cookies in client', e);
                 }
 
-                if (data?.success) {
-                  // Normalize user object from server
-                  const userPayload = data.data && typeof data.data === 'object' && 'user' in data.data ? data.data.user : data.data;
-                  const user = userPayload as UserPayload | undefined;
+                setIsAuthenticated && setIsAuthenticated(true);
+                const userRole = user?.role?.toLowerCase();
+                let redirectPath = "/profile";
+                if (userRole === "admin") redirectPath = "/admin/dashboard";
 
-                  // Registration flow: if component was rendered on the register page
-                  // (autoLogin === false) we should NOT auto-login the user even
-                  // if the server returned a token. Instead prompt to login.
-                  if (!autoLogin) {
-                    try { pushToast({ title: 'Account created', description: 'Please login.', tone: 'success' }); } catch (e) {}
-                    const loginPath = userType === 'Admin' ? '/admin_login' : '/login';
-                    try { (router.push as any)(loginPath); } catch (e) { try { window.location.href = loginPath; } catch (_) {} }
-                    return;
-                  }
+                try {
+                  const pushResult = (router.push as any)(redirectPath);
+                  const pushPromise = pushResult && typeof pushResult.then === 'function'
+                    ? pushResult
+                    : Promise.resolve(pushResult);
 
-                  // Login flow: persist token and user, then set auth state
-                  if (typeof data.token === 'string' && data.token) {
-                    try { localStorage.setItem("auth_token", data.token); } catch(e){}
-                  }
-                  if (user) {
-                    try { localStorage.setItem("user_data", JSON.stringify(user)); } catch(e){}
-                    setUser && setUser(user);
-                  }
-
+                  let navigated = false;
                   try {
-                    if (typeof document !== 'undefined' && typeof data.token === 'string' && data.token) {
-                      const maxAge = 60 * 60 * 24 * 30; // 30 days
-                      document.cookie = `auth_token=${encodeURIComponent(data.token)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
-                    }
-                    if (typeof document !== 'undefined' && user) {
-                      const ud = encodeURIComponent(JSON.stringify(user));
-                      const maxAge = 60 * 60 * 24 * 30;
-                      document.cookie = `user_data=${ud}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
-                    }
-                    // cookies set for client-side checks
+                    await Promise.race([
+                      pushPromise,
+                      new Promise((res) => setTimeout(res, 600)),
+                    ]);
+                    navigated = window.location.pathname === redirectPath;
                   } catch (e) {
-                    console.error('Could not set cookies in client', e);
+                    console.error('router.push promise rejected', e);
                   }
-                  setIsAuthenticated && setIsAuthenticated(true);
-                  const userRole = user?.role?.toLowerCase();
-                  let redirectPath = "/profile";
-                  if (userRole === "admin") redirectPath = "/admin/dashboard";
-                  try {
-                    // attempt client-side navigation
-                    const pushResult = (router.push as any)(redirectPath);
-                    // Normalize to a promise for awaiting if possible
-                    const pushPromise = pushResult && typeof pushResult.then === 'function'
-                      ? pushResult
-                      : Promise.resolve(pushResult);
 
-                    // Wait briefly for router to perform navigation
-                    let navigated = false;
-                    try {
-                      await Promise.race([
-                        pushPromise,
-                        new Promise((res) => setTimeout(res, 600)),
-                      ]);
-                      // check location after attempt
-                      navigated = window.location.pathname === redirectPath;
-                    } catch (e) {
-                      console.error('router.push promise rejected', e);
-                    }
-
-                    if (!navigated) {
-                      // fallback to full redirect
-                      window.location.href = redirectPath;
-                    }
-                  } catch (e) {
-                    console.error('Redirect failed', e);
-                    try {
-                      window.location.href = redirectPath;
-                    } catch (_) {}
+                  if (!navigated) {
+                    window.location.href = redirectPath;
                   }
-                } else {
+                } catch (e) {
+                  console.error('Redirect failed', e);
                   try {
-                    const errorMessage = typeof data?.message === 'string' ? data.message : 'Google sign-in failed';
-                    pushToast({ title: errorMessage, tone: 'error' });
-                  } catch (e) { }
+                    window.location.href = redirectPath;
+                  } catch (_) {}
                 }
               } catch (err) {
                 console.error("Google sign-in request failed", err);

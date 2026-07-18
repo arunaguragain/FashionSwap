@@ -10,10 +10,28 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function VerifyForm() {
   const [loading, setLoading] = useState(false);
+  const [code, setCode] = useState('');
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [csrfReady, setCsrfReady] = useState(false);
   const { pushToast } = useToast();
   const router = useRouter();
   const { checkAuth } = useAuth();
+
+  const ensureCsrf = async () => {
+    if (csrfReady) return;
+    try {
+      await fetch('/api/csrf', { credentials: 'include' });
+    } catch {
+      // continue even if CSRF endpoint fails, backend will enforce strict validation.
+    } finally {
+      setCsrfReady(true);
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    ensureCsrf();
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -30,6 +48,10 @@ export default function VerifyForm() {
 
     setLoading(true);
     try {
+      if (!csrfReady) {
+        await ensureCsrf();
+      }
+
       const res = await handleVerifyMfa(sessionToken, code);
       if (!res.success) {
         throw new Error(res.message || 'MFA verification failed');
@@ -38,8 +60,8 @@ export default function VerifyForm() {
       await checkAuth(true);
       pushToast({ title: 'Verified', description: 'MFA verified', tone: 'success' });
       router.push('/profile');
-    } catch (e: any) {
-      pushToast({ title: 'Verification failed', description: e?.message || 'Invalid code', tone: 'error' });
+    } catch (e: unknown) {
+      pushToast({ title: 'Verification failed', description: e instanceof Error ? e.message : 'Invalid code', tone: 'error' });
     } finally {
       setLoading(false);
     }
@@ -47,13 +69,13 @@ export default function VerifyForm() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="rounded-[1.5rem] border border-outline/15 bg-surface-container-low p-6">
-        <p className="text-sm text-on-surface-variant">Enter the 6-digit code from your authenticator app.</p>
+      <div className="rounded-[1.5rem] border border-border bg-parchment-dark/40 p-6">
+        <p className="text-sm text-ink">Enter the 6-digit code from your authenticator app.</p>
         <div className="mt-4">
-          <OTPInput length={6} onComplete={handleComplete} />
+          <OTPInput length={6} onChange={setCode} />
         </div>
         <div className="mt-4">
-          <Button disabled={loading} className="w-full" onClick={() => pushToast({ title: 'Use the input', description: 'Finish entering the code to verify', tone: 'info' })}>
+          <Button disabled={loading || code.length !== 6} className="w-full" onClick={() => handleComplete(code)}>
             {loading ? 'Verifying…' : 'Verify code'}
           </Button>
         </div>

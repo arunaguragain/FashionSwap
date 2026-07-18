@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import Protected from '../../components/common/Protected';
-import { BellRing, ShieldCheck, Trash2, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { BellRing, ShieldCheck, Trash2, KeyRound, Eye, EyeOff, LockKeyhole } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { disableMfa, deactivateAccount } from '@/lib/api';
+import { disableMfa, deactivateAccount, changePassword } from '@/lib/api';
 import { useToast } from '@/app/(platform)/_components/ToastProvider';
 import { useRouter } from 'next/navigation';
 
@@ -21,7 +21,13 @@ export default function SettingsPage() {
   const [mfaDisabling, setMfaDisabling] = useState(false);
   const [showMfaPassword, setShowMfaPassword] = useState(false);
 
-
+  // Change password state
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [cpCurrentPassword, setCpCurrentPassword] = useState('');
+  const [cpNewPassword, setCpNewPassword] = useState('');
+  const [cpShowCurrent, setCpShowCurrent] = useState(false);
+  const [cpShowNew, setCpShowNew] = useState(false);
+  const [cpSubmitting, setCpSubmitting] = useState(false);
 
   const handleDeactivate = async () => {
     if (!mfaPassword) return pushToast({ title: 'Password required', description: 'Please enter your password to deactivate your account.', tone: 'info' });
@@ -58,6 +64,23 @@ export default function SettingsPage() {
       pushToast({ title: 'Failed to disable MFA', description: e instanceof Error ? e.message : 'Incorrect password', tone: 'error' });
     } finally {
       setMfaDisabling(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!cpCurrentPassword) return pushToast({ title: 'Current password required', description: 'Please enter your current password.', tone: 'info' });
+    if (!cpNewPassword) return pushToast({ title: 'New password required', description: 'Please enter a new password.', tone: 'info' });
+    setCpSubmitting(true);
+    try {
+      await changePassword(cpCurrentPassword, cpNewPassword);
+      pushToast({ title: 'Password changed', description: 'Your password has been updated successfully.', tone: 'success' });
+      setShowChangePassword(false);
+      setCpCurrentPassword('');
+      setCpNewPassword('');
+    } catch (e: unknown) {
+      pushToast({ title: 'Failed to change password', description: e instanceof Error ? e.message : 'Could not change password', tone: 'error' });
+    } finally {
+      setCpSubmitting(false);
     }
   };
 
@@ -174,6 +197,90 @@ export default function SettingsPage() {
               </div>
 
 
+              {/* Change Password */}
+              <div className="rounded-[16px] border border-border/80 bg-parchment/50 p-4 sm:p-5">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-charcoal/10 text-charcoal">
+                    <LockKeyhole className="h-5 w-5" />
+                  </div>
+                  <div className="w-full">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <p className="text-[16px] font-semibold text-charcoal">Change password</p>
+                        <p className="mt-1 text-sm text-ink leading-relaxed max-w-md">
+                          Update your password while logged in. Your session will be refreshed automatically.
+                        </p>
+                      </div>
+
+                      {!showChangePassword && (
+                        <button
+                          onClick={() => setShowChangePassword(true)}
+                          className="shrink-0 rounded-xl border border-border bg-white px-6 py-2.5 text-sm font-medium text-charcoal transition-colors hover:bg-parchment-dark"
+                        >
+                          Change
+                        </button>
+                      )}
+                    </div>
+
+                    {showChangePassword && (
+                      <div className="mt-4 rounded-xl border border-border/80 bg-white p-4 shadow-sm animate-in fade-in slide-in-from-top-2">
+                        <p className="text-sm font-medium text-charcoal mb-3">Enter your current and new password</p>
+                        <div className="flex flex-col gap-3">
+                          <div className="relative">
+                            <input
+                              type={cpShowCurrent ? "text" : "password"}
+                              value={cpCurrentPassword}
+                              onChange={(e) => setCpCurrentPassword(e.target.value)}
+                              placeholder="Current password"
+                              className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-sm text-charcoal outline-none focus:border-terracotta"
+                              autoFocus
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setCpShowCurrent(!cpShowCurrent)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink hover:text-charcoal"
+                            >
+                              {cpShowCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                          </div>
+                          <div className="relative">
+                            <input
+                              type={cpShowNew ? "text" : "password"}
+                              value={cpNewPassword}
+                              onChange={(e) => setCpNewPassword(e.target.value)}
+                              placeholder="New password (min 12 chars, upper, lower, number, special)"
+                              className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-sm text-charcoal outline-none focus:border-terracotta"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setCpShowNew(!cpShowNew)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink hover:text-charcoal"
+                            >
+                              {cpShowNew ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                          </div>
+                          <div className="flex gap-2 justify-end">
+                            <button
+                              onClick={() => { setShowChangePassword(false); setCpCurrentPassword(''); setCpNewPassword(''); }}
+                              className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-charcoal transition-colors hover:bg-parchment"
+                              disabled={cpSubmitting}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={handleChangePassword}
+                              className="rounded-lg bg-terracotta px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-terracotta-dark"
+                              disabled={cpSubmitting}
+                            >
+                              {cpSubmitting ? 'Updating...' : 'Update password'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
               <div className="rounded-[16px] border border-red-200/80 bg-red-50/70 p-4 sm:p-5">
                 <div className="flex flex-col gap-4">
                   <div>

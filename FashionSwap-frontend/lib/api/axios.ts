@@ -24,9 +24,13 @@ try {
 }
 
 if (typeof window !== 'undefined') {
+    // In browser/runtime, use the same origin and rely on the Next.js proxy.
+    // This avoids cross-origin cookie/SameSite issues when frontend runs on 3000
+    // and backend runs on 5050 during local development.
+    BASE_URL = '';
     // help debugging in the browser console when requests fail
     // eslint-disable-next-line no-console
-    console.debug('[api] using BASE_URL ->', BASE_URL);
+    console.debug('[api] using BASE_URL ->', BASE_URL || 'relative');
 }
 
 const getCookie = (name: string): string | null => {

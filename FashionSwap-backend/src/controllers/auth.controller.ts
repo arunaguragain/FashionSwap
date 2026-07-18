@@ -306,6 +306,24 @@ export class AuthController {
         return;
       }
 
+      // If MFA is enabled, don't complete login — return a temporary session token
+      if (existingUser.mfaEnabled) {
+        const sessionToken = jwt.sign(
+          { userId: existingUser._id.toString(), mfaPending: true },
+          process.env.JWT_SECRET || JWT_SECRET,
+          { expiresIn: '5m' }
+        );
+        res.status(200).json({
+          success: true,
+          message: 'MFA verification required',
+          data: {
+            mfaRequired: true,
+            sessionToken,
+          },
+        });
+        return;
+      }
+
       res.status(200).json({ success: true, message: 'Login successful', data: existingUser, token });
     } catch (error: any) {
       console.error('Login error:', error);
@@ -641,6 +659,50 @@ export class AuthController {
     } catch (error: any) {
       console.error('Password strength error:', error);
       res.status(500).json({ success: false, message: 'Error checking password strength' });
+    }
+  }
+
+  async changePassword(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?._id?.toString();
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const validationResult = (await import('../dtos/auth.dto')).ChangePasswordDTO.safeParse(req.body);
+      if (!validationResult.success) {
+        res.status(400).json({ success: false, message: 'Validation failed', errors: validationResult.error.issues });
+        return;
+      }
+
+      const { currentPassword, newPassword } = validationResult.data;
+      const user = await userService.changePassword(userId, currentPassword, newPassword);
+
+      const { accessToken, refreshToken } = this.generateTokens(user._id.toString());
+      
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 15 * 24 * 60 * 60 * 1000,
+      });
+
+      res.cookie('auth_token', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 15 * 60 * 1000, // 15 minutes
+      });
+
+      res.status(200).json({ success: true, message: 'Password changed successfully' });
+    } catch (error: any) {
+      console.error('Change password error:', error);
+      if (error?.statusCode) {
+        res.status(error.statusCode).json({ success: false, message: error.message || 'Internal Server Error' });
+      } else {
+        res.status(500).json({ success: false, message: 'Error changing password' });
+      }
     }
   }
 

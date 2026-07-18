@@ -20,14 +20,20 @@ export const authorizedMiddleware = async(req: Request, res: Response, next: Nex
         const authHeader = req.headers.authorization;
         console.log("Auth Middleware Debug - Header:", authHeader);
         console.log("Auth Middleware Debug - Cookies:", req.cookies);
-        if(authHeader && authHeader.startsWith("Bearer ")){
-            token = authHeader.split(" ")[1]; 
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const parts = authHeader.split(' ');
+            token = parts[1] || '';
+            if (!token) {
+                throw new HttpError(401, 'Unauthorized, Token missing');
+            }
+        } else if (authHeader) {
+            throw new HttpError(401, 'Unauthorized, Header malformed');
         } else if (req.cookies && req.cookies.auth_token) {
             token = req.cookies.auth_token;
         }
 
-        if(!token){
-            throw new HttpError(401, "Unauthorized, Token missing or malformed");
+        if (!token) {
+            throw new HttpError(401, 'Unauthorized, Token missing or malformed');
         }
         const decodedToken = jwt.verify(token, JWT_SECRET) as Record<string, any>; 
         const userId = decodedToken.id || decodedToken.userId;

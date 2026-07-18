@@ -211,6 +211,13 @@ export function disableMfa(password: string) {
   });
 }
 
+export function changePassword(currentPassword: string, newPassword: string) {
+  return fetchJSON('/api/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+}
+
 // Favorites
 export function toggleFavorite(listingId: string) {
   return fetchJSON(`/api/profiles/favorites/${listingId}`, {

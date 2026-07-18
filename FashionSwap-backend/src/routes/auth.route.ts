@@ -3,7 +3,7 @@ import z from 'zod';
 import AuthController from '../controllers/auth.controller';
 import { authenticateJWT } from '../middlewares/authentication.middleware';
 import { validateSchema } from '../middlewares/validation.middleware';
-import { RegisterDTO, LoginDTO, MFASetupDTO, PasswordResetDTO } from '../dtos/auth.dto';
+import { RegisterDTO, LoginDTO, MFASetupDTO, PasswordResetDTO, ChangePasswordDTO } from '../dtos/auth.dto';
 import { authLimiter, passwordResetLimiter, otpLimiter, createAccountLockoutMiddleware } from '../middlewares/rateLimit.middleware';
 import { verifyCaptcha } from '../middlewares/captcha.middleware';
 import { uploads } from '../middlewares/upload.middleware';
@@ -62,6 +62,13 @@ router.post(
 );
 
 router.post('/logout', authenticateJWT, (req, res) => authController.logoutUser(req, res));
+
+router.post(
+  '/change-password',
+  authenticateJWT,
+  validateSchema(ChangePasswordDTO),
+  (req, res) => authController.changePassword(req, res)
+);
 
 router.post(
   '/password-reset/request',

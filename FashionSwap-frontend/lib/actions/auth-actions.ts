@@ -100,7 +100,15 @@ export const handleGoogleSignIn = async (idToken: string) => {
 
 export const handleVerifyMfa = async (sessionToken: string, otp: string) => {
     try {
-        const response = await axios.post(API.AUTH.MFA_VERIFY_LOGIN, { sessionToken, otp });
+        // Server actions do not automatically forward browser cookies to the
+        // backend request. Forward the CSRF cookie and matching header here,
+        // just as the login action does.
+        const cookieStore = await cookies();
+        const csrfToken = cookieStore.get('x-csrf-token')?.value;
+        const customHeaders = csrfToken
+            ? { 'x-csrf-token': csrfToken, Cookie: `x-csrf-token=${csrfToken}` }
+            : undefined;
+        const response = await axios.post(API.AUTH.MFA_VERIFY_LOGIN, { sessionToken, otp }, { headers: customHeaders });
         if (response.data.success) {
             const token = response.data.token || response.data.data?.accessToken;
             const user = response.data.data?.user ?? response.data.data;

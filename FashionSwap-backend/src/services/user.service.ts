@@ -232,6 +232,43 @@ export class UserService{
         await passwordResetRepository.markUsed(record._id.toString());
         return user;
     }
+
+    async changePassword(userId: string, currentPassword?: string, newPassword?: string) {
+        if (!currentPassword || !newPassword) {
+            throw new HttpError(400, "Current and new password are required");
+        }
+        const user = await userRepository.getUserById(userId);
+        if (!user) {
+            throw new HttpError(404, "User not found");
+        }
+
+        const isPasswordValid = await bcrypts.compare(currentPassword, user.password);
+        if (!isPasswordValid) {
+            throw new HttpError(400, "Invalid current password");
+        }
+
+        const isSamePassword = await bcrypts.compare(newPassword, user.password);
+        if (isSamePassword) {
+            throw new HttpError(400, "New password cannot be the same as your current password");
+        }
+
+        const history = user.passwordHistory || [];
+        for (const oldHash of history) {
+            const isMatch = await bcrypts.compare(newPassword, oldHash);
+            if (isMatch) {
+                throw new HttpError(400, "You've used this password recently. Please choose a different one.");
+            }
+        }
+
+        const hashedPassword = await bcrypts.hash(newPassword, 10);
+        const updatedHistory = [user.password, ...history].slice(0, 5);
+
+        await userRepository.updateUser(user._id.toString(), { 
+            password: hashedPassword,
+            passwordHistory: updatedHistory
+        } as any);
+        return user;
+    }
 }
 
 

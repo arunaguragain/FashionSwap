@@ -35,7 +35,13 @@ export const PasswordResetDTO = z.object({
   newPassword: passwordSchema,
 });
 
+export const ChangePasswordDTO = z.object({
+  currentPassword: z.string(),
+  newPassword: passwordSchema,
+});
+
 export type RegisterInput = z.infer<typeof RegisterDTO>;
 export type LoginInput = z.infer<typeof LoginDTO>;
 export type MFASetupInput = z.infer<typeof MFASetupDTO>;
 export type PasswordResetInput = z.infer<typeof PasswordResetDTO>;
+export type ChangePasswordInput = z.infer<typeof ChangePasswordDTO>;
