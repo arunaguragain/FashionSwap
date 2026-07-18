@@ -1,0 +1,33 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+
+  backend:
+    build:
+      context: ./FashionSwap-backend
+    restart: unless-stopped
+    env_file:
+      - ./FashionSwap-backend/.env.docker
+    ports:
+      - "5050:5050"
+    depends_on:
+      - mongo
+
+  frontend:
+    build:
+      context: ./FashionSwap-frontend
+    restart: unless-stopped
+    env_file:
+      - ./FashionSwap-frontend/.env.local
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  mongo-data:

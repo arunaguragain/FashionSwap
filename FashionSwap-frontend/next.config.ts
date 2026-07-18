@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   /* config options here */
   // Allow cross-origin dev requests from these origins (for dev server hot reload, assets)
   // Add additional origins as needed, exact origin must include protocol and port if used.
