@@ -11,7 +11,7 @@ jest.mock('@/lib/actions/auth-actions', () => ({
   handleVerifyEmail: jest.fn(async () => ({ success: true }))
 }));
 
-// mock GoogleSignIn 
+// mock GoogleSignIn
 jest.mock('@/app/(auth)/_components/GoogleSignIn', () => {
   const React = require('react');
   return function MockGoogleSignIn() {

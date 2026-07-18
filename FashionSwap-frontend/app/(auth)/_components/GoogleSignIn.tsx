@@ -15,34 +15,24 @@ interface Props {
 export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
   const router = useRouter();
   const { setIsAuthenticated, setUser } = useAuth();
-  let pushToast: (t: any) => void | null = () => {};
+  type ToastPayload = { title?: string; description?: string; tone?: string };
+  let pushToast: (t: ToastPayload) => void | null = () => {};
 
-  // utility to decode a base64url JWT payload
-  function parseJwt(token: string): Record<string, any> {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map(function (c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-          })
-          .join('')
-      );
-      return JSON.parse(jsonPayload);
-    } catch (e) {
-      return {};
-    }
-  }
   try {
-    // @ts-ignore
-    const toastCtx = useToast();
-    pushToast = toastCtx.pushToast;
-  } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const toastCtx = useToast() as { pushToast?: (t: ToastPayload) => void };
+    if (toastCtx.pushToast) {
+      pushToast = toastCtx.pushToast;
+    }
+  } catch {
     // fallback: use react-toastify if available
-    pushToast = (t: any) => {
-      try { toast(t.title || t.description || ''); } catch (e) {}
+    pushToast = (t: ToastPayload) => {
+      try {
+        toast(t.title || t.description || "");
+      } catch {
+        return null;
+      }
+      return null;
     };
   }
   const [gsiStatus, setGsiStatus] = React.useState<string>("loading");
@@ -68,17 +58,17 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
       if (!googleObj || !clientId) return;
 
       try {
-        // @ts-ignore
-        googleObj.accounts.id.initialize({
+        const googleAccounts = googleObj.accounts as { id: { initialize: (config: { client_id: string; callback: (response: { credential?: string } | null) => void }) => void; renderButton: (container: HTMLElement, options: { theme: string; size: string }) => void } };
+        googleAccounts.id.initialize({
           client_id: clientId,
-          callback: (response: any) => {
+          callback: (response: { credential?: string } | null) => {
             if (!response?.credential) return;
             (async () => {
               try {
                 // always send an explicit action so the server can differentiate
                 // between login (existing account only) and register (create new user).
-              const payloadBody: Record<string, any> = {
-                idToken: response.credential,
+              const payloadBody: Record<string, string | boolean> = {
+                idToken: response.credential || "",
                 action: autoLogin ? 'login' : 'register',
               };
 
@@ -93,13 +83,13 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
                   r.headers.forEach((v,k) => { headers[k]=v });
                 } catch(e) {
                 }
-                let data: any = null;
+                let data: Record<string, unknown> | null = null;
                 const contentType = r.headers.get("content-type") || "";
                 if (!r.ok) {
                   try {
                     if (contentType.includes("application/json")) {
                       const errJson = await r.json();
-                      try { pushToast({ title: errJson?.message || 'Request failed', description: undefined, tone: 'error' }); } catch(_) {}
+                      try { pushToast({ title: typeof errJson?.message === 'string' ? errJson.message : 'Request failed', tone: 'error' }); } catch(_) {}
                     } else {
                       const txt = await r.text().catch(() => null);
                       try { pushToast({ title: txt || 'Request failed', tone: 'error' }); } catch(_) {}

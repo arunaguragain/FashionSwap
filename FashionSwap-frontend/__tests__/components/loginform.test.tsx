@@ -11,10 +11,14 @@ jest.mock('@/lib/actions/auth-actions', () => ({
 }));
 
 // mock GoogleSignIn so we can inspect props without spreading unknown attributes
-let lastGoogleProps: any = null;
+type GoogleMockProps = {
+  userType: string;
+  autoLogin?: boolean;
+};
+let lastGoogleProps: GoogleMockProps | null = null;
 jest.mock('@/app/(auth)/_components/GoogleSignIn', () => {
   const React = require('react');
-  return function MockGoogleSignIn(props: any) {
+  return function MockGoogleSignIn(props: GoogleMockProps) {
     lastGoogleProps = props;
     return React.createElement('div', { 'data-testid': 'mock-google-signin' });
   };

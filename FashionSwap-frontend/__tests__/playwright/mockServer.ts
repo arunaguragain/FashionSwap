@@ -1,6 +1,7 @@
 import http from 'http';
 
-type Handler = (req: http.IncomingMessage, body: string) => { status?: number; body?: any } | null;
+type MockBody = Record<string, unknown> | string | number | boolean | null;
+type Handler = (req: http.IncomingMessage, body: string) => { status?: number; body?: MockBody } | null;
 
 export function createMockServer(handler: Handler, port = 5050) {
   let server: http.Server | null = null;
@@ -25,7 +26,9 @@ export function createMockServer(handler: Handler, port = 5050) {
         req.on('end', () => {
           try {
             _requests.push({ method: req.method || 'GET', url: req.url, body });
-          } catch (e) {}
+          } catch {
+            // ignore request logging errors
+          }
           try {
             const result = handler(req, body);
             if (!result) {
@@ -35,15 +38,16 @@ export function createMockServer(handler: Handler, port = 5050) {
             }
             res.writeHead(result.status || 200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify(result.body));
-          } catch (err: any) {
+          } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Server error';
             res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false, message: err?.message || 'Server error' }));
+            res.end(JSON.stringify({ success: false, message }));
           }
         });
       });
 
       const srv = server!;
-      const onError = (err: any) => {
+      const onError = (err: NodeJS.ErrnoException | Error) => {
         if (err && err.code === 'EADDRINUSE') {
           srv.removeListener('error', onError);
           return reject(new Error(`Port ${port} already in use`));
