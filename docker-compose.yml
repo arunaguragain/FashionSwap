@@ -24,6 +24,8 @@ services:
     restart: unless-stopped
     env_file:
       - ./FashionSwap-frontend/.env.local
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://backend:5050
     ports:
       - "3000:3000"
     depends_on:

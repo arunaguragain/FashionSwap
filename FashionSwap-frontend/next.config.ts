@@ -1,5 +1,9 @@
 import type { NextConfig } from "next";
 
+const apiBaseUrl =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  (process.env.NODE_ENV === "production" ? "http://backend:5050" : "http://localhost:5050");
+
 const nextConfig: NextConfig = {
   output: "standalone",
   /* config options here */
@@ -57,18 +61,15 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Proxy API requests to backend during development to avoid CORS and cookie issues.
-// This keeps the browser origin as the frontend so backend cookies are treated same-site.
-if (process.env.NODE_ENV !== 'production') {
-  // add rewrites function
-  ;(nextConfig as any).rewrites = async () => {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5050'}/api/:path*`,
-      },
-    ];
-  };
-}
+// Proxy API requests to the backend so browser requests stay same-origin and
+// the containerized frontend can reach the backend service over the Docker network.
+(nextConfig as any).rewrites = async () => {
+  return [
+    {
+      source: '/api/:path*',
+      destination: `${apiBaseUrl}/api/:path*`,
+    },
+  ];
+};
 
 export default nextConfig;

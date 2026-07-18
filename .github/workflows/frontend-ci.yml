@@ -24,5 +24,6 @@ jobs:
           cache-dependency-path: FashionSwap-frontend/package-lock.json
 
       - run: npm ci
+      - run: npm run lint || true
       - run: npm run build
       - run: npm audit --audit-level=high
