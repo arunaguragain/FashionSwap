@@ -49,7 +49,13 @@ describe('AuthController', () => {
   });
 
   function mockRes() {
-    return { status: jest.fn().mockReturnThis(), json: jest.fn() } as any;
+    const res: any = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      cookie: jest.fn().mockReturnThis(),
+      clearCookie: jest.fn().mockReturnThis(),
+    };
+    return res;
   }
 
   test('whoami returns 401 when no user', async () => {
@@ -111,7 +117,15 @@ describe('AuthController', () => {
     const res = mockRes();
     await controller.register(req, res);
     expect(res.status).toHaveBeenCalledWith(201);
-    expect(res.json).toHaveBeenCalledWith({ success: true, message: 'User Registered', data: newUser });
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      message: 'User Registered',
+      data: {
+        userId: 'u2',
+        email: 'ok@x',
+        requiresVerification: true,
+      },
+    });
   });
 
   test('login returns 400 on validation error', async () => {
@@ -121,8 +135,20 @@ describe('AuthController', () => {
     expect(res.status).toHaveBeenCalledWith(400);
   });
 
+  test('login returns 403 when email is not verified', async () => {
+    const existing = { _id: 'u3', email: 'a@b', isVerified: false } as any;
+    jest.spyOn(UserService.prototype, 'loginUser').mockResolvedValueOnce({ token: 't', existingUser: existing } as any);
+    const req: any = { body: { email: 'a@b', password: 'password1' } };
+    const dtoMod = require('../../../dtos/user.dto');
+    jest.spyOn(dtoMod.LoginUserDTO, 'safeParse').mockReturnValue({ success: true, data: req.body });
+    const res = mockRes();
+    await controller.login(req, res);
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({ success: false, message: 'Please verify your email before logging in' });
+  });
+
   test('login returns 200 on success', async () => {
-    const existing = { _id: 'u3', email: 'a@b' } as any;
+    const existing = { _id: 'u3', email: 'a@b', isVerified: true } as any;
     jest.spyOn(UserService.prototype, 'loginUser').mockResolvedValueOnce({ token: 't', existingUser: existing } as any);
     const req: any = { body: { email: 'a@b', password: 'password1' } };
     const dtoMod = require('../../../dtos/user.dto');

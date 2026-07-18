@@ -17,8 +17,8 @@ export const verifyCaptcha = async (req: Request, res: Response, next: NextFunct
 
     const secretKey = process.env.RECAPTCHA_SECRET_KEY;
     if (!secretKey) {
-      console.warn('RECAPTCHA_SECRET_KEY is not defined in environment variables');
-      return next(); // Fail open if no secret key configured
+      console.error('RECAPTCHA_SECRET_KEY is not defined in environment variables');
+      throw new HttpError(500, 'CAPTCHA verification is not configured on this server');
     }
 
     const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;

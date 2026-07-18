@@ -18,14 +18,18 @@ export class UserService{
         if(checkEmail){
             throw new HttpError(403, "Email already in use");
         }
-        
-        const newUser = await userRepository.createUser(data);
+
+        const newUser = await userRepository.createUser(data as any);
         return newUser;
     }
+
     async loginUser(data: LoginUserDTO){
         const existingUser = await userRepository.getUserByEmail(data.email);
         if(!existingUser){
             throw new HttpError(404, "User not found");
+        }
+        if (!existingUser.isVerified) {
+            throw new HttpError(403, "Please verify your email before logging in");
         }
         const isPasswordValid = await bcrypts.compare(data.password, existingUser.password); 
         if(!isPasswordValid){
@@ -49,22 +53,26 @@ export class UserService{
 
         // If password is being updated, hash it
         if (updateData.password) {
-            const isSamePassword = await bcrypts.compare(updateData.password, user.password);
-            if (isSamePassword) {
-                throw new HttpError(400, "New password cannot be the same as your current password");
-            }
-
-            const history = user.passwordHistory || [];
-            for (const oldHash of history) {
-                const isMatch = await bcrypts.compare(updateData.password, oldHash);
-                if (isMatch) {
-                    throw new HttpError(400, "You've used this password recently. Please choose a different one.");
+            // Only compare with existing password/history if present
+            if (user.password) {
+                const isSamePassword = await bcrypts.compare(updateData.password, user.password);
+                if (isSamePassword) {
+                    throw new HttpError(400, "New password cannot be the same as your current password");
                 }
+
+                const history = user.passwordHistory || [];
+                for (const oldHash of history) {
+                    const isMatch = await bcrypts.compare(updateData.password, oldHash);
+                    if (isMatch) {
+                        throw new HttpError(400, "You've used this password recently. Please choose a different one.");
+                    }
+                }
+
+                (updateData as any).passwordHistory = [user.password, ...(user.passwordHistory || [])].slice(0, 5);
             }
 
             const hashedPassword = await bcrypts.hash(updateData.password, 10);
             updateData.password = hashedPassword;
-            (updateData as any).passwordHistory = [user.password, ...history].slice(0, 5);
         }
 
         // Check if email is being updated and if it's already in use

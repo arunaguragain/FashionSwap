@@ -37,7 +37,9 @@ describe('AuthController.googleSignIn', () => {
   function mockRes() {
     const json = jest.fn();
     const status = jest.fn().mockReturnValue({ json });
-    return { status, json } as any;
+    const cookie = jest.fn().mockReturnThis();
+    const clearCookie = jest.fn().mockReturnThis();
+    return { status, json, cookie, clearCookie } as any;
   }
 
   test('returns 400 when action=register and email already exists', async () => {

@@ -18,19 +18,34 @@ function ensureLogDir() {
   }
 }
 
+const ALLOWED_META_KEYS = new Set(['email', 'reason', 'eventType', 'action', 'status', 'ip', 'userId', 'requestId', 'traceId']);
+const REDACTED_KEYS = new Set(['password', 'token', 'refreshToken', 'otp', 'secret', 'encryptionKey']);
+
 function sanitizeMeta(meta?: Record<string, any>): Record<string, any> | undefined {
   if (!meta) return undefined;
   const sanitized: Record<string, any> = {};
+
   Object.entries(meta).forEach(([key, value]) => {
+    const normalizedKey = key.toLowerCase();
+
+    if (REDACTED_KEYS.has(normalizedKey)) {
+      return;
+    }
+
+    if (!ALLOWED_META_KEYS.has(normalizedKey)) {
+      return;
+    }
+
     if (typeof value === 'string') {
-      sanitized[key] = value.length > 80 ? `${value.slice(0, 80)}…` : value;
+      sanitized[normalizedKey] = value.length > 80 ? `${value.slice(0, 80)}…` : value;
     } else if (value && typeof value === 'object') {
-      sanitized[key] = '[REDACTED]';
+      sanitized[normalizedKey] = '[REDACTED]';
     } else {
-      sanitized[key] = value;
+      sanitized[normalizedKey] = value;
     }
   });
-  return sanitized;
+
+  return Object.keys(sanitized).length > 0 ? sanitized : undefined;
 }
 
 export function recordAuditEvent(event: AuditEvent) {
