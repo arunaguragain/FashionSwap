@@ -4,9 +4,9 @@ FashionSwap is a full-stack marketplace application with separate backend and fr
 
 ## Repository structure
 
-- `FashionSwap-backend/` — Express + TypeScript backend with Mongoose, JWT authentication, and Jest tests.
-- `FashionSwap-frontend/` — Next.js frontend application with Tailwind CSS.
-- `.github/workflows/` — GitHub Actions workflows for backend CI, frontend CI, and CodeQL analysis.
+- `FashionSwap-backend/`: Express + TypeScript backend with Mongoose, JWT authentication, and Jest tests.
+- `FashionSwap-frontend/`: Next.js frontend application with Tailwind CSS.
+- `.github/workflows/`: GitHub Actions workflows for backend CI, frontend CI, and CodeQL analysis.
 
 ## Running locally
 
