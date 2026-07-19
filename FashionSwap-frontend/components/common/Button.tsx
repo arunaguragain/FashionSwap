@@ -4,7 +4,7 @@ import { cn } from './cn';
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary' | 'outline';
   loading?: boolean;
-};
+}; 
 
 export const Button: React.FC<Props> = ({ variant = 'primary', loading, className, children, ...rest }) => {
   const base = 'inline-flex items-center justify-center rounded-full px-4 py-2.5 text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-70';

@@ -143,7 +143,7 @@ describe('UserService (core behaviours)', () => {
     jest.spyOn(UserRepository.prototype, 'getUserByEmail').mockResolvedValue(user as any);
     jest.spyOn(bcrypts as any, 'compare').mockResolvedValueOnce(false as any);
     await expect(service.loginUser({ email: 'a@b', password: 'bad' } as any)).rejects.toEqual(expect.any(Error));
-  });
+  }); 
 
   test('loginUser returns token and user on success', async () => {
     // create a real bcrypt hash to avoid relying on spy ordering
