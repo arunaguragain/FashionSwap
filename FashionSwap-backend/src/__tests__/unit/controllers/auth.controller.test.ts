@@ -1,7 +1,6 @@
 // AuthController is required inside tests to control module load-time env
 import { UserService } from '../../../services/user.service';
 import { HttpError } from '../../../errors/http-error';
-import { AuthController } from '../../../controllers/auth.controller';
 
 jest.mock('../../../services/user.service');
 
@@ -11,6 +10,7 @@ describe('AuthController', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.restoreAllMocks();
+    // require controller after setting up any spies in individual tests when needed
     const controllerModule = require('../../../controllers/auth.controller');
     controller = new controllerModule.AuthController();
   });
@@ -21,8 +21,8 @@ describe('AuthController', () => {
       await new Promise<void>((resolve) => {
         jest.isolateModules(async () => {
           process.env.GOOGLE_CLIENT_ID = "'idA','idB'";
-          jest.unmock('../../../services/user.service');
           const google = require('google-auth-library');
+          // ensure verify spy is installed before requiring controller module
           const verifySpy = jest.spyOn(google.OAuth2Client.prototype, 'verifyIdToken' as any).mockImplementationOnce(async (opts: any) => {
             expect(opts.audience).toEqual(['idA', 'idB']);
             return { getPayload: () => ({ email: 'quoted@x', email_verified: true }) } as any;
@@ -31,7 +31,7 @@ describe('AuthController', () => {
           const controllerModule = require('../../../controllers/auth.controller');
           const controller2 = new controllerModule.AuthController();
 
-          const RealUserService = jest.requireActual('../../../services/user.service').UserService;
+          const RealUserService = jest.requireActual('../../../services.user.service').UserService;
           jest.spyOn(RealUserService.prototype, 'findOrCreateFromGoogle' as any).mockResolvedValueOnce({ _id: 'uq', email: 'quoted@x', role: 'user' } as any);
           const jwt = require('jsonwebtoken');
           jest.spyOn(jwt, 'sign' as any).mockReturnValueOnce('tokq');

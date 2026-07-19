@@ -6,6 +6,14 @@ import { JWT_SECRET } from '../../config';
 
 const makeUniqueEmail = (prefix: string) => `${prefix}+${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
 
+// helper to obtain CSRF cookie and token for mutating requests
+async function getCsrf() {
+  const res = await request(app).get('/api/csrf');
+  const cookie = res.headers['set-cookie'] && res.headers['set-cookie'][0];
+  const token = cookie ? (cookie.match(/x-csrf-token=([^;]+)/) || [])[1] : undefined;
+  return { cookie, token };
+}
+
 describe('Authentication Integration Tests', () => {
   const createdEmails = new Set<string>();
 
@@ -15,13 +23,15 @@ describe('Authentication Integration Tests', () => {
       email,
       password: 'TestPassword@1234',
       confirmPassword: 'TestPassword@1234',
-      name: 'Test User',
+      firstName: 'Test',
+      lastName: 'User',
       location: 'Test City',
       ...overrides,
     };
 
     createdEmails.add(email);
-    return request(app).post('/api/auth/register').send(user);
+    const { cookie, token } = await getCsrf();
+    return request(app).post('/api/auth/register').set('Cookie', cookie || '').set('x-csrf-token', token || '').send(user);
   };
 
   beforeAll(async () => {
@@ -52,15 +62,17 @@ describe('Authentication Integration Tests', () => {
       };
 
       createdEmails.add(email);
-      await request(app).post('/api/auth/register').send(user);
-      const response = await request(app).post('/api/auth/register').send(user);
+      const { cookie, token } = await getCsrf();
+      await request(app).post('/api/auth/register').set('Cookie', cookie || '').set('x-csrf-token', token || '').send(user);
+      const response = await request(app).post('/api/auth/register').set('Cookie', cookie || '').set('x-csrf-token', token || '').send(user);
 
       expect(response.status).toBe(403);
       expect(response.body).toHaveProperty('success', false);
     });
 
     test('should not register a new user with invalid email', async () => {
-      const response = await request(app).post('/api/auth/register').send({
+      const { cookie, token } = await getCsrf();
+      const response = await request(app).post('/api/auth/register').set('Cookie', cookie || '').set('x-csrf-token', token || '').send({
         email: 'invalid-email',
         password: 'TestPassword@1234',
         confirmPassword: 'TestPassword@1234',
@@ -74,7 +86,8 @@ describe('Authentication Integration Tests', () => {
     });
 
     test('should not register a new user without name', async () => {
-      const response = await request(app).post('/api/auth/register').send({
+      const { cookie, token } = await getCsrf();
+      const response = await request(app).post('/api/auth/register').set('Cookie', cookie || '').set('x-csrf-token', token || '').send({
         email: makeUniqueEmail('missingname'),
         password: 'TestPassword@1234',
         confirmPassword: 'TestPassword@1234',
@@ -95,7 +108,8 @@ describe('Authentication Integration Tests', () => {
       await registerUser({ email, password, confirmPassword: password, firstName: 'Login', lastName: 'User', location: 'Login City' });
       await UserModel.updateOne({ email }, { isVerified: true });
 
-      const response = await request(app).post('/api/auth/login').send({ email, password });
+      const { cookie, token } = await getCsrf();
+      const response = await request(app).post('/api/auth/login').set('Cookie', cookie || '').set('x-csrf-token', token || '').send({ email, password });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('success', true);
@@ -110,7 +124,8 @@ describe('Authentication Integration Tests', () => {
       await registerUser({ email, password, confirmPassword: password, firstName: 'Login', lastName: 'User', location: 'Login City' });
       await UserModel.updateOne({ email }, { isVerified: true });
 
-      const response = await request(app).post('/api/auth/login').send({ email, password: 'WrongPassword!' });
+      const { cookie, token } = await getCsrf();
+      const response = await request(app).post('/api/auth/login').set('Cookie', cookie || '').set('x-csrf-token', token || '').send({ email, password: 'WrongPassword!' });
 
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('success', false);
@@ -119,7 +134,8 @@ describe('Authentication Integration Tests', () => {
 
   describe('POST /api/auth/reset-password/:token', () => {
     test('should not reset password with invalid token', async () => {
-      const response = await request(app).post('/api/auth/reset-password/invalid-token').send({ newPassword: 'NewPassword@123' });
+      const { cookie, token } = await getCsrf();
+      const response = await request(app).post('/api/auth/reset-password/invalid-token').set('Cookie', cookie || '').set('x-csrf-token', token || '').send({ newPassword: 'NewPassword@123' });
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('success', false);
@@ -131,11 +147,14 @@ describe('Authentication Integration Tests', () => {
       createdEmails.add(email);
 
       await registerUser({ email, password, confirmPassword: password, firstName: 'Reset', lastName: 'User', location: 'Reset City' });
+      // mark user as verified so reset/login flows can proceed in integration tests
+      await UserModel.updateOne({ email }, { isVerified: true });
       const resetUserDoc = await UserModel.findOne({ email });
       const token = jwt.sign({ id: resetUserDoc?._id }, JWT_SECRET, { expiresIn: '1h' });
 
-      const response = await request(app).post(`/api/auth/reset-password/${token}`).send({ newPassword: 'NewPassword@123' });
-
+      const { cookie, token: csrfToken } = await getCsrf();
+      const response = await request(app).post(`/api/auth/reset-password/${token}`).set('Cookie', cookie || '').set('x-csrf-token', csrfToken || '').send({ newPassword: 'NewPassword@123' });
+      if (response.status !== 200) console.log('RESET-PW RESPONSE:', response.status, response.body);
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('success', true);
     });
@@ -146,12 +165,16 @@ describe('Authentication Integration Tests', () => {
       createdEmails.add(email);
 
       await registerUser({ email, password, confirmPassword: password, firstName: 'Reset', lastName: 'User', location: 'Reset City' });
+      // mark user as verified so login after reset succeeds
+      await UserModel.updateOne({ email }, { isVerified: true });
       const resetUserDoc = await UserModel.findOne({ email });
       const token = jwt.sign({ id: resetUserDoc?._id }, JWT_SECRET, { expiresIn: '1h' });
-      await request(app).post(`/api/auth/reset-password/${token}`).send({ newPassword: 'NewPassword@123' });
+      const { cookie, token: csrfToken } = await getCsrf();
+      await request(app).post(`/api/auth/reset-password/${token}`).set('Cookie', cookie || '').set('x-csrf-token', csrfToken || '').send({ newPassword: 'NewPassword@123' });
 
-      const response = await request(app).post('/api/auth/login').send({ email, password: 'NewPassword@123' });
-
+      const { cookie: loginCookie, token: loginCsrf } = await getCsrf();
+      const response = await request(app).post('/api/auth/login').set('Cookie', loginCookie || '').set('x-csrf-token', loginCsrf || '').send({ email, password: 'NewPassword@123' });
+      if (response.status !== 200) console.log('LOGIN-AFTER-RESET RESPONSE:', response.status, response.body);
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('success', true);
       expect(response.body).toHaveProperty('token');

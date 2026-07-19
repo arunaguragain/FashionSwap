@@ -3,13 +3,20 @@ import mongoose from 'mongoose';
 import app from '../../app';
 import { UserModel } from '../../models/user.model';
 
+// helper to obtain CSRF cookie and token for mutating requests
+async function getCsrf() {
+    const res = await request(app).get('/api/csrf');
+    const cookie = res.headers['set-cookie'] && res.headers['set-cookie'][0];
+    const token = cookie ? (cookie.match(/x-csrf-token=([^;]+)/) || [])[1] : undefined;
+    return { cookie, token };
+}
+
 describe('Admin User Integration Tests', () => { // Test Suite function
     const adminUser = {
         email: 'admin.test@example.com',
         password: 'AdminUser@1234',
         confirmPassword: 'AdminUser@1234',
-        firstName: 'Admin',
-        lastName: 'User',
+        name: 'Admin User',
         location: 'Admin City',
         role: 'admin',
     };
@@ -18,8 +25,7 @@ describe('Admin User Integration Tests', () => { // Test Suite function
         email: 'buyer.test@example.com',
         password: 'BuyerUser@1234',
         confirmPassword: 'BuyerUser@1234',
-        firstName: 'Buyer',
-        lastName: 'User',
+        name: 'Buyer User',
         location: 'Buyer City',
         role: 'user',
     };
@@ -35,20 +41,19 @@ describe('Admin User Integration Tests', () => { // Test Suite function
             email: { $in: [adminUser.email, buyerUser.email] },
         });
 
-        await request(app).post('/api/auth/register').send(adminUser);
-        await request(app).post('/api/auth/register').send(buyerUser);
+        const { cookie, token } = await getCsrf();
+        await request(app).post('/api/auth/register').set('Cookie', cookie || '').set('x-csrf-token', token || '').send(adminUser);
+        await request(app).post('/api/auth/register').set('Cookie', cookie || '').set('x-csrf-token', token || '').send(buyerUser);
 
         // Make admin & verify both so login works
         await UserModel.updateOne({ email: adminUser.email }, { isVerified: true, role: 'admin' });
         await UserModel.updateOne({ email: buyerUser.email }, { isVerified: true });
 
-        const adminLogin = await request(app)
-            .post('/api/auth/login')
-            .send({ email: adminUser.email, password: adminUser.password });
+        const { cookie: c1, token: t1 } = await getCsrf();
+        const adminLogin = await request(app).post('/api/auth/login').set('Cookie', c1 || '').set('x-csrf-token', t1 || '').send({ email: adminUser.email, password: adminUser.password });
 
-        const buyerLogin = await request(app)
-            .post('/api/auth/login')
-            .send({ email: buyerUser.email, password: buyerUser.password });
+        const { cookie: c2, token: t2 } = await getCsrf();
+        const buyerLogin = await request(app).post('/api/auth/login').set('Cookie', c2 || '').set('x-csrf-token', t2 || '').send({ email: buyerUser.email, password: buyerUser.password });
 
         adminToken = adminLogin.body.token;
         buyerToken = buyerLogin.body.token;
