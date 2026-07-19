@@ -146,8 +146,7 @@ describe('UserService (core behaviours)', () => {
   test('loginUser returns token and user on success', async () => {
     const user = { _id: 'u', email: 'a@b', password: 'hashed', role: 'buyer', isVerified: true } as any;
     jest.spyOn(UserRepository.prototype, 'getUserByEmail').mockResolvedValueOnce(user as any);
-    // ensure bcrypt.compare is mocked before calling loginUser
-    jest.spyOn(bcrypts as any, 'compare').mockResolvedValue(true as any);
+    jest.spyOn(bcrypts as any, 'compare').mockResolvedValueOnce(true as any);
     jest.spyOn(jwt, 'sign').mockReturnValueOnce('tok' as any);
 
     const res = await service.loginUser({ email: 'a@b', password: 'good' } as any);

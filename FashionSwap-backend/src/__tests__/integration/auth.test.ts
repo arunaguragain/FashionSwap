@@ -23,6 +23,7 @@ describe('Authentication Integration Tests', () => {
       email,
       password: 'TestPassword@1234',
       confirmPassword: 'TestPassword@1234',
+      name: 'Test User',
       firstName: 'Test',
       lastName: 'User',
       location: 'Test City',
