@@ -1,4 +1,6 @@
 
+export {};
+
 jest.mock('mongoose', () => ({ connect: jest.fn() }));
 
 let mongoose: any;

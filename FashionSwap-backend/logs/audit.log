@@ -334,3 +334,8 @@
 {"timestamp":"2026-07-19T07:46:58.771Z","event":"ADMIN_USER_CREATED","meta":{"email":"ok@x"}}
 {"timestamp":"2026-07-19T07:46:58.849Z","event":"ADMIN_USER_UPDATED"}
 {"timestamp":"2026-07-19T07:46:58.899Z","event":"ADMIN_USER_DELETED"}
+{"timestamp":"2026-07-19T08:01:45.000Z","userId":"6a5c84674db2ed9b344f081f","event":"ADMIN_USER_UPDATED","ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-07-19T08:01:45.113Z","userId":"6a5c84674db2ed9b344f081f","event":"ADMIN_USER_DELETED","ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-07-19T08:01:46.730Z","event":"ADMIN_USER_CREATED","meta":{"email":"ok@x"}}
+{"timestamp":"2026-07-19T08:01:46.793Z","event":"ADMIN_USER_UPDATED"}
+{"timestamp":"2026-07-19T08:01:46.814Z","event":"ADMIN_USER_DELETED"}
