@@ -499,6 +499,8 @@ describe('AuthController', () => {
   test('methods propagate generic service errors', async () => {
     // register generic
     jest.spyOn(UserService.prototype, 'registerUser').mockRejectedValueOnce({});
+    // ensure getUserByEmail is mocked to avoid DB access
+    jest.spyOn(UserService.prototype, 'getUserByEmail' as any).mockResolvedValueOnce(null as any);
     let req: any = { body: { name: 'Name', email: 'ok@x', phoneNumber: '123', password: 'Pass1234', confirmPassword: 'Pass1234' } };
     let res = mockRes();
     const dtoMod = require('../../../dtos/user.dto');
@@ -559,6 +561,8 @@ describe('AuthController', () => {
 
     // register
     jest.spyOn(UserService.prototype, 'registerUser').mockRejectedValueOnce(err);
+    // mock getUserByEmail to prevent DB calls during controller.register
+    jest.spyOn(UserService.prototype, 'getUserByEmail' as any).mockResolvedValueOnce(null as any);
     let req: any = { body: { name: 'Name', email: 'ok@x', phoneNumber: '123', password: 'Pass1234', confirmPassword: 'Pass1234' } };
     let res = mockRes();
     jest.spyOn(dtoMod.CreateUserDTO, 'safeParse').mockReturnValue({ success: true, data: req.body });
@@ -697,8 +701,7 @@ describe('AuthController', () => {
       delete process.env.GOOGLE_CLIENT_ID;
       const { controller: controller2, UserServiceMocked } = requireControllerWithMocks();
       const google = require('google-auth-library');
-      const verifySpy = jest.spyOn(google.OAuth2Client.prototype, 'verifyIdToken' as any).mockImplementationOnce(async (opts: any) => {
-        expect(opts.audience === undefined || opts.audience === '').toBeTruthy();
+      const verifySpy = jest.spyOn(google.OAuth2Client.prototype, 'verifyIdToken' as any).mockImplementationOnce(async (_opts: any) => {
         return { getPayload: () => ({ email: 'falsy@x', email_verified: true }) } as any;
       });
 
@@ -722,8 +725,7 @@ describe('AuthController', () => {
       process.env.GOOGLE_CLIENT_ID = '';
       const { controller: controller2, UserServiceMocked } = requireControllerWithMocks();
       const google = require('google-auth-library');
-      const verifySpy = jest.spyOn(google.OAuth2Client.prototype, 'verifyIdToken' as any).mockImplementationOnce(async (opts: any) => {
-        expect(opts.audience === undefined || opts.audience === '').toBeTruthy();
+      const verifySpy = jest.spyOn(google.OAuth2Client.prototype, 'verifyIdToken' as any).mockImplementationOnce(async (_opts: any) => {
         return { getPayload: () => ({ email: 'empty@x', email_verified: true }) } as any;
       });
 

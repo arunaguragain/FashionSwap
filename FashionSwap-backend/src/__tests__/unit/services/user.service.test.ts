@@ -14,6 +14,7 @@ describe('UserService OTP flow', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
     svc = new UserService();
   });
 
@@ -114,6 +115,7 @@ describe('UserService (core behaviours)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
     service = new UserService();
   });
 
@@ -144,12 +146,14 @@ describe('UserService (core behaviours)', () => {
   });
 
   test('loginUser returns token and user on success', async () => {
-    const user = { _id: 'u', email: 'a@b', password: 'hashed', role: 'buyer', isVerified: true } as any;
+    // create a real bcrypt hash to avoid relying on spy ordering
+    const plain = 'good';
+    const hashed = await bcrypts.hash(plain, 10);
+    const user = { _id: 'u', email: 'a@b', password: hashed, role: 'buyer', isVerified: true } as any;
     jest.spyOn(UserRepository.prototype, 'getUserByEmail').mockResolvedValueOnce(user as any);
-    jest.spyOn(bcrypts as any, 'compare').mockResolvedValueOnce(true as any);
     jest.spyOn(jwt, 'sign').mockReturnValueOnce('tok' as any);
 
-    const res = await service.loginUser({ email: 'a@b', password: 'good' } as any);
+    const res = await service.loginUser({ email: 'a@b', password: plain } as any);
     expect(res.token).toBe('tok');
     expect(res.existingUser).toEqual(user);
   });
