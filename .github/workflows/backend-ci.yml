@@ -1,0 +1,51 @@
+name: Backend CI
+
+on:
+  push:
+    paths:
+      - 'FashionSwap-backend/**'
+  pull_request:
+    paths:
+      - 'FashionSwap-backend/**'
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: FashionSwap-backend
+    env:
+      MONGODB_URI: mongodb://localhost:27017/fashionswap
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: FashionSwap-backend/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test -- --runInBand
+      - name: Security audit (informational)
+        run: |
+          npm audit --json --audit-level=high > audit-report.json || true
+          cat audit-report.json
+        continue-on-error: true
+      - name: Upload npm audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: FashionSwap-backend/audit-report.json
