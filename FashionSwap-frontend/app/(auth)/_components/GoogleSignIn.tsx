@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-toastify";
 import { useToast } from "@/app/(platform)/_components/ToastProvider";
 import { API } from "@/lib/api/endpoints";
+import axios from "@/lib/api/axios";
 
 interface Props {
   userType: "Admin" | "User";
@@ -82,48 +83,8 @@ export default function GoogleSignIn({ userType, autoLogin = true }: Props) {
                 action: autoLogin ? 'login' : 'register',
               };
 
-                const r = await fetch(`/api/auth/google`, {
-                  method: "POST",
-                  credentials: "include",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(payloadBody),
-                });
-                try {                 
-                  const headers: Record<string,string> = {};
-                  r.headers.forEach((v,k) => { headers[k]=v });
-                } catch(e) {
-                }
-                let data: any = null;
-                const contentType = r.headers.get("content-type") || "";
-                if (!r.ok) {
-                  try {
-                    if (contentType.includes("application/json")) {
-                      const errJson = await r.json();
-                      try { pushToast({ title: errJson?.message || 'Request failed', description: undefined, tone: 'error' }); } catch(_) {}
-                    } else {
-                      const txt = await r.text().catch(() => null);
-                      try { pushToast({ title: txt || 'Request failed', tone: 'error' }); } catch(_) {}
-                    }
-                  } catch (e) {
-                    try { pushToast({ title: 'Request failed', tone: 'error' }); } catch(_) {}
-                  }
-                  return;
-                }
-
-                try {
-                  if (contentType.includes("application/json")) {
-                    data = await r.json();
-                  } else {
-                    const txt = await r.text().catch(() => null);
-                    // Non-JSON successful response: show it and stop
-                    try { pushToast({ title: txt || 'Unexpected server response', tone: 'error' }); } catch(_) {}
-                    return;
-                  }
-                } catch(e) {
-                  console.error('invalid json body', e);
-                  try { pushToast({ title: 'Invalid server response', tone: 'error' }); } catch(_) {}
-                  return;
-                }
+                const r = await axios.post(`/api/auth/google`, payloadBody);
+                const data = r.data;
 
                 if (data?.success) {
                   // Normalize user object from server

@@ -45,10 +45,7 @@ export const validateCSRFToken = (req: Request, res: Response, next: NextFunctio
   const cookieToken = req.cookies?.[CSRF_COOKIE_NAME];
   const headerToken = req.get(CSRF_HEADER_NAME);
 
-  console.log(`[CSRF Validation] Path: ${req.path}`);
-  console.log(`[CSRF Validation] Cookie Token: ${cookieToken ? 'Present' : 'Missing'}, Header Token: ${headerToken ? 'Present' : 'Missing'}`);
-  console.log(`[CSRF Validation] Match: ${cookieToken === headerToken ? 'YES' : 'NO'}`);
-
+  //CSRF check: compare the token stored in the cookie with the token sent in the request header 
   if (!cookieToken || !headerToken || cookieToken !== headerToken) {
     return res.status(403).json({
       success: false,

@@ -265,6 +265,18 @@ export class AuthController {
 
       await resetFailedLoginAttempts(email);
 
+      // Check if email is verified
+      if (!user.isVerified) {
+        res.status(403).json({
+          success: false,
+          message: 'Email not verified. Please verify your email to continue.',
+          data: {
+            requiresVerification: true,
+          },
+        });
+        return;
+      }
+
       if (user.mfaEnabled && user.totpSecret) {
         const sessionToken = jwt.sign(
           { userId: user._id.toString(), mfaPending: true },

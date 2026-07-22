@@ -153,7 +153,7 @@ export class ListingController {
       res.status(500).json({ success: false, message: 'Error creating listing' });
     }
   }
-
+//Allow-list pattern preventing mass assignment - only 15 permitted fields can be updated
   async updateListing(req: Request, res: Response): Promise<void> {
     try {
       const user = (req as any).user;
